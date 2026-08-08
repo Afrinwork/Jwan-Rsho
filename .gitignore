@@ -1,0 +1,16 @@
+node_modules/
+.expo/
+.expo-shared/
+dist/
+build/
+coverage/
+*.log
+.env
+.env.*
+!.env.example
+firebase-debug.log
+google-services.json
+GoogleService-Info.plist
+service-account*.json
+functions/lib/
+scaffold-temp/

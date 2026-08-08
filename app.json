@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "Rsho",
+    "slug": "rsho",
+    "scheme": "rsho",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Rsho uses your location to open and filter customer destinations on the map."
+        }
+      ],
+      "expo-font"
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.rsho.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Rsho uses your location to show nearby deliveries and open navigation apps."
+      }
+    },
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
