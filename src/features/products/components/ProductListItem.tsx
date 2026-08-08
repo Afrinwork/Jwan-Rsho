@@ -9,9 +9,20 @@ type ProductListItemProps = {
   onPress?: () => void;
   onToggleActive?: () => void;
   onEdit?: () => void;
+  onDelete?: () => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 };
 
-export function ProductListItem({ product, onPress, onToggleActive, onEdit }: ProductListItemProps) {
+export function ProductListItem({
+  product,
+  onPress,
+  onToggleActive,
+  onEdit,
+  onDelete,
+  onMoveUp,
+  onMoveDown,
+}: ProductListItemProps) {
   const colors = useThemeColors();
 
   return (
@@ -24,12 +35,29 @@ export function ProductListItem({ product, onPress, onToggleActive, onEdit }: Pr
         <Text style={[styles.name, { color: colors.text }, !product.isActive && { color: colors.mutedText }]}>
           {product.name}
         </Text>
-        <Text style={[styles.unit, { color: colors.mutedText }]}>{product.defaultUnit}</Text>
+        <Text style={[styles.unit, { color: colors.mutedText }]}>
+          {product.defaultUnit} · Sortierung {product.sortOrder}
+        </Text>
       </View>
       <View style={styles.actions}>
+        {onMoveUp ? (
+          <Pressable onPress={onMoveUp}>
+            <Text style={[styles.edit, { color: colors.primary }]}>Hoch</Text>
+          </Pressable>
+        ) : null}
+        {onMoveDown ? (
+          <Pressable onPress={onMoveDown}>
+            <Text style={[styles.edit, { color: colors.primary }]}>Runter</Text>
+          </Pressable>
+        ) : null}
         {onEdit ? (
           <Pressable onPress={onEdit}>
             <Text style={[styles.edit, { color: colors.primary }]}>Bearbeiten</Text>
+          </Pressable>
+        ) : null}
+        {onDelete ? (
+          <Pressable onPress={onDelete}>
+            <Text style={[styles.edit, { color: colors.danger }]}>Loeschen</Text>
           </Pressable>
         ) : null}
         {onToggleActive ? (

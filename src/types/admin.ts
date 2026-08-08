@@ -6,5 +6,5 @@ export type AdminDashboardStats = {
 };
 
 export type DeleteUserInput = {
-  identifier: string;
+  email: string;
 };

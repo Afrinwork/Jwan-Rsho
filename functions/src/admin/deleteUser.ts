@@ -1,29 +1,30 @@
-import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
-import { requireAdmin } from "@/shared/authGuard";
+import "@/shared/firebaseAdmin";
+import { requireAdmin } from "@/shared/adminGuard";
 import { deleteOwnedDocuments } from "@/shared/firestoreHelpers";
 
-initializeApp();
-
-async function resolveUid(identifier: string) {
-  const auth = getAuth();
-
-  if (identifier.includes("@")) {
-    const user = await auth.getUserByEmail(identifier);
-    return user.uid;
-  }
-
-  return identifier;
-}
-
 export const deleteUser = onCall(async (request) => {
-  requireAdmin(request);
+  await requireAdmin(request);
 
-  const { identifier } = request.data as { identifier: string };
-  const targetUid = await resolveUid(identifier);
+  const { email } = request.data as { email: string };
+  const auth = getAuth();
+  let targetUser;
+
+  try {
+    targetUser = await auth.getUserByEmail(email);
+  } catch (error) {
+    const code = error instanceof Error && "code" in error ? String(error.code) : "";
+
+    if (code === "auth/user-not-found") {
+      throw new HttpsError("not-found", "User not found.");
+    }
+
+    throw error;
+  }
+  const targetUid = targetUser.uid;
 
   if (request.auth?.uid === targetUid) {
     throw new HttpsError("failed-precondition", "Admin cannot delete own account.");
@@ -31,7 +32,7 @@ export const deleteUser = onCall(async (request) => {
 
   await deleteOwnedDocuments(targetUid);
   await getFirestore().collection("users").doc(targetUid).delete();
-  await getAuth().deleteUser(targetUid);
+  await auth.deleteUser(targetUid);
 
   return { success: true };
 });

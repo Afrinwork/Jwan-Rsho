@@ -10,22 +10,44 @@ import { formatError } from "@/src/utils/formatError";
 export function useDeleteUser() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const form = useForm<DeleteUserFormValues>({
     resolver: zodResolver(deleteUserSchema),
-    defaultValues: { identifier: "" },
+    defaultValues: { email: "" },
   });
 
-  const submit = form.handleSubmit(async (values) => {
+  const requestDelete = form.handleSubmit(async (values) => {
+    setSubmitError(null);
+    setSuccessMessage(null);
+    setPendingEmail(values.email);
+  });
+
+  async function confirmDelete() {
+    const email = pendingEmail;
+
+    if (!email) {
+      return;
+    }
+
     try {
       setSubmitError(null);
-      await adminService.deleteUser(values.identifier);
+      await adminService.deleteUser(email);
       form.reset();
-      setSuccessMessage("User deletion request sent.");
+      setSuccessMessage("Benutzer wurde endgueltig geloescht.");
+      setPendingEmail(null);
     } catch (error) {
       setSubmitError(formatError(error).message);
       setSuccessMessage(null);
     }
-  });
+  }
 
-  return { form, submit, submitError, successMessage };
+  return {
+    form,
+    submitError,
+    successMessage,
+    pendingEmail,
+    requestDelete,
+    confirmDelete,
+    cancelDelete: () => setPendingEmail(null),
+  };
 }

@@ -1,27 +1,28 @@
-type Point = {
-  latitude: number;
-  longitude: number;
-};
-
-type Circle = Point & {
-  radiusKm: number;
-};
-
-function toRadians(value: number) {
-  return (value * Math.PI) / 180;
-}
+import { isPointInsideCircle } from "@/src/features/map/utils/circleMath";
+import { isPointInsidePolygon } from "@/src/features/map/utils/polygonMath";
+import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
+import { MapCircleSelection, MapSelectionPoint } from "@/src/features/map/types/mapSelectionTypes";
 
 export const mapSelectionService = {
-  isPointInsideCircle(point: Point, circle: Circle) {
-    const earthRadiusKm = 6371;
-    const latDistance = toRadians(circle.latitude - point.latitude);
-    const lngDistance = toRadians(circle.longitude - point.longitude);
-    const a =
-      Math.sin(latDistance / 2) ** 2 +
-      Math.cos(toRadians(point.latitude)) *
-        Math.cos(toRadians(circle.latitude)) *
-        Math.sin(lngDistance / 2) ** 2;
+  toggleMarkerSelection(selectedIds: string[], markerId: string) {
+    return selectedIds.includes(markerId)
+      ? selectedIds.filter((value) => value !== markerId)
+      : [...selectedIds, markerId];
+  },
 
-    return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) <= circle.radiusKm;
+  resetSelection() {
+    return [] as string[];
+  },
+
+  mergeSelection(selectedIds: string[], newIds: string[]) {
+    return [...new Set([...selectedIds, ...newIds])];
+  },
+
+  getMarkerIdsInCircle(markers: MapCustomerMarker[], circle: MapCircleSelection) {
+    return markers.filter((marker) => isPointInsideCircle(marker, circle)).map((marker) => marker.id);
+  },
+
+  getMarkerIdsInPolygon(markers: MapCustomerMarker[], polygon: MapSelectionPoint[]) {
+    return markers.filter((marker) => isPointInsidePolygon(marker, polygon)).map((marker) => marker.id);
   },
 };

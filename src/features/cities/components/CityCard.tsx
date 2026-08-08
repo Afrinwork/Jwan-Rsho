@@ -3,7 +3,6 @@ import { useRouter } from "expo-router";
 
 import { colors } from "@/src/constants/colors";
 import { spacing } from "@/src/constants/spacing";
-import { routes } from "@/src/constants/routes";
 
 import { CitySummary } from "@/src/features/cities/types/cityTypes";
 
@@ -15,7 +14,7 @@ export function CityCard({ city }: CityCardProps) {
   const router = useRouter();
 
   return (
-    <Pressable onPress={() => router.push(`${routes.admin.replace("/admin", "/city")}/${city.normalizedName}`)}>
+    <Pressable onPress={() => router.push(`/city/${city.normalizedName}`)}>
       <View style={styles.card}>
       <Text style={styles.title}>{city.name}</Text>
       <Text style={styles.meta}>{city.country}</Text>

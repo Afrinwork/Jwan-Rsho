@@ -5,7 +5,7 @@ import { AdminSectionHeader } from "@/src/features/admin/components/AdminSection
 export function DeleteUserScreenBody() {
   return (
     <ScreenContainer>
-      <AdminSectionHeader subtitle="Loeschen per E-Mail oder eindeutiger Benutzer-ID. Eigenes Konto bleibt geschuetzt." title="Benutzer loeschen" />
+      <AdminSectionHeader subtitle="Loeschen per E-Mail mit Sicherheitsdialog. Eigenes Konto bleibt geschuetzt." title="Benutzer loeschen" />
       <DeleteUserForm />
     </ScreenContainer>
   );

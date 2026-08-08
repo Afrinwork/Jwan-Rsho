@@ -1,14 +1,12 @@
-import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
-import { onCall } from "firebase-functions/v2/https";
+import { HttpsError, onCall } from "firebase-functions/v2/https";
 
-import { requireAdmin } from "@/shared/authGuard";
-
-initializeApp();
+import "@/shared/firebaseAdmin";
+import { requireAdmin } from "@/shared/adminGuard";
 
 export const createUser = onCall(async (request) => {
-  requireAdmin(request);
+  await requireAdmin(request);
 
   const { email, fullName, password } = request.data as {
     email: string;
@@ -17,7 +15,19 @@ export const createUser = onCall(async (request) => {
   };
 
   const auth = getAuth();
-  const createdUser = await auth.createUser({ email, password, displayName: fullName });
+  let createdUser;
+
+  try {
+    createdUser = await auth.createUser({ email, password, displayName: fullName });
+  } catch (error) {
+    const code = error instanceof Error && "code" in error ? String(error.code) : "";
+
+    if (code === "auth/email-already-exists") {
+      throw new HttpsError("already-exists", "Email already exists.");
+    }
+
+    throw error;
+  }
 
   await getFirestore().collection("users").doc(createdUser.uid).set({
     email,

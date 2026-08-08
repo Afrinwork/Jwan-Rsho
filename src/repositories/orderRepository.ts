@@ -8,13 +8,15 @@ import {
   query,
   runTransaction,
   updateDoc,
+  writeBatch,
   where,
 } from "firebase/firestore";
 
-import { CustomerWrite } from "@/src/repositories/customerRepositoryData";
+import { buildCustomerUpdateData, CustomerWrite } from "@/src/repositories/customerRepositoryData";
 import { buildNewCustomerForOrder, buildOrderCreateData, buildOrderItemData, CreateOrderInput } from "@/src/repositories/orderRepositoryData";
 import { mapSnapshot, requireCurrentUserId, requireDb } from "@/src/repositories/repositoryContext";
 import { Order } from "@/src/types/order";
+import { OrderItem } from "@/src/types/orderItem";
 
 export const orderRepository = {
   async createOrder(input: CreateOrderInput & { customer?: CustomerWrite; id?: string }) {
@@ -85,6 +87,42 @@ export const orderRepository = {
     await updateDoc(snapshot.ref, { status: "completed", completedAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
   },
 
+  async updateOpenOrderCustomerAndItems(input: {
+    customerId: string;
+    orderId: string;
+    customer: Partial<CustomerWrite>;
+    items: (Partial<OrderItem> & Pick<OrderItem, "productId" | "productNameSnapshot" | "quantity" | "unit">)[];
+  }) {
+    const customerSnapshot = await getOwnedCustomer(input.customerId);
+    const orderSnapshot = await getOwnedOrder(input.orderId);
+
+    if (orderSnapshot.data().status !== "open" || orderSnapshot.data().customerId !== input.customerId) {
+      throw new Error("Open order not found.");
+    }
+
+    const db = requireDb();
+    const batch = writeBatch(db);
+    const orderItemsCollection = collection(db, "orders", input.orderId, "items");
+    const existingItemSnapshots = await getDocs(orderItemsCollection);
+    const timestamp = new Date().toISOString();
+
+    batch.update(customerSnapshot.ref, {
+      ...clean(buildCustomerUpdateData(input.customer)),
+      updatedAt: timestamp,
+    });
+    batch.update(orderSnapshot.ref, {
+      updatedAt: timestamp,
+    });
+
+    existingItemSnapshots.docs.forEach((value) => batch.delete(value.ref));
+    input.items.forEach((item, index) => {
+      const itemRef = doc(orderItemsCollection);
+      batch.set(itemRef, buildOrderItemData({ ...item, sortOrder: item.sortOrder ?? index }, itemRef.id));
+    });
+
+    await batch.commit();
+  },
+
   async cancelOrder(id: string) {
     const snapshot = await getOwnedOrder(id);
     await updateDoc(snapshot.ref, { status: "cancelled", updatedAt: new Date().toISOString() });
@@ -112,6 +150,17 @@ export async function getOwnedOrder(id: string) {
   return snapshot;
 }
 
+async function getOwnedCustomer(id: string) {
+  const ownerId = requireCurrentUserId();
+  const snapshot = await getDoc(doc(requireDb(), "customers", id));
+
+  if (!snapshot.exists() || snapshot.data().ownerId !== ownerId) {
+    throw new Error("Customer not found.");
+  }
+
+  return snapshot;
+}
+
 export async function getOrdersByCustomer(customerId: string) {
   const ownerId = requireCurrentUserId();
   const orderQuery = query(
@@ -132,4 +181,8 @@ export async function getOpenOrdersByCustomerIds(customerIds: string[]) {
 function withCreateTimestamps<T extends object>(value: T) {
   const timestamp = new Date().toISOString();
   return { ...value, createdAt: timestamp, updatedAt: timestamp };
+}
+
+function clean<T extends object>(value: T) {
+  return Object.fromEntries(Object.entries(value).filter(([, current]) => current !== undefined)) as T;
 }

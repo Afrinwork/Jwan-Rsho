@@ -1,6 +1,7 @@
-import { collection, doc, getCountFromServer, getDoc, query, where } from "firebase/firestore";
+import { collection, doc, getCountFromServer, getDoc, query, updateDoc, where } from "firebase/firestore";
 
 import { db } from "@/src/firebase/firestore";
+import { requireCurrentUserId } from "@/src/repositories/repositoryContext";
 import { UserProfile } from "@/src/types/user";
 
 export const userRepository = {
@@ -26,5 +27,16 @@ export const userRepository = {
     );
     const snapshot = await getCountFromServer(activeUsersQuery);
     return snapshot.data().count;
+  },
+
+  async updateOwnProfile(input: { fullName: string }) {
+    if (!db) {
+      return;
+    }
+
+    const ownerId = requireCurrentUserId();
+    await updateDoc(doc(db, "users", ownerId), {
+      fullName: input.fullName.trim(),
+    });
   },
 };

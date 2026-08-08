@@ -2,7 +2,7 @@ import { PropsWithChildren, useEffect } from "react";
 import { useRouter, useSegments } from "expo-router";
 
 import { LoadingView } from "@/src/components/ui/LoadingView";
-import { routes } from "@/src/constants/routes";
+import { resolveAuthRedirect } from "@/src/components/layout/authGateRules";
 import { useAuthSession } from "@/src/features/auth/hooks/useAuthSession";
 
 export function AuthGate({ children }: PropsWithChildren) {
@@ -15,22 +15,10 @@ export function AuthGate({ children }: PropsWithChildren) {
       return;
     }
 
-    const firstSegment = segments[0];
-    const inAuthGroup = firstSegment === "(auth)";
-    const inAdminArea = firstSegment === "admin";
+    const redirectTo = resolveAuthRedirect({ isAuthenticated, isAdmin, firstSegment: segments[0] });
 
-    if (!isAuthenticated && !inAuthGroup) {
-      router.replace(routes.login);
-      return;
-    }
-
-    if (isAuthenticated && inAuthGroup) {
-      router.replace(routes.cities);
-      return;
-    }
-
-    if (inAdminArea && !isAdmin) {
-      router.replace(routes.cities);
+    if (redirectTo) {
+      router.replace(redirectTo);
     }
   }, [authLoading, isAdmin, isAuthenticated, router, segments]);
 

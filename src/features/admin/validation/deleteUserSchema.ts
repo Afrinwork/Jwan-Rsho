@@ -1,5 +1,6 @@
 import { z } from "zod";
+import { emailSchema } from "@/src/validation/commonSchemas";
 
 export const deleteUserSchema = z.object({
-  identifier: z.string().min(3),
+  email: emailSchema,
 });

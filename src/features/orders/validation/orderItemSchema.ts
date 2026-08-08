@@ -2,9 +2,9 @@ import { z } from "zod";
 
 export const orderItemSchema = z.object({
   id: z.string().optional(),
-  productId: z.string().trim().min(1, "Product required"),
-  productNameSnapshot: z.string().trim().min(1, "Product name required"),
-  quantity: z.number().positive("Quantity must be greater than 0"),
-  unit: z.string().trim().min(1, "Unit required"),
+  productId: z.string().trim().min(1, "Produkt erforderlich"),
+  productNameSnapshot: z.string().trim().min(1, "Produktname erforderlich"),
+  quantity: z.number().positive("Menge muss groesser als 0 sein"),
+  unit: z.string().trim().min(1, "Einheit erforderlich"),
   sortOrder: z.number().int().nonnegative().default(0),
 });

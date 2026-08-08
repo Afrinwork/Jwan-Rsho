@@ -6,7 +6,9 @@ import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
 import { colors } from "@/src/constants/colors";
 import { routes } from "@/src/constants/routes";
 import { spacing } from "@/src/constants/spacing";
+import { CountryManagementSection } from "@/src/features/countries/components/CountryManagementSection";
 import { ProductManagementSection } from "@/src/features/products/components/ProductManagementSection";
+import { RegionManagementSection } from "@/src/features/regions/components/RegionManagementSection";
 import { useAuthStore } from "@/src/store/authStore";
 
 export function ManagementScreen() {
@@ -22,6 +24,8 @@ export function ManagementScreen() {
         </View>
         {isAdmin ? <AppButton label="Admin Dashboard" onPress={() => router.push(routes.admin)} variant="secondary" /> : null}
         <ProductManagementSection />
+        <CountryManagementSection />
+        <RegionManagementSection />
       </ScrollView>
     </ScreenContainer>
   );

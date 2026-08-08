@@ -59,3 +59,13 @@ test("ungueltige Menge: non-positive item quantity is rejected", () => {
   });
   assert.equal(result.success, false);
 });
+
+test("ungueltige Menge: negative quantity is rejected", () => {
+  const schema = buildAddOrderFormSchema("existing");
+  const result = schema.safeParse({
+    customerId: "customer-1",
+    customer: {},
+    items: [{ ...validItem, quantity: -3 }],
+  });
+  assert.equal(result.success, false);
+});

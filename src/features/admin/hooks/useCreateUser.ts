@@ -12,15 +12,19 @@ export function useCreateUser() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const form = useForm<CreateUserFormValues>({
     resolver: zodResolver(createUserSchema),
-    defaultValues: { fullName: "", email: "", password: "" },
+    defaultValues: { fullName: "", email: "", password: "", confirmPassword: "" },
   });
 
   const submit = form.handleSubmit(async (values) => {
     try {
       setSubmitError(null);
-      await adminService.createUser(values);
+      await adminService.createUser({
+        email: values.email,
+        fullName: values.fullName,
+        password: values.password,
+      });
       form.reset();
-      setSuccessMessage("User created successfully.");
+      setSuccessMessage("Benutzer wurde erfolgreich angelegt.");
     } catch (error) {
       setSubmitError(formatError(error).message);
       setSuccessMessage(null);

@@ -2,7 +2,6 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
-    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "types": [
       "node"
@@ -15,6 +14,14 @@
   },
   "exclude": [
     "functions",
-    "scaffold-temp"
+    "scaffold-temp",
+    "__sdk54ref",
+    "__sdk54router"
+  ],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
   ]
 }

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Rsho",
+    "name": "Rsho Orders",
     "slug": "rsho",
     "scheme": "rsho",
     "version": "1.0.0",
@@ -13,20 +13,24 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Rsho uses your location to open and filter customer destinations on the map."
+          "locationWhenInUsePermission": "Rsho Orders verwendet deinen Standort, um deine Position auf der Karte anzuzeigen und Navigation zu Kunden zu starten."
         }
       ],
       "expo-font"
     ],
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.rsho.app",
+      "bundleIdentifier": "com.rsho.cheeseorders",
+      "buildNumber": "1",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Rsho uses your location to show nearby deliveries and open navigation apps."
+        "NSLocationWhenInUseUsageDescription": "Rsho Orders verwendet deinen Standort, um deine Position auf der Karte anzuzeigen und Navigation zu Kunden zu starten."
       }
     },
     "experiments": {
       "typedRoutes": true
+    },
+    "android": {
+      "package": "com.rsho.cheeseorders"
     }
   }
 }

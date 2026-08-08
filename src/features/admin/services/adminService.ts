@@ -23,15 +23,15 @@ export const adminService = {
     return callable(input);
   },
 
-  async deleteUser(identifier: string) {
+  async deleteUser(email: string) {
     if (!functionsClient) {
       throw new AppError(errorMessages.firebaseNotConfigured);
     }
 
-    const callable = httpsCallable<{ identifier: string }, { success: boolean }>(
+    const callable = httpsCallable<{ email: string }, { success: boolean }>(
       functionsClient,
       "deleteUser",
     );
-    return callable({ identifier });
+    return callable({ email });
   },
 };

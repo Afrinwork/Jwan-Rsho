@@ -1,0 +1,66 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
+import { StyleSheet, View } from "react-native";
+
+import { FormField } from "@/src/components/forms/FormField";
+import { AppButton } from "@/src/components/ui/AppButton";
+import { AppInput } from "@/src/components/ui/AppInput";
+import { ErrorState } from "@/src/components/ui/ErrorState";
+import { spacing } from "@/src/constants/spacing";
+import { countrySchema } from "@/src/features/countries/validation/countrySchema";
+import { formatError } from "@/src/utils/formatError";
+
+const countryFormSchema = countrySchema.pick({ name: true, isoCode: true, sortOrder: true });
+export type CountryFormValues = z.input<typeof countryFormSchema>;
+
+type CountryFormProps = {
+  initialValues?: CountryFormValues;
+  submitLabel: string;
+  onCancel?: () => void;
+  onSubmit: (values: CountryFormValues) => Promise<void>;
+};
+
+export function CountryForm({ initialValues, submitLabel, onCancel, onSubmit }: CountryFormProps) {
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const form = useForm<CountryFormValues>({
+    resolver: zodResolver(countryFormSchema),
+    defaultValues: initialValues ?? { name: "", isoCode: "", sortOrder: 0 },
+  });
+
+  const submit = form.handleSubmit(async (values) => {
+    try {
+      setSubmitError(null);
+      await onSubmit(values);
+      form.reset({ name: "", isoCode: "", sortOrder: 0 });
+    } catch (error) {
+      setSubmitError(formatError(error).message);
+    }
+  });
+
+  return (
+    <View style={styles.container}>
+      <FormField error={form.formState.errors.name?.message} label="Land">
+        <Controller control={form.control} name="name" render={({ field }) => <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder="Land" value={field.value} />} />
+      </FormField>
+      <FormField error={form.formState.errors.isoCode?.message} label="ISO-Code (optional)">
+        <Controller control={form.control} name="isoCode" render={({ field }) => <AppInput autoCapitalize="characters" maxLength={3} onBlur={field.onBlur} onChangeText={field.onChange} placeholder="DE" value={field.value ?? ""} />} />
+      </FormField>
+      <FormField error={form.formState.errors.sortOrder?.message} label="Sortierung">
+        <Controller control={form.control} name="sortOrder" render={({ field }) => <AppInput keyboardType="number-pad" onBlur={field.onBlur} onChangeText={(text) => field.onChange(text === "" ? 0 : Number(text))} placeholder="0" value={String(field.value)} />} />
+      </FormField>
+      {submitError ? <ErrorState message={submitError} /> : null}
+      <View style={styles.actions}>
+        {onCancel ? <View style={styles.actionButton}><AppButton label="Abbrechen" onPress={onCancel} variant="secondary" /></View> : null}
+        <View style={styles.actionButton}><AppButton disabled={form.formState.isSubmitting} label={submitLabel} loading={form.formState.isSubmitting} onPress={submit} /></View>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { gap: spacing.sm },
+  actions: { flexDirection: "row", gap: spacing.sm },
+  actionButton: { flex: 1 },
+});

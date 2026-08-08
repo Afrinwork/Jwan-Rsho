@@ -14,13 +14,16 @@ import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { Product } from "@/src/types/product";
 
 export function ProductManagementSection() {
-  const { products, loading, error, addProduct, updateProduct, toggleActive } = useProducts();
+  const { products, loading, error, addProduct, updateProduct, toggleActive, deleteProduct, moveProduct } = useProducts();
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [deactivateTarget, setDeactivateTarget] = useState<Product | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const colors = useThemeColors();
 
   async function handleAdd(values: ProductFormValues) {
+    setActionError(null);
     await addProduct(values);
     setShowAddForm(false);
   }
@@ -29,6 +32,7 @@ export function ProductManagementSection() {
     if (!editingProduct) {
       return;
     }
+    setActionError(null);
     await updateProduct(editingProduct.id, values);
     setEditingProduct(null);
   }
@@ -38,7 +42,7 @@ export function ProductManagementSection() {
       setDeactivateTarget(product);
       return;
     }
-    toggleActive(product);
+    void toggleActive(product).catch((error) => setActionError(error instanceof Error ? error.message : "Produkt konnte nicht aktualisiert werden."));
   }
 
   return (
@@ -56,6 +60,7 @@ export function ProductManagementSection() {
 
       {loading ? <LoadingView label="Produkte laden..." /> : null}
       {error ? <ErrorState message={error} /> : null}
+      {actionError ? <ErrorState message={actionError} /> : null}
       {!loading && !error && products.length === 0 ? (
         <EmptyState message="Noch keine Produkte angelegt." title="Keine Produkte" />
       ) : null}
@@ -63,7 +68,7 @@ export function ProductManagementSection() {
       {products.map((product) =>
         editingProduct?.id === product.id ? (
           <ProductForm
-            initialValues={{ name: product.name, defaultUnit: product.defaultUnit }}
+            initialValues={{ name: product.name, defaultUnit: product.defaultUnit, sortOrder: product.sortOrder }}
             key={product.id}
             onCancel={() => setEditingProduct(null)}
             onSubmit={handleEdit}
@@ -72,7 +77,10 @@ export function ProductManagementSection() {
         ) : (
           <ProductListItem
             key={product.id}
+            onDelete={() => setDeleteTarget(product)}
             onEdit={() => setEditingProduct(product)}
+            onMoveDown={() => void moveProduct(product, "down").catch((error) => setActionError(error instanceof Error ? error.message : "Sortierung konnte nicht geaendert werden."))}
+            onMoveUp={() => void moveProduct(product, "up").catch((error) => setActionError(error instanceof Error ? error.message : "Sortierung konnte nicht geaendert werden."))}
             onToggleActive={() => requestToggle(product)}
             product={product}
           />
@@ -86,12 +94,26 @@ export function ProductManagementSection() {
         onCancel={() => setDeactivateTarget(null)}
         onConfirm={() => {
           if (deactivateTarget) {
-            toggleActive(deactivateTarget);
+            void toggleActive(deactivateTarget).catch((error) => setActionError(error instanceof Error ? error.message : "Produkt konnte nicht deaktiviert werden."));
           }
           setDeactivateTarget(null);
         }}
         title="Produkt deaktivieren?"
         visible={Boolean(deactivateTarget)}
+      />
+      <ConfirmDialog
+        confirmLabel="Loeschen"
+        destructive
+        message="Dieses Produkt wird nur geloescht, wenn es noch in keiner Bestellung verwendet wurde."
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => {
+          if (deleteTarget) {
+            void deleteProduct(deleteTarget).catch((error) => setActionError(error instanceof Error ? error.message : "Produkt konnte nicht geloescht werden."));
+          }
+          setDeleteTarget(null);
+        }}
+        title="Produkt wirklich loeschen?"
+        visible={Boolean(deleteTarget)}
       />
     </View>
   );

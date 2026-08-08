@@ -11,6 +11,7 @@ type AuthStore = {
   clearUser: () => void;
   setAuthLoading: (value: boolean) => void;
   setAuthError: (value: string | null) => void;
+  updateDisplayName: (value: string) => void;
 };
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -22,4 +23,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
   clearUser: () => set({ currentUser: null, isAdmin: false }),
   setAuthLoading: (value) => set({ authLoading: value }),
   setAuthError: (value) => set({ authError: value }),
+  updateDisplayName: (value) =>
+    set((state) => ({
+      currentUser: state.currentUser
+        ? { ...state.currentUser, displayName: value }
+        : null,
+    })),
 }));

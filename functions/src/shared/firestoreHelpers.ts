@@ -2,7 +2,6 @@ import { getFirestore } from "firebase-admin/firestore";
 
 const collections = [
   "customers",
-  "orders",
   "products",
   "countries",
   "regions",
@@ -11,6 +10,15 @@ const collections = [
 
 export async function deleteOwnedDocuments(ownerId: string) {
   const db = getFirestore();
+  const orderSnapshot = await db.collection("orders").where("ownerId", "==", ownerId).get();
+
+  await Promise.all(
+    orderSnapshot.docs.map(async (value) => {
+      const itemsSnapshot = await value.ref.collection("items").get();
+      await Promise.all(itemsSnapshot.docs.map((item) => item.ref.delete()));
+      await value.ref.delete();
+    }),
+  );
 
   await Promise.all(
     collections.map(async (name) => {
