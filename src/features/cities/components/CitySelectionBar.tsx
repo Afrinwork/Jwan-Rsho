@@ -1,28 +1,36 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { AppButton } from "@/src/components/ui/AppButton";
-import { colors } from "@/src/constants/colors";
+import { useThemeColors } from "@/src/hooks/useThemeColors";
 
 type CitySelectionBarProps = {
   selectedCount: number;
-  onSelectAllOpen: () => void;
-  onResetSelection: () => void;
 };
 
 export function CitySelectionBar(props: CitySelectionBarProps) {
+  const colors = useThemeColors();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{props.selectedCount} Kunden ausgewaehlt</Text>
-      <View style={styles.actions}>
-        <AppButton label="Alle offenen" onPress={props.onSelectAllOpen} variant="secondary" />
-        <AppButton label="Auswahl loeschen" onPress={props.onResetSelection} variant="secondary" />
+      <View style={styles.row}>
+        <View style={[styles.countChip, { backgroundColor: colors.backgroundAccent, borderColor: colors.primary }]}>
+          <Text style={[styles.countText, { color: colors.primary }]}>{props.selectedCount} ausgewaehlt</Text>
+        </View>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { gap: 10 },
-  label: { color: colors.text, fontSize: 14, fontWeight: "600" },
-  actions: { gap: 10 },
+  container: { gap: 8 },
+  row: { flexDirection: "row", gap: 8, alignItems: "center" },
+  countChip: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  countText: {
+    fontSize: 13,
+    fontWeight: "700",
+  },
 });

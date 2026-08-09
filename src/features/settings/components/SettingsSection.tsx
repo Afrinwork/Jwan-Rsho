@@ -12,7 +12,7 @@ export function SettingsSection({ title, children }: SettingsSectionProps) {
   const colors = useThemeColors();
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+    <View style={[styles.card, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, shadowColor: colors.shadow }]}>
       <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
       {children}
     </View>
@@ -20,6 +20,14 @@ export function SettingsSection({ title, children }: SettingsSectionProps) {
 }
 
 const styles = StyleSheet.create({
-  card: { borderWidth: 1, borderRadius: 18, padding: spacing.md, gap: spacing.sm },
+  card: {
+    borderWidth: 1,
+    borderRadius: 22,
+    padding: spacing.md,
+    gap: spacing.sm,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+  },
   title: { fontSize: 16, fontWeight: "700" },
 });

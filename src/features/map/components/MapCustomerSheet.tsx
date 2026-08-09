@@ -17,6 +17,8 @@ type MapCustomerSheetProps = {
   onClose: () => void;
   onRetry: () => void;
   onEdit: () => void;
+  onComplete: () => void;
+  completing?: boolean;
   onCall: () => void;
   onNavigate: () => void;
   onShare: () => void;
@@ -31,6 +33,8 @@ export function MapCustomerSheet({
   onClose,
   onRetry,
   onEdit,
+  onComplete,
+  completing,
   onCall,
   onNavigate,
   onShare,
@@ -58,6 +62,9 @@ export function MapCustomerSheet({
               {actionError ? <ErrorState message={actionError} /> : null}
               <View style={styles.actions}>
                 <AppButton label="Bearbeiten" onPress={onEdit} />
+                {details.openOrder ? (
+                  <AppButton label="Als erledigt markieren" loading={completing} onPress={onComplete} />
+                ) : null}
                 <AppButton label="Anrufen" onPress={onCall} variant="secondary" />
                 <AppButton label="Navigation" onPress={onNavigate} variant="secondary" />
                 <AppButton label="Standort teilen" onPress={onShare} variant="secondary" />

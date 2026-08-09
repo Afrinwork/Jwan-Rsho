@@ -625,3 +625,171 @@ Tests:
 Offene Punkte:
 
 - Die neuen Composite-Indexe in `firebase/firestore.indexes.json` sind nur ein Manifest; sie muessen einmalig per `firebase deploy --only firestore:indexes` gegen das echte Firebase-Projekt ausgerollt werden, sobald dieses eingerichtet ist (siehe weiterhin offene Punkte aus Phase 1).
+
+## Phase 10 - Ein Adressfeld, echte Laender-Auswahl, Beispiel-Katalog
+
+Auf Nutzerwunsch (WhatsApp-Liste mit 12 Produkten und Vertriebslaendern) umgesetzt, nach Rueckfrage zur genauen Auswirkung auf das Adressfeld:
+
+Was fertig ist:
+
+- **Adressfeld zusammengelegt:** `Customer.street` + `houseNumber` + `postalCode` (3 separate Pflichtfelder) sind zu einem einzigen Feld `address` (Freitext, z. B. "Musterstrasse 12, 12345") verschmolzen. `city`, `country` und das optionale `region` bleiben eigene Felder, damit der bestehende Staedte-Tab (Gruppierung nach Stadt) und die Kartenfilter (Land/Stadt/Region) unveraendert weiterfunktionieren. Betroffen waren `Customer`-Typ, `customerSchema`, `customerRepositoryData`, `geocodingService`, beide Kundenformulare (neu/bearbeiten), alle Anzeige-Stellen (Kundendetails, Kartenkarte, Staedte-Kundenkarte, Teilen-Text) und die Kundensuche - insgesamt rund 20 Dateien.
+- Bewusst **kein Migrationscode** fuer bereits gespeicherte Kunden mit altem Feldschema: Die App ist noch nicht auf TestFlight/produktiv, ein sauberer Schnitt ohne Kompatibilitaetsschicht wurde als einfachste, richtige Loesung gewaehlt.
+- **Echte Laender-Auswahl:** `country` ist in beiden Kundenformularen keine Freitexteingabe mehr, sondern ein neues `CountrySelectField` (Chip-Auswahl), das die echten, in der Verwaltung gepflegten `countries`-Eintraege des Benutzers laedt. Kein Land in der Verwaltung angelegt heisst kein Land waehlbar - klarer Hinweistext statt Freitext-Ausweichloesung.
+- **Beispiel-Katalog:** Die vom Nutzer genannten 12 Produkte (Baladi Kaese, Musanara, Meshalel, Labneh, Qishta, Shanglish, Duberke, Oliven, Olivenoel, Paprikamark, Tomatenmark, Makdos) und 6 Laender (Deutschland, Daenemark, Niederlande, Belgien, Frankreich, Schweden, aus der Textnachricht zu den Vertriebslaendern) liegen jetzt als Daten in `seedCatalog.ts`. Ein neuer Button "Beispiel-Katalog laden" in der Verwaltung legt sie ueber die bestehenden `productRepository`/`countryRepository`-Pfade fuer den eingeloggten Benutzer in Firestore an; bereits vorhandene Eintraege (Namensvergleich, gross-/kleinschreibungsunabhaengig) werden uebersprungen, der Button ist also gefahrlos mehrfach klickbar.
+- Wichtige Einschraenkung, dem Nutzer mitgeteilt: von dieser CLI-Umgebung aus kann nicht direkt in die echte Firebase-Datenbank des Nutzers geschrieben werden (kein echtes Projekt/keine Credentials hier konfiguriert, nur die lokale Emulator-Suite fuer Tests). Der Katalog wird deshalb erst gespeichert, wenn der Nutzer den Button in der echten App antippt, dort mit seinem eigenen Login.
+
+Welche Dateien erstellt oder erweitert wurden:
+
+- `src/types/customer.ts`, `src/features/customers/validation/customerSchema.ts`, `src/repositories/customerRepositoryData.ts`
+- `src/services/geocodingService.ts`
+- `src/features/countries/components/CountrySelectField.tsx` (neu)
+- `src/features/customers/components/CustomerAddressSection.tsx`, `CustomerEditAddressSection.tsx`, `CustomerAddressView.tsx`, `CustomerDetailsHeader.tsx`, `CustomerDetailsScreen.tsx`
+- `src/features/customers/services/customerEditService.ts`, `src/features/customers/hooks/useCustomerEdit.ts`
+- `src/features/orders/validation/addOrderFormSchema.ts`
+- `src/features/map/services/mapCustomerService.ts`, `src/features/map/components/CustomerMapCard.tsx`, `src/features/map/hooks/useMapActions.ts`
+- `src/features/cities/components/CityCustomerCard.tsx`, `src/features/cities/services/cityCustomerService.ts`, `src/features/cities/types/cityCustomerTypes.ts`
+- `src/repositories/customerRepository.ts` (Suche nutzt jetzt `address` statt `street`)
+- `src/features/management/data/seedCatalog.ts`, `src/features/management/services/seedCatalogService.ts`, `src/features/management/hooks/useSeedCatalog.ts`, `src/features/management/components/SeedCatalogSection.tsx` (alle neu)
+- `src/features/management/components/ManagementScreen.tsx` (Seed-Katalog-Sektion eingebunden)
+- `tests/unit/seedCatalogService.test.ts` (neu)
+- `tests/unit/customerSchema.test.ts`, `tests/unit/addOrderFormSchema.test.ts`, `tests/unit/customerEditService.test.ts`, `tests/unit/mapCustomerService.test.ts`, `tests/unit/mapLargeData.test.ts`, `tests/unit/cityCustomerService.test.ts`, `tests/unit/citySelectionService.test.ts`, `tests/unit/cityService.test.ts`, `tests/repositories/customerRepositoryData.test.ts`, `tests/repositories/orderRepositoryData.test.ts` (Fixtures auf `address` umgestellt)
+
+Tests:
+
+- `npx tsc --noEmit` (0 Fehler)
+- `npm run lint` (0 Fehler)
+- `npm test` (85 Tests, alle gruen)
+- `npx expo-doctor` (18/18)
+
+Offene Punkte:
+
+- Der Beispiel-Katalog muss noch einmal in der echten App (mit echtem Firebase-Projekt) angetippt werden, damit die Daten tatsaechlich in Firestore landen.
+- „Staedte-Wahl" wurde bewusst nicht als eigene Auswahl-Komponente gebaut (Stadt bleibt Freitext wie zuvor); falls eine Autovervollstaendigung aus bereits verwendeten Staedten gewuenscht ist, ist das ein eigener, kleiner Folgeschritt.
+
+## Phase 11 - Fix: Firestore-Fehler wurden immer als generische Meldung angezeigt
+
+Beim Live-Debugging mit dem Nutzer (echtes Projekt `rsho-orders` zeigte ueberall "Etwas ist schiefgelaufen") wurde ein echter Bug gefunden:
+
+- `src/utils/formatError.ts` hat Firestore-Fehlercodes bisher mit einem `"firestore/"`-Praefix in der Map erwartet (z. B. `"firestore/permission-denied"`). Der reale Firestore-Web-SDK-Code (`FirestoreError.code`, verifiziert direkt im installierten `@firebase/firestore`-Paket) hat aber **keinen** Praefix, z. B. nur `"permission-denied"`, `"failed-precondition"`, `"unavailable"`. Dadurch griff die Zuordnung fuer **jeden** Firestore-Fehler nie, und die App zeigte immer nur die nichtssagende Standardmeldung - egal ob Regeln fehlten, Indexe fehlten oder etwas ganz anderes das Problem war.
+- Behoben: Praefix aus den Map-Schluesseln entfernt (`permission-denied`, `failed-precondition`, `unavailable`, `deadline-exceeded`, `cancelled`, `not-found`). Auth- (`auth/...`) und Functions-Codes (`functions/...`) waren bereits korrekt, da diese SDKs ihre Codes tatsaechlich so praefixen.
+- Zusaetzlich wurden im echten Firebase-Projekt `rsho-orders` gemeinsam mit dem Nutzer alle 8 in `firebase/firestore.indexes.json` vorbereiteten Composite-Indexe manuell ueber die Firebase-Konsole angelegt (die CLI-basierte Bereitstellung war von dieser Umgebung aus nicht moeglich, da kein authentifizierter `firebase login` verfuegbar ist).
+
+Welche Dateien erweitert wurden:
+
+- `src/utils/formatError.ts`
+- `tests/unit/formatError.test.ts` (Codes ohne Praefix, zwei neue Faelle fuer `failed-precondition` und `permission-denied` ergaenzt)
+
+Tests:
+
+- `npx tsc --noEmit` (0 Fehler)
+- `npm test` (88 Tests, alle gruen)
+
+Offene Punkte:
+
+- Der Nutzer muss die App nach diesem Fix erneut testen; falls jetzt noch ein Fehler auftaucht, sollte er dank der korrigierten Zuordnung eine spezifischere, hilfreichere Meldung zeigen statt der generischen.
+- Composite-Indexe fuer das echte Projekt `rsho-orders` wurden nur manuell in der Konsole angelegt, nicht ueber `firebase deploy`; kuenftige neue Indexe (falls noch mehr Abfragen dazukommen) muessen ebenso manuell nachgezogen werden, solange kein authentifizierter CLI-Zugang eingerichtet ist.
+
+## Phase 12 - Live-Debugging mit dem Nutzer: Karten-UI, Verwaltungs-Karten, Bestell-Regel-Bug
+
+Beim gemeinsamen Testen mit dem Nutzer (echtes Geraet, echtes Projekt `rsho-orders`) kamen mehrere echte Probleme zum Vorschein und wurden direkt behoben:
+
+- **Firestore-Regeln des echten Projekts waren veraltet/anders**: Die in der Konsole deployten Regeln nutzten ueberall das Feld `userId` statt `ownerId` (Mismatch zum kompletten App-Code, der ausschliesslich `ownerId` schreibt). Dadurch schlug praktisch jede Lese-/Schreiboperation fehl. Der Nutzer hat die korrekte, bereits getestete Regel-Datei aus diesem Repo manuell in der Konsole eingefuegt und veroeffentlicht.
+- **Karten-Screen (`MapScreen.tsx`) war nicht scrollbar** und hat die eigentliche Karte auf quasi 0 Hoehe zusammengequetscht, wenn Filter/Werkzeuge viel Platz brauchten. Jetzt steckt der ganze Screen in einer `ScrollView`, die Karte hat eine feste Hoehe (440) statt `flex: 1`, und die doppelte Kundenzahl-Anzeige (einmal als Stat-Kachel oben, einmal als Extra-Karte weiter unten) wurde auf die eine Anzeige oben reduziert.
+- **"Auswahl loeschen"-Button in `MapSelectionToolbar.tsx` lief ausser Kontrolle**: `flex: 1` neben drei Werkzeug-Chips ohne `flexWrap` hat den Button auf eine derart schmale Spalte gequetscht, dass der Text buchstabenweise umgebrochen ist. Jetzt eigene volle Zeile fuer den Button, Werkzeug-Chips duerfen umbrechen.
+- **Produkt-/Laender-/Regionen-Listenkarten liefen ueber den Bildschirmrand**: zu viele Aktionen (Pfeile, Bearbeiten, Loeschen, Schalter) in einer einzigen Zeile ohne Umbruch haben Inhalte abgeschnitten und den Titel unsichtbar gemacht. Alle drei (`ProductListItem`, `CountryListItem`, `RegionListItem`) wurden auf ein zweizeiliges Karten-Layout umgestellt: oben Titel (mit Platzhalter-Icon bei Produkten) + Schalter, darunter die Aktionen in eigener Zeile.
+- **Bild-Upload-Feature angefangen, dann auf Nutzerwunsch wieder verworfen**: `expo-image-picker` + Firebase Storage (Client, Regeln, `firebase.json`) sowie `Product.imageUrl`/`imagePath` wurden aufgebaut, dann komplett zurueckgebaut, nachdem der Nutzer sich stattdessen fuer die einfache Platzhalter-Icon-Loesung entschieden hat. `react-native-svg` (echter, unabhaengiger Fix fuer eine fehlende Peer-Dependency von `@fluentui/react-native-icons`) wurde behalten.
+- **Echter, subtiler Regel-Bug beim Anlegen eines neuen Kunden gefunden und behoben**: `orderRepository.createOrder()` legt Kunde, Bestellung und Bestellpositionen in **einer** Firestore-Transaktion an. Die alte Regel fuer `orders/{orderId}/items/{itemId}` hat den Besitzer per `get()` der uebergeordneten Bestellung geprueft - die aber im selben Moment innerhalb derselben Transaktion gerade erst angelegt wird und aus Sicht der Regel-Auswertung (Stand vor Transaktionsbeginn) noch nicht existiert. Das fuehrte zu `permission-denied` bei jedem "neuer Kunde"-Vorgang. Fix: Bestellpositionen tragen jetzt selbst ein `ownerId`-Feld; `create`/`update` pruefen das direkt am Dokument (`validOwnerWrite()`), nur `read`/`delete` (die immer eine bereits existierende Bestellung voraussetzen) nutzen weiter `get()`. Mit einem gezielten Test abgesichert, der genau die reale Transaktion (Bestellung + Position gleichzeitig anlegen) nachstellt.
+
+Welche Dateien erstellt oder erweitert wurden:
+
+- `src/features/map/components/MapScreen.tsx`, `MapToolbar.tsx`, `MapSelectionToolbar.tsx`
+- `src/features/products/components/ProductListItem.tsx`
+- `src/features/countries/components/CountryListItem.tsx`
+- `src/features/regions/components/RegionListItem.tsx`
+- `src/repositories/orderRepositoryData.ts`, `src/repositories/orderRepository.ts`
+- `firebase/firestore.rules`
+- `tests/repositories/orderRepositoryData.test.ts`
+- `tests/security/firestoreRules.test.ts`
+- `tests/unit/authGateRules.test.ts` (an umbenannte `routes.overview` angepasst, Drift durch parallele Aenderung)
+- `react-native-svg` als Dependency ergaenzt (fehlende Peer-Dependency von `@fluentui/react-native-icons`, von `expo-doctor` aufgedeckt)
+
+Tests:
+
+- `npx tsc --noEmit` (0 Fehler)
+- `npm run lint` (0 Fehler)
+- `npm test` (88 Tests)
+- `npm run test:security` (64 Tests, inkl. neuem Transaktions-Regressionstest)
+- `npm run test:functions` (7 Tests)
+- `npx expo-doctor` (18/18)
+
+Nachtrag: nach dem ersten Deploy der obigen Regel meldete die App im selben "neuer Kunde"-Ablauf weiterhin `permission-denied`. Zweite, verwandte Ursache gefunden und behoben:
+
+- `orderRepository.createOrder()` liest vor dem eigentlichen Anlegen per `transaction.get(orderRef)` nach, ob zufaellig schon eine Bestellung mit dieser (frisch generierten) ID existiert - ein Duplikat-Schutz. Fuer eine brandneue ID existiert das Dokument aber nie, und die alte Regel `allow read: if isOwner(resource.data.ownerId)` wertet bei einem nicht existierenden Dokument `resource` als `null` aus; der Zugriff auf `.data.ownerId` darauf wirft einen Auswertungsfehler, den Firestore als `permission-denied` behandelt ("Null value error"). Betraf nicht nur `orders`, sondern strukturell jede Sammlung mit demselben Regel-Muster.
+- Fix: alle fuenf owner-gebundenen Lese-Regeln (`customers`, `orders`, `products`, `countries`, `regions`) pruefen jetzt zuerst `resource == null` (Dokument existiert nicht -> Lesen ist unbedenklich erlaubt, es gibt nichts zu schuetzen) und erst danach den eigentlichen Besitzer-Vergleich.
+- Mit zwei weiteren Tests abgesichert: einer prueft gezielt das Lesen eines nicht existierenden `orders`-Dokuments in einer Transaktion, der andere simuliert den kompletten echten `createOrder()`-Ablauf (neuer Kunde + neue Bestellung + Produkte, alles in einer Transaktion) End-to-End gegen den Emulator.
+
+Tests (aktualisiert):
+
+- `npm test` (88 Tests)
+- `npm run test:security` (66 Tests)
+
+Offene Punkte:
+
+- Der Nutzer muss die finale, oben im Chat geteilte `firebase/firestore.rules`-Datei erneut in der Konsole veroeffentlichen (jetzt mit beiden Fixes: Bestellpositionen-Block und `resource == null`-Absicherung bei allen fuenf Lese-Regeln), damit die Fixes auch im echten Projekt wirken.
+
+Nachtrag 2: Nach den beiden Regel-Fixes kam beim selben "neuer Kunde"-Test ein **anderer** Fehler, diesmal generisch statt "kein Zugriff" - also ein neues, unabhaengiges Problem. Da `formatError()` den echten Fehler bisher komplett hinter einer freundlichen Meldung versteckt hat, wurde vorher blind geraten; das wurde behoben, bevor weitergesucht wurde:
+
+- `src/utils/formatError.ts` loggt jetzt den rohen Fehler zusaetzlich per `console.error("[formatError] raw error:", error)` (nur wenn `__DEV__`, faellt im Node-Test-Runner sicher auf "immer loggen" zurueck, da dort kein `__DEV__` existiert). Der Nutzer hat daraufhin den echten Fehler aus dem Metro-Terminal geschickt.
+- **Echter, dritter Bug gefunden**: `Function Transaction.set() called with invalid data. Unsupported field value: undefined (found in field note in document orders/...)`. Ursache: `buildOrderCreateData()` schreibt `note: parsed.note?.trim()` direkt in die Firestore-Schreiboperation. Das Bestell-Notizfeld hat aber (siehe Phase 2) noch gar kein UI-Feld, ist also immer `undefined`, nicht leer - und die Firestore-Web-SDK wirft bei jedem `undefined`-Feldwert in `setDoc`/`transaction.set()` sofort einen Fehler, statt das Feld stillschweigend wegzulassen.
+- Dieselbe Fehlerklasse (`optionalField?.trim()` direkt in die Schreib-Daten geschrieben, ohne auf `undefined` zu pruefen) systematisch in allen anderen `*RepositoryData.ts`-Create-Funktionen gesucht und behoben, bevor sie dort ebenfalls zuschlaegt: `customerRepositoryData.ts` (`region`, `note`, `latitude`, `longitude` - Letzteres besonders relevant, weil Geocoding bei fehlgeschlagener/uebersprungener Adresssuche `undefined` liefert), `countryRepositoryData.ts` (`isoCode`), `regionRepositoryData.ts` (`city`/`normalizedCity`). Alle betroffenen Felder werden jetzt nur noch in das Schreib-Objekt aufgenommen, wenn tatsaechlich ein Wert vorhanden ist (`...(value ? { field: value } : {})`), statt sie mit `undefined` mitzuschreiben.
+- Mit zwei neuen Tests abgesichert, die pruefen, dass die betroffenen Felder beim Fehlen komplett aus dem Ergebnisobjekt fehlen (nicht nur `undefined` sind, was in JS/TS einen Unterschied macht, den Firestore aber nicht toleriert).
+
+Welche Dateien zusaetzlich erweitert wurden:
+
+- `src/utils/formatError.ts` (Debug-Logging)
+- `src/repositories/orderRepositoryData.ts`, `customerRepositoryData.ts`, `countryRepositoryData.ts`, `regionRepositoryData.ts`
+- `tests/repositories/orderRepositoryData.test.ts`, `customerRepositoryData.test.ts`
+
+Tests (aktualisiert):
+
+- `npm test` (90 Tests)
+
+Offene Punkte:
+
+- Der Nutzer muss die App neu starten (nicht nur neu laden) und den kompletten "neuer Kunde + Bestellung"-Ablauf erneut testen; falls dabei noch ein Fehler auftaucht, zeigt das Metro-Terminal dank des neuen Loggings jetzt den echten Fehler direkt an.
+
+Nachtrag 3: "neuer Kunde" funktionierte danach nachweislich (Kunde korrekt mit `ownerId` in Firestore sichtbar), aber "bestehender Kunde auswählen und Bestellung speichern" lieferte weiterhin `permission-denied`, diesmal ohne Detailtext ("Missing or insufficient permissions."). Wurzelursache gefunden, unabhängig von allen bisherigen Fixes:
+
+- Ganz am Anfang der Session (erstes Metro-Log) stand bereits die Warnung `Auth (12.17.0): You are initializing Firebase Auth for React Native without providing AsyncStorage. Auth state will default to memory persistence...`. `src/firebase/auth.ts` rief `initializeAuth(firebaseApp)` bisher ohne `persistence`-Option auf. Dadurch lebt die Anmeldesitzung nur im Arbeitsspeicher; bei jedem Metro-Reload/Fast-Refresh während der Entwicklung (und generell bei jedem App-Neustart in Produktion) kann die Sitzung intern verschwinden, ohne dass die UI das sichtbar macht - der naechste Firestore-Zugriff schlägt dann mit `permission-denied` fehl, weil `request.auth` auf Server-Seite nicht mehr existiert, obwohl die App optisch weiter eingeloggt wirkt. Erklaert das unregelmaessige "mal geht's, mal nicht"-Verhalten ueber die ganze Session hinweg.
+- Fix: `src/firebase/auth.ts` nutzt jetzt `initializeAuth(firebaseApp, { persistence: getReactNativePersistence(AsyncStorage) })` mit `@react-native-async-storage/async-storage` (war bereits eine Abhaengigkeit). Faellt bei bereits initialisierter Auth-Instanz (Fast-Refresh) weiterhin auf `getAuth()` zurueck, wie zuvor.
+- `getReactNativePersistence` ist im `@firebase/auth`-Paket nur ueber die `"react-native"`-Exportbedingung erreichbar; Metro loest das zur Laufzeit korrekt auf, TypeScript waehlt beim Typecheck aber die plattformneutrale Deklarationsdatei, die diese Funktion nicht kennt. Statt eines `any`-Casts oder `@ts-ignore` wurde eine kleine, praezise typisierte Modul-Erweiterung (`src/types/firebaseAuthRn.d.ts`) ergaenzt, die exakt die reale, dokumentierte Signatur nachtraegt.
+
+Welche Dateien zusaetzlich erstellt/erweitert wurden:
+
+- `src/firebase/auth.ts`
+- `src/types/firebaseAuthRn.d.ts` (neu)
+
+Tests:
+
+- `npx tsc --noEmit` (0 Fehler)
+- `npm run lint` (0 Fehler)
+- `npm test` (90 Tests)
+- `npx expo-doctor` (18/18)
+
+Offene Punkte:
+
+- Der Nutzer muss sich nach diesem Fix einmal **komplett neu einloggen** (nicht nur die App neu laden), damit die Sitzung erstmals mit Persistenz gespeichert wird, und danach erneut "bestehender Kunde auswählen und Bestellung speichern" testen.
+
+Nachtrag 4: Direkt nach dem Neustart erschien im Log `[formatError] raw error: [Error: Bitte melde dich erneut an.]`, ausgeloest aus `useUserPreferences` -> `userPreferencesRepository.getPreferences()`. Kein neuer Datenfehler, sondern ein Timing-Nebeneffekt des Persistenz-Fixes selbst:
+
+- `SettingsBootstrap` (gemountet in `AppProviders`, oberhalb von `AuthGate`) laedt Nutzereinstellungen sobald `useCurrentUser()` einen Benutzer liefert. Direkt nach App-Start/Fast-Refresh kann der Zustand-Store kurzzeitig noch einen (alten) Benutzer zeigen, waehrend die frisch initialisierte Firebase-Auth-Instanz ihre Sitzung noch asynchron aus dem Speicher wiederherstellt (`auth.currentUser` ist in diesem kurzen Fenster noch `null`). Das ist ein normaler, erwarteter Uebergangszustand, wurde bisher aber wie ein echter Fehler behandelt.
+- Fix: `useUserPreferences.ts` faengt genau den Fehlercode `auth/unauthenticated` jetzt gezielt ab (Praeferenzen werden auf Standardwerte zurueckgesetzt, kein Fehlerbanner) statt ihn als Fehler anzuzeigen. Sobald die Auth-Sitzung kurz danach wirklich bereit ist, feuert derselbe Hook durch seine eigene Abhaengigkeit auf `user` automatisch erneut und laedt die echten Einstellungen nach - kein Datenverlust, nur kein unnoetiger roter Banner mehr fuer einen Zustand, der sich von selbst aufloest.
+
+Tests:
+
+- `npx tsc --noEmit` (0 Fehler)
+- `npm test` (91 Tests)
+
+Offene Punkte:
+
+- Der eigentliche offene Test bleibt: "bestehender Kunde auswaehlen und Bestellung speichern" nach dem kompletten Neu-Login noch einmal bestaetigen.

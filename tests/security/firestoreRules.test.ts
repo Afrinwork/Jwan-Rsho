@@ -1,7 +1,7 @@
 import { after, before, beforeEach, test } from "node:test";
 import assert from "node:assert/strict";
 import { assertFails, assertSucceeds, RulesTestEnvironment } from "@firebase/rules-unit-testing";
-import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, getDocs, query, runTransaction, setDoc, updateDoc, where } from "firebase/firestore";
 
 import { createTestEnv } from "./testEnv";
 
@@ -113,6 +113,68 @@ test("orders/items: unauthenticated access is blocked", async () => {
 
   const anon = testEnv.unauthenticatedContext();
   await assertFails(getDoc(doc(anon.firestore(), "orders", "order1", "items", "item1")));
+});
+
+test("orders/items: owner can create a brand-new order and its items together in one transaction", async () => {
+  const userA = testEnv.authenticatedContext("userA");
+  const db = userA.firestore();
+  const orderRef = doc(db, "orders", "order-tx-1");
+
+  await assertSucceeds(
+    runTransaction(db, async (transaction) => {
+      const itemRef = doc(collection(orderRef, "items"));
+      transaction.set(orderRef, { ownerId: "userA", customerId: "c1", status: "open" });
+      transaction.set(itemRef, { ownerId: "userA", productId: "p1", quantity: 1 });
+    }),
+  );
+});
+
+test("orders: reading a not-yet-existing order (duplicate pre-check, matches real createOrder flow) does not throw", async () => {
+  const userA = testEnv.authenticatedContext("userA");
+  const db = userA.firestore();
+  const orderRef = doc(db, "orders", "order-precheck-1");
+
+  await assertSucceeds(
+    runTransaction(db, async (transaction) => {
+      const existing = await transaction.get(orderRef);
+      if (existing.exists()) {
+        throw new Error("should not exist yet");
+      }
+      transaction.set(orderRef, { ownerId: "userA", customerId: "c1", status: "open" });
+    }),
+  );
+});
+
+test("full createOrder flow: new customer + new order + items in one transaction succeeds end to end", async () => {
+  const userA = testEnv.authenticatedContext("userA");
+  const db = userA.firestore();
+  const orderRef = doc(db, "orders", "order-full-flow-1");
+  const customerRef = doc(db, "customers", "customer-full-flow-1");
+
+  await assertSucceeds(
+    runTransaction(db, async (transaction) => {
+      const existingOrder = await transaction.get(orderRef);
+      if (existingOrder.exists()) {
+        throw new Error("should not exist yet");
+      }
+
+      transaction.set(customerRef, { ownerId: "userA", fullName: "Neuer Kunde" });
+      transaction.set(orderRef, { ownerId: "userA", customerId: customerRef.id, status: "open" });
+
+      const itemRef = doc(collection(orderRef, "items"));
+      transaction.set(itemRef, { ownerId: "userA", productId: "p1", quantity: 2 });
+    }),
+  );
+});
+
+test("orders/items: creating an item without a matching ownerId is rejected", async () => {
+  const userA = testEnv.authenticatedContext("userA");
+  await assertFails(
+    setDoc(doc(userA.firestore(), "orders", "order2", "items", "item1"), { productId: "p1", quantity: 1 }),
+  );
+  await assertFails(
+    setDoc(doc(userA.firestore(), "orders", "order2", "items", "item1"), { ownerId: "userB", productId: "p1", quantity: 1 }),
+  );
 });
 
 test("userPreferences: owner can create their own preferences with a matching id and ownerId", async () => {

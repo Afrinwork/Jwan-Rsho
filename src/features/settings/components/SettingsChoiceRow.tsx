@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors } from "@/src/constants/colors";
+import { useThemeColors } from "@/src/hooks/useThemeColors";
 
 type Option = {
   label: string;
@@ -15,9 +15,11 @@ type SettingsChoiceRowProps = {
 };
 
 export function SettingsChoiceRow(props: SettingsChoiceRowProps) {
+  const colors = useThemeColors();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{props.label}</Text>
+      <Text style={[styles.label, { color: colors.mutedText }]}>{props.label}</Text>
       <View style={styles.row}>
         {props.options.map((option) => {
           const active = props.value === option.value;
@@ -25,9 +27,15 @@ export function SettingsChoiceRow(props: SettingsChoiceRowProps) {
             <Pressable
               key={option.value}
               onPress={() => props.onChange(option.value)}
-              style={[styles.chip, active && styles.activeChip]}
+              style={[
+                styles.chip,
+                {
+                  backgroundColor: active ? colors.primary : colors.surfaceMuted,
+                  borderColor: active ? colors.primaryStrong : colors.border,
+                },
+              ]}
             >
-              <Text style={[styles.chipLabel, active && styles.activeChipLabel]}>{option.label}</Text>
+              <Text style={[styles.chipLabel, { color: active ? colors.primaryContrast : colors.text }]}>{option.label}</Text>
             </Pressable>
           );
         })}
@@ -38,10 +46,8 @@ export function SettingsChoiceRow(props: SettingsChoiceRowProps) {
 
 const styles = StyleSheet.create({
   container: { gap: 8 },
-  label: { color: colors.mutedText, fontSize: 14, fontWeight: "600" },
+  label: { fontSize: 13, fontWeight: "700", letterSpacing: 0.6, textTransform: "uppercase" },
   row: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
-  chip: { borderWidth: 1, borderColor: colors.border, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: colors.surface },
-  activeChip: { backgroundColor: colors.primary, borderColor: colors.primary },
-  chipLabel: { color: colors.text, fontSize: 14 },
-  activeChipLabel: { color: colors.surface, fontWeight: "600" },
+  chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  chipLabel: { fontSize: 14, fontWeight: "600" },
 });

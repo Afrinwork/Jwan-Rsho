@@ -2,15 +2,11 @@ import * as Linking from "expo-linking";
 
 import { MapNavigationApp, NavigationAppId } from "@/src/features/map/types/mapTypes";
 import {
+  NavigationTarget,
   buildAppleMapsUrl,
   buildGoogleMapsUrl,
   buildWazeUrl,
 } from "@/src/services/navigationService.shared";
-
-type Coordinate = {
-  latitude: number;
-  longitude: number;
-};
 
 async function openIfAvailable(url: string, fallbackUrl?: string) {
   const supported = await Linking.canOpenURL(url);
@@ -27,35 +23,35 @@ async function openIfAvailable(url: string, fallbackUrl?: string) {
 }
 
 export const navigationService = {
-  openAppleMaps({ latitude, longitude }: Coordinate) {
-    return Linking.openURL(buildAppleMapsUrl({ latitude, longitude }));
+  openAppleMaps(target: NavigationTarget) {
+    return Linking.openURL(buildAppleMapsUrl(target));
   },
 
-  openDefaultNavigation(coordinate: Coordinate) {
-    return this.openAppleMaps(coordinate);
+  openDefaultNavigation(target: NavigationTarget) {
+    return this.openAppleMaps(target);
   },
 
-  openGoogleMaps({ latitude, longitude }: Coordinate) {
+  openGoogleMaps(target: NavigationTarget) {
     return openIfAvailable(
-      buildGoogleMapsUrl({ latitude, longitude }),
-      buildAppleMapsUrl({ latitude, longitude }),
+      buildGoogleMapsUrl(target),
+      buildAppleMapsUrl(target),
     );
   },
 
-  openWaze({ latitude, longitude }: Coordinate) {
+  openWaze(target: NavigationTarget) {
     return openIfAvailable(
-      buildWazeUrl({ latitude, longitude }),
-      buildAppleMapsUrl({ latitude, longitude }),
+      buildWazeUrl(target),
+      buildAppleMapsUrl(target),
     );
   },
 
   async getNavigationApps(
-    coordinate: Coordinate,
+    target: NavigationTarget,
     preferredNavigationApp: NavigationAppId,
   ): Promise<MapNavigationApp[]> {
     const [googleMapsAvailable, wazeAvailable] = await Promise.all([
-      Linking.canOpenURL(buildGoogleMapsUrl(coordinate)),
-      Linking.canOpenURL(buildWazeUrl(coordinate)),
+      Linking.canOpenURL(buildGoogleMapsUrl(target)),
+      Linking.canOpenURL(buildWazeUrl(target)),
     ]);
 
     return sortNavigationApps([
@@ -65,16 +61,16 @@ export const navigationService = {
     ], preferredNavigationApp);
   },
 
-  openNavigationApp(appId: NavigationAppId, coordinate: Coordinate) {
+  openNavigationApp(appId: NavigationAppId, target: NavigationTarget) {
     if (appId === "google-maps") {
-      return this.openGoogleMaps(coordinate);
+      return this.openGoogleMaps(target);
     }
 
     if (appId === "waze") {
-      return this.openWaze(coordinate);
+      return this.openWaze(target);
     }
 
-    return this.openAppleMaps(coordinate);
+    return this.openAppleMaps(target);
   },
 };
 

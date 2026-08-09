@@ -21,9 +21,7 @@ const defaultValues: CustomerEditFormValues = {
     fullName: "",
     phone: "",
     note: "",
-    street: "",
-    houseNumber: "",
-    postalCode: "",
+    address: "",
     city: "",
     country: "",
     region: "",
@@ -80,10 +78,8 @@ export function useCustomerEdit(customerId: string) {
 
     try {
       const parsedCustomer = customerSchema.parse(values.customer);
-      const coordinates = await geocodingService.geocodeCustomerAddress({
-        street: parsedCustomer.street,
-        houseNumber: parsedCustomer.houseNumber,
-        postalCode: parsedCustomer.postalCode,
+      const coordinates = await geocodingService.geocodeCustomerAddressSafely({
+        address: parsedCustomer.address,
         city: parsedCustomer.city,
         country: parsedCustomer.country,
         region: parsedCustomer.region,

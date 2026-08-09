@@ -5,9 +5,7 @@ export type Customer = {
   ownerId: string;
   fullName: string;
   phone: string;
-  street: string;
-  houseNumber: string;
-  postalCode: string;
+  address: string;
   city: string;
   normalizedCity: string;
   country: string;

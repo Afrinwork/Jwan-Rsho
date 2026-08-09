@@ -21,7 +21,7 @@ export function CityCustomerCard(props: CityCustomerCardProps) {
     <View style={styles.card}>
       <Text style={styles.name}>{props.customer.fullName}</Text>
       <Text style={styles.meta}>{props.customer.phone}</Text>
-      <Text style={styles.meta}>{formatAddress([`${props.customer.street} ${props.customer.houseNumber}`, props.customer.postalCode, props.customer.city])}</Text>
+      <Text style={styles.meta}>{formatAddress([props.customer.address, props.customer.city])}</Text>
       <Text style={styles.meta}>{props.customer.currentOpenOrderLabel ?? "Keine offene Bestellung"}</Text>
       <Text style={styles.status}>{labelForStatus(props.customer.status)}</Text>
       <CityCustomerActions canComplete={Boolean(props.customer.currentOpenOrderId)} completing={props.completing} onComplete={props.onComplete} onPressDetails={props.onPressDetails} onToggleSelection={props.onToggleSelection} selected={props.selected} />

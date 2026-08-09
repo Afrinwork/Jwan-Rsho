@@ -7,9 +7,7 @@ const validItem = { productId: "p1", productNameSnapshot: "Kaese", quantity: 2, 
 const validCustomer = {
   fullName: "Max Mustermann",
   phone: "0170 1234567",
-  street: "Hauptstrasse",
-  houseNumber: "12",
-  postalCode: "10115",
+  address: "Hauptstrasse 12, 10115",
   city: "Berlin",
   country: "Deutschland",
 };
@@ -24,14 +22,14 @@ test("Pflichtfelder: missing required customer fields fail in new mode", () => {
   const schema = buildAddOrderFormSchema("new");
   const result = schema.safeParse({
     customerId: "",
-    customer: { ...validCustomer, fullName: "", street: "" },
+    customer: { ...validCustomer, fullName: "", address: "" },
     items: [validItem],
   });
   assert.equal(result.success, false);
   if (!result.success) {
     const paths = result.error.issues.map((issue) => issue.path.join("."));
     assert.ok(paths.includes("customer.fullName"));
-    assert.ok(paths.includes("customer.street"));
+    assert.ok(paths.includes("customer.address"));
   }
 });
 

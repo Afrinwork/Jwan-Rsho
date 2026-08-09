@@ -12,6 +12,7 @@ import {
 import { orderRepository } from "@/src/repositories/orderRepository";
 import { CreateOrderInput } from "@/src/repositories/orderRepositoryData";
 import { Customer } from "@/src/types/customer";
+import { geocodingService } from "@/src/services/geocodingService";
 import { formatError } from "@/src/utils/formatError";
 import { guardAsync } from "@/src/utils/guardAsync";
 
@@ -52,12 +53,18 @@ export function useAddOrder() {
     setSubmitError(null);
     setSuccessMessage(null);
 
-    const payload: CreateOrderInput =
-      customerMode === "existing"
-        ? { customerId: values.customerId, items: values.items }
-        : { customer: customerSchema.parse(values.customer), items: values.items };
-
     try {
+      const payload: CreateOrderInput =
+        customerMode === "existing"
+          ? { customerId: values.customerId, items: values.items }
+          : {
+              customer: {
+                ...customerSchema.parse(values.customer),
+                ...(await buildCustomerCoordinates(values.customer)),
+              },
+              items: values.items,
+            };
+
       await guardedCreateOrder(payload);
       setSuccessMessage("Bestellung wurde gespeichert.");
       form.reset(defaultValues);
@@ -78,5 +85,19 @@ export function useAddOrder() {
     submit,
     submitError,
     successMessage,
+  };
+}
+
+async function buildCustomerCoordinates(customer: AddOrderFormValues["customer"]) {
+  const coordinates = await geocodingService.geocodeCustomerAddressSafely({
+    address: customer.address ?? "",
+    city: customer.city ?? "",
+    country: customer.country ?? "",
+    region: customer.region,
+  });
+
+  return {
+    latitude: coordinates?.latitude,
+    longitude: coordinates?.longitude,
   };
 }

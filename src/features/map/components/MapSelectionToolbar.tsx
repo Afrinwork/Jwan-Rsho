@@ -41,10 +41,8 @@ export function MapSelectionToolbar(props: MapSelectionToolbarProps) {
             </Pressable>
           );
         })}
-        <View style={styles.flexButton}>
-          <AppButton label="Auswahl loeschen" onPress={props.onResetSelection} variant="secondary" />
-        </View>
       </View>
+      <AppButton label="Auswahl loeschen" onPress={props.onResetSelection} variant="secondary" />
       {props.activeTool === "polygon" ? (
         <View style={styles.row}>
           <View style={styles.flexButton}>
@@ -70,8 +68,8 @@ export function MapSelectionToolbar(props: MapSelectionToolbarProps) {
 
 const styles = StyleSheet.create({
   container: { gap: spacing.sm },
-  row: { flexDirection: "row", gap: spacing.sm, alignItems: "center" },
+  row: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, alignItems: "center" },
   toolChip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
   toolLabel: { fontSize: 14, fontWeight: "600" },
-  flexButton: { flex: 1 },
+  flexButton: { flex: 1, minWidth: 120 },
 });

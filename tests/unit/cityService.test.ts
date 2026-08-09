@@ -5,8 +5,8 @@ import { buildCitySummaries, filterCitySummaries, getCountryOptions } from "@/sr
 
 test("city summaries are grouped from customers and open orders", () => {
   const summaries = buildCitySummaries([
-    { id: "c1", ownerId: "u1", fullName: "A", phone: "1", street: "S", houseNumber: "1", postalCode: "1", city: "Hamburg", normalizedCity: "hamburg", country: "DE", isActive: true, createdAt: "", updatedAt: "" },
-    { id: "c2", ownerId: "u1", fullName: "B", phone: "2", street: "S", houseNumber: "2", postalCode: "2", city: "Hamburg", normalizedCity: "hamburg", country: "DE", isActive: true, createdAt: "", updatedAt: "" },
+    { id: "c1", ownerId: "u1", fullName: "A", phone: "1", address: "S 1", city: "Hamburg", normalizedCity: "hamburg", country: "DE", isActive: true, createdAt: "", updatedAt: "" },
+    { id: "c2", ownerId: "u1", fullName: "B", phone: "2", address: "S 2", city: "Hamburg", normalizedCity: "hamburg", country: "DE", isActive: true, createdAt: "", updatedAt: "" },
   ], [
     { id: "o1", ownerId: "u1", customerId: "c1", status: "open", orderedAt: "", createdAt: "", updatedAt: "" },
     { id: "o2", ownerId: "u1", customerId: "c2", status: "completed", orderedAt: "", createdAt: "", updatedAt: "" },

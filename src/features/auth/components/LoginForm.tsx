@@ -34,11 +34,11 @@ export function LoginForm() {
       {submitError ? <ErrorState message={submitError} /> : null}
       <AppButton
         disabled={form.formState.isSubmitting}
-        label={form.formState.isSubmitting ? "Signing in..." : "Login"}
+        label={form.formState.isSubmitting ? "Anmeldung laeuft..." : "Login"}
         onPress={submit}
       />
       <Pressable onPress={() => router.push(routes.forgotPassword)}>
-        <Text style={styles.link}>Forgot password?</Text>
+        <Text style={styles.link}>Passwort vergessen?</Text>
       </Pressable>
     </View>
   );

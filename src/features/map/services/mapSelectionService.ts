@@ -1,4 +1,4 @@
-import { isPointInsideCircle } from "@/src/features/map/utils/circleMath";
+import { distanceKm, isPointInsideCircle } from "@/src/features/map/utils/circleMath";
 import { isPointInsidePolygon } from "@/src/features/map/utils/polygonMath";
 import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
 import { MapCircleSelection, MapSelectionPoint } from "@/src/features/map/types/mapSelectionTypes";
@@ -24,5 +24,10 @@ export const mapSelectionService = {
 
   getMarkerIdsInPolygon(markers: MapCustomerMarker[], polygon: MapSelectionPoint[]) {
     return markers.filter((marker) => isPointInsidePolygon(marker, polygon)).map((marker) => marker.id);
+  },
+
+  shouldAppendPolygonPoint(points: MapSelectionPoint[], point: MapSelectionPoint, minDistanceKm = 0.05) {
+    const lastPoint = points.at(-1);
+    return !lastPoint || distanceKm(lastPoint, point) >= minDistanceKm;
   },
 };

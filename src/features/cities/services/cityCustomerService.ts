@@ -12,7 +12,7 @@ export function buildCityCustomerItems(customers: Customer[], orders: Order[]) {
 export function filterCityCustomerItems(items: CityCustomerItem[], searchTerm: string, status: string) {
   const term = searchTerm.trim().toLowerCase();
   return items.filter((value) => {
-    const matchesSearch = !term || [value.fullName, value.phone, value.street].some((field) => field.toLowerCase().includes(term));
+    const matchesSearch = !term || [value.fullName, value.phone, value.address].some((field) => field.toLowerCase().includes(term));
     const matchesStatus = status === "all" || value.status === status;
     return matchesSearch && matchesStatus;
   });
@@ -27,9 +27,7 @@ function buildCityCustomerItem(customer: Customer, orders: Order[]): CityCustome
     id: customer.id,
     fullName: customer.fullName,
     phone: customer.phone,
-    street: customer.street,
-    houseNumber: customer.houseNumber,
-    postalCode: customer.postalCode,
+    address: customer.address,
     city: customer.city,
     currentOpenOrderId: openOrder?.id ?? null,
     currentOpenOrderLabel: openOrder ? formatOpenOrderLabel(openOrder.orderedAt) : null,

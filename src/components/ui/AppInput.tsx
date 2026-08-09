@@ -1,25 +1,51 @@
-import { ForwardedRef, forwardRef } from "react";
+import { ForwardedRef, forwardRef, useState } from "react";
 import { StyleSheet, TextInput, TextInputProps } from "react-native";
 
-import { colors } from "@/src/constants/colors";
 import { spacing } from "@/src/constants/spacing";
+import { useThemeColors } from "@/src/hooks/useThemeColors";
 
 export const AppInput = forwardRef(function AppInput(
   props: TextInputProps,
   ref: ForwardedRef<TextInput>,
 ) {
-  return <TextInput placeholderTextColor={colors.mutedText} ref={ref} style={styles.input} {...props} />;
+  const colors = useThemeColors();
+  const [focused, setFocused] = useState(false);
+
+  return (
+    <TextInput
+      {...props}
+      onBlur={(event) => {
+        setFocused(false);
+        props.onBlur?.(event);
+      }}
+      onFocus={(event) => {
+        setFocused(true);
+        props.onFocus?.(event);
+      }}
+      placeholderTextColor={colors.mutedText}
+      ref={ref}
+      style={[
+        styles.input,
+        {
+          backgroundColor: colors.surfaceElevated,
+          borderColor: focused ? colors.primary : colors.border,
+          color: colors.text,
+          shadowColor: focused ? colors.shadow : "transparent",
+        },
+      ]}
+    />
+  );
 });
 
 const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    backgroundColor: colors.surface,
+    borderRadius: 16,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: 14,
     fontSize: 16,
-    color: colors.text,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
   },
 });

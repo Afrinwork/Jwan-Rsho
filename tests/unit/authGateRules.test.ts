@@ -18,14 +18,14 @@ test("signed out user already on an auth screen is left alone", () => {
 test("signed in user lingering on an auth screen is sent to the app", () => {
   assert.equal(
     resolveAuthRedirect({ isAuthenticated: true, isAdmin: false, firstSegment: "(auth)" }),
-    routes.cities,
+    routes.overview,
   );
 });
 
 test("normal user opening the admin area directly is redirected away", () => {
   assert.equal(
     resolveAuthRedirect({ isAuthenticated: true, isAdmin: false, firstSegment: "admin" }),
-    routes.cities,
+    routes.overview,
   );
 });
 

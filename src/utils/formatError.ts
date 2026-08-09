@@ -10,12 +10,14 @@ const firebaseMessageMap: Record<string, string> = {
   "auth/email-already-in-use": errorMessages.emailAlreadyExists,
   "auth/network-request-failed": errorMessages.noInternet,
   "auth/too-many-requests": errorMessages.authTemporarilyLocked,
+  "auth/requires-recent-login": errorMessages.recentLoginRequired,
   "auth/unauthenticated": errorMessages.authRequired,
-  "firestore/permission-denied": errorMessages.forbidden,
-  "firestore/unavailable": errorMessages.dataLoadFailed,
-  "firestore/deadline-exceeded": errorMessages.dataLoadFailed,
-  "firestore/cancelled": errorMessages.dataLoadFailed,
-  "firestore/not-found": errorMessages.dataNotFound,
+  "permission-denied": errorMessages.forbidden,
+  "failed-precondition": errorMessages.dataLoadFailed,
+  "unavailable": errorMessages.dataLoadFailed,
+  "deadline-exceeded": errorMessages.dataLoadFailed,
+  "cancelled": errorMessages.dataLoadFailed,
+  "not-found": errorMessages.dataNotFound,
   "functions/already-exists": errorMessages.emailAlreadyExists,
   "functions/not-found": errorMessages.userNotFound,
   "functions/failed-precondition": errorMessages.adminSelfDelete,
@@ -26,6 +28,10 @@ const firebaseMessageMap: Record<string, string> = {
 };
 
 export function formatError(error: unknown): AppError {
+  if (typeof __DEV__ === "undefined" || __DEV__) {
+    console.error("[formatError] raw error:", error);
+  }
+
   if (error instanceof AppError) {
     return error;
   }

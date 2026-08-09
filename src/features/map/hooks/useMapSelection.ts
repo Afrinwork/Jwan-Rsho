@@ -16,7 +16,9 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
   const selectTool = useCallback((tool: MapSelectionTool) => {
     setActiveTool((current) => (current === tool ? "none" : tool));
     setCircleDraftCenter(null);
+    setCircleConfirmed(null);
     setPolygonPoints([]);
+    setPolygonConfirmed(null);
   }, []);
 
   const toggleSelection = useCallback((markerId: string) => {
@@ -50,10 +52,25 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
       }
 
       if (activeTool === "polygon") {
-        setPolygonPoints((current) => [...current, point]);
+        setPolygonPoints((current) =>
+          mapSelectionService.shouldAppendPolygonPoint(current, point) ? [...current, point] : current,
+        );
       }
     },
     [activeTool, circleDraftCenter, markers],
+  );
+
+  const handleMapDrag = useCallback(
+    (point: MapSelectionPoint) => {
+      if (activeTool !== "polygon") {
+        return;
+      }
+
+      setPolygonPoints((current) =>
+        mapSelectionService.shouldAppendPolygonPoint(current, point) ? [...current, point] : current,
+      );
+    },
+    [activeTool],
   );
 
   const closePolygon = useCallback(() => {
@@ -92,6 +109,7 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
     toggleSelection,
     handleMarkerPress,
     handleMapPress,
+    handleMapDrag,
     closePolygon,
     undoPolygonPoint,
     resetSelection,

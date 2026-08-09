@@ -4,6 +4,8 @@ import {
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
+  updateEmail,
+  updatePassword,
 } from "firebase/auth";
 
 import { AppError } from "@/src/errors/AppError";
@@ -33,6 +35,30 @@ export const authRepository = {
     }
 
     await sendPasswordResetEmail(auth, email);
+  },
+
+  async updateEmail(nextEmail: string) {
+    if (!auth) {
+      throw new AppError(errorMessages.firebaseNotConfigured);
+    }
+
+    if (!auth.currentUser) {
+      throw new AppError(errorMessages.authRequired, "auth/unauthenticated");
+    }
+
+    await updateEmail(auth.currentUser, nextEmail.trim().toLowerCase());
+  },
+
+  async updatePassword(nextPassword: string) {
+    if (!auth) {
+      throw new AppError(errorMessages.firebaseNotConfigured);
+    }
+
+    if (!auth.currentUser) {
+      throw new AppError(errorMessages.authRequired, "auth/unauthenticated");
+    }
+
+    await updatePassword(auth.currentUser, nextPassword);
   },
 
   observeAuth(callback: (user: FirebaseUser | null) => void) {

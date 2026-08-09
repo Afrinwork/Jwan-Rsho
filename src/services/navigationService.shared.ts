@@ -1,16 +1,29 @@
-type Coordinate = {
-  latitude: number;
-  longitude: number;
+export type NavigationTarget = {
+  latitude?: number;
+  longitude?: number;
+  address?: string;
 };
 
-export function buildAppleMapsUrl({ latitude, longitude }: Coordinate) {
-  return `http://maps.apple.com/?daddr=${latitude},${longitude}`;
+export function buildAppleMapsUrl(target: NavigationTarget) {
+  return `http://maps.apple.com/?daddr=${resolveDestination(target)}`;
 }
 
-export function buildGoogleMapsUrl({ latitude, longitude }: Coordinate) {
-  return `comgooglemaps://?daddr=${latitude},${longitude}&directionsmode=driving`;
+export function buildGoogleMapsUrl(target: NavigationTarget) {
+  return `comgooglemaps://?daddr=${resolveDestination(target)}&directionsmode=driving`;
 }
 
-export function buildWazeUrl({ latitude, longitude }: Coordinate) {
-  return `waze://?ll=${latitude},${longitude}&navigate=yes`;
+export function buildWazeUrl(target: NavigationTarget) {
+  if (target.address?.trim()) {
+    return `waze://?q=${encodeURIComponent(target.address.trim())}&navigate=yes`;
+  }
+
+  return `waze://?ll=${target.latitude},${target.longitude}&navigate=yes`;
+}
+
+function resolveDestination(target: NavigationTarget) {
+  if (target.address?.trim()) {
+    return encodeURIComponent(target.address.trim());
+  }
+
+  return `${target.latitude},${target.longitude}`;
 }

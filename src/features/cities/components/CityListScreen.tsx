@@ -1,5 +1,6 @@
 import { FlatList } from "react-native";
 
+import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
 import { EmptyState } from "@/src/components/ui/EmptyState";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { LoadingView } from "@/src/components/ui/LoadingView";
@@ -27,14 +28,37 @@ export function CityListScreen() {
 
   return (
     <ScreenContainer>
-      <CitySummaryHeader cityCount={cities.length} />
-      <CityFilters countryOptions={countryOptions} onCountryChange={setCountry} onSearchTermChange={setSearchTerm} searchTerm={searchTerm} selectedCountry={country} />
-      {error ? <ErrorState message={error} /> : null}
+      <AnimatedEntrance>
+        <CitySummaryHeader cityCount={cities.length} />
+      </AnimatedEntrance>
+      <AnimatedEntrance delay={60}>
+        <CityFilters countryOptions={countryOptions} onCountryChange={setCountry} onSearchTermChange={setSearchTerm} searchTerm={searchTerm} selectedCountry={country} />
+      </AnimatedEntrance>
+      {error ? <AnimatedEntrance delay={100}><ErrorState message={error} /></AnimatedEntrance> : null}
       {!cities.length ? (
-        <EmptyState message="Noch keine passenden Staedte fuer den aktuellen Benutzer gefunden." title="Keine Staedte" />
+        <AnimatedEntrance delay={120}><EmptyState
+          message="Noch keine Staedte sichtbar. Lege zuerst im Tab Hinzufuegen einen Kunden oder eine Bestellung mit Stadt an."
+          title="Keine Staedte"
+        /></AnimatedEntrance>
       ) : (
-        <FlatList data={cities} keyExtractor={(item) => item.normalizedName} renderItem={({ item }) => <CityCard city={item} />} />
+        <FlatList
+          contentContainerStyle={styles.listContent}
+          data={cities}
+          keyExtractor={(item) => item.normalizedName}
+          renderItem={({ item, index }) => (
+            <AnimatedEntrance delay={120 + index * 40}>
+              <CityCard city={item} />
+            </AnimatedEntrance>
+          )}
+        />
       )}
     </ScreenContainer>
   );
 }
+
+const styles = {
+  listContent: {
+    gap: 12,
+    paddingBottom: 24,
+  },
+};

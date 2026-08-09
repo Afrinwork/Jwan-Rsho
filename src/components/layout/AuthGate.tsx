@@ -23,7 +23,7 @@ export function AuthGate({ children }: PropsWithChildren) {
   }, [authLoading, isAdmin, isAuthenticated, router, segments]);
 
   if (authLoading) {
-    return <LoadingView label="Checking session..." />;
+    return <LoadingView label="Sitzung wird geprueft..." />;
   }
 
   return <>{children}</>;

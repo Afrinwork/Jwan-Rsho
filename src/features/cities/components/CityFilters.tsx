@@ -1,7 +1,8 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { AppInput } from "@/src/components/ui/AppInput";
-import { colors } from "@/src/constants/colors";
+import { spacing } from "@/src/constants/spacing";
+import { useThemeColors } from "@/src/hooks/useThemeColors";
 
 type CityFiltersProps = {
   searchTerm: string;
@@ -13,14 +14,27 @@ type CityFiltersProps = {
 
 export function CityFilters(props: CityFiltersProps) {
   const countries = ["Alle", ...props.countryOptions];
+  const colors = useThemeColors();
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, shadowColor: colors.shadow }]}>
       <AppInput onChangeText={props.onSearchTermChange} placeholder="Suche nach Stadt" value={props.searchTerm} />
+      <Text style={[styles.kicker, { color: colors.mutedText }]}>Landesfilter</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={styles.row}>
           {countries.map((value) => (
-            <Pressable key={value} onPress={() => props.onCountryChange(value === "Alle" ? "" : value)} style={[styles.chip, currentCountry(props.selectedCountry, value) && styles.activeChip]}>
-              <Text style={[styles.label, currentCountry(props.selectedCountry, value) && styles.activeLabel]}>{value}</Text>
+            <Pressable
+              key={value}
+              onPress={() => props.onCountryChange(value === "Alle" ? "" : value)}
+              style={[
+                styles.chip,
+                {
+                  backgroundColor: currentCountry(props.selectedCountry, value) ? colors.primary : colors.surface,
+                  borderColor: currentCountry(props.selectedCountry, value) ? colors.primaryStrong : colors.border,
+                },
+              ]}
+            >
+              <Text style={[styles.label, { color: currentCountry(props.selectedCountry, value) ? colors.primaryContrast : colors.text }]}>{value}</Text>
             </Pressable>
           ))}
         </View>
@@ -34,10 +48,17 @@ function currentCountry(selectedCountry: string, value: string) {
 }
 
 const styles = StyleSheet.create({
-  container: { gap: 12 },
+  container: {
+    gap: 12,
+    borderRadius: 22,
+    borderWidth: 1,
+    padding: spacing.md,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.07,
+    shadowRadius: 16,
+  },
+  kicker: { fontSize: 12, fontWeight: "700", letterSpacing: 0.8, textTransform: "uppercase" },
   row: { flexDirection: "row", gap: 8 },
-  chip: { borderWidth: 1, borderColor: colors.border, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: colors.surface },
-  activeChip: { backgroundColor: colors.primary, borderColor: colors.primary },
-  label: { color: colors.text, fontSize: 14 },
-  activeLabel: { color: colors.surface, fontWeight: "600" },
+  chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  label: { fontSize: 14, fontWeight: "600" },
 });

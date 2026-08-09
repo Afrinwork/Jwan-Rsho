@@ -17,16 +17,17 @@ export function buildOrderCreateData(input: CreateOrderInput, ownerId: string, c
     ownerId,
     customerId,
     status: "open" as const,
-    note: parsed.note?.trim(),
+    ...(parsed.note ? { note: parsed.note.trim() } : {}),
     orderedAt: parsed.orderedAt ?? new Date().toISOString(),
   };
 }
 
 type OrderItemWrite = z.input<typeof orderSchema.shape.items.element>;
 
-export function buildOrderItemData(item: OrderItemWrite, itemId: string) {
+export function buildOrderItemData(item: OrderItemWrite, itemId: string, ownerId: string) {
   return {
     id: itemId,
+    ownerId,
     productId: item.productId,
     productNameSnapshot: item.productNameSnapshot.trim(),
     quantity: item.quantity,

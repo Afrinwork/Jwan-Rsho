@@ -21,8 +21,18 @@ test("Netzwerkfehler: auth offline error is translated", () => {
 });
 
 test("Netzwerkfehler: firestore unavailable is translated", () => {
-  const result = formatError(new FirebaseError("firestore/unavailable", "unavailable"));
+  const result = formatError(new FirebaseError("unavailable", "unavailable"));
   assert.equal(result.message, errorMessages.dataLoadFailed);
+});
+
+test("Firestore Fehler: missing composite index (failed-precondition) is translated, not generic", () => {
+  const result = formatError(new FirebaseError("failed-precondition", "requires an index"));
+  assert.equal(result.message, errorMessages.dataLoadFailed);
+});
+
+test("Firestore Fehler: permission-denied is translated, not generic", () => {
+  const result = formatError(new FirebaseError("permission-denied", "missing permissions"));
+  assert.equal(result.message, errorMessages.forbidden);
 });
 
 test("Cloud Function Fehler: internal function error is translated", () => {

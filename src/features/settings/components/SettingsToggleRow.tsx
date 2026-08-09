@@ -12,7 +12,7 @@ export function SettingsToggleRow({ label, value, onChange }: SettingsToggleRowP
   const colors = useThemeColors();
 
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, { backgroundColor: colors.surfaceMuted, borderColor: colors.border }]}>
       <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
       <Switch onValueChange={onChange} trackColor={{ true: colors.primary }} value={value} />
     </View>
@@ -20,6 +20,6 @@ export function SettingsToggleRow({ label, value, onChange }: SettingsToggleRowP
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderWidth: 1, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 12 },
   label: { fontSize: 15, flex: 1 },
 });

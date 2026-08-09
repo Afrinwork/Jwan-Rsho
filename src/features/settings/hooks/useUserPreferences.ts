@@ -39,7 +39,15 @@ export function useUserPreferences() {
 
       setError(null);
     } catch (value) {
-      setError(formatError(value).message);
+      const formatted = formatError(value);
+
+      // The Auth session can still be restoring from storage right after app start;
+      // that is an expected transitional state, not a real error to show the user.
+      if (formatted.code === "auth/unauthenticated") {
+        resetPreferences();
+      } else {
+        setError(formatted.message);
+      }
     } finally {
       setLoading(false);
     }

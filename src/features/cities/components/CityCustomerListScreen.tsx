@@ -1,4 +1,4 @@
-import { FlatList } from "react-native";
+import { FlatList, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 
 import { EmptyState } from "@/src/components/ui/EmptyState";
@@ -39,16 +39,57 @@ export function CityCustomerListScreen(props: CityCustomerListScreenProps) {
 
   return (
     <ScreenContainer>
-      <CitySummaryHeader cityCount={customers.length} />
-      <CityProductTotals totals={productTotals} />
-      <CitySelectionBar onResetSelection={selection.resetSelection} onSelectAllOpen={selection.selectAllOpen} selectedCount={selection.selectedCount} />
-      <CityCustomerFilters onSearchTermChange={setSearchTerm} onStatusChange={setStatus} searchTerm={searchTerm} selectedStatus={status} />
-      {error ? <ErrorState message={error} /> : null}
-      {!customers.length ? (
-        <EmptyState message="Keine passenden Kunden fuer diese Stadt gefunden." title="Keine Kunden" />
-      ) : (
-        <FlatList data={customers} keyExtractor={(item) => item.id} renderItem={({ item }) => <CityCustomerCard completing={completingOrderId === item.currentOpenOrderId} customer={item} onComplete={() => item.currentOpenOrderId && completeOrder(item.currentOpenOrderId)} onPressDetails={() => router.push(`/customer/${item.id}`)} onToggleSelection={() => selection.toggleSelection(item.id)} selected={selection.isSelected(item.id)} />} />
-      )}
+      <FlatList
+        contentContainerStyle={styles.content}
+        data={customers}
+        keyExtractor={(item) => item.id}
+        keyboardShouldPersistTaps="handled"
+        ListEmptyComponent={
+          !error ? (
+            <EmptyState message="Keine passenden Kunden fuer diese Stadt gefunden." title="Keine Kunden" />
+          ) : null
+        }
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <CitySummaryHeader cityCount={customers.length} />
+            <CityProductTotals totals={productTotals} />
+            <CitySelectionBar selectedCount={selection.selectedCount} />
+            <CityCustomerFilters
+              onSearchTermChange={setSearchTerm}
+              onStatusChange={setStatus}
+              searchTerm={searchTerm}
+              selectedStatus={status}
+            />
+            {error ? <ErrorState message={error} /> : null}
+          </View>
+        }
+        renderItem={({ item }) => (
+          <CityCustomerCard
+            completing={completingOrderId === item.currentOpenOrderId}
+            customer={item}
+            onComplete={() => item.currentOpenOrderId && completeOrder(item.currentOpenOrderId)}
+            onPressDetails={() => router.push(`/customer/${item.id}`)}
+            onToggleSelection={() => selection.toggleSelection(item.id)}
+            selected={selection.isSelected(item.id)}
+          />
+        )}
+        showsVerticalScrollIndicator={false}
+        style={styles.list}
+      />
     </ScreenContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  list: {
+    flex: 1,
+  },
+  content: {
+    gap: 12,
+    paddingBottom: 24,
+  },
+  header: {
+    gap: 12,
+    marginBottom: 12,
+  },
+});

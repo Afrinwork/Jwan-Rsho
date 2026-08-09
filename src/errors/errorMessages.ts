@@ -1,6 +1,7 @@
 export const errorMessages = {
   firebaseNotConfigured: "Firebase ist noch nicht konfiguriert.",
   invalidCredentials: "E-Mail oder Passwort sind nicht korrekt.",
+  recentLoginRequired: "Bitte melde dich kurz neu an, bevor du die E-Mail-Adresse aenderst.",
   generic: "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
   forbidden: "Du hast keinen Zugriff auf diesen Bereich.",
   authRequired: "Bitte melde dich erneut an.",
@@ -15,5 +16,7 @@ export const errorMessages = {
   duplicateProduct: "Ein Produkt mit diesem Namen existiert bereits.",
   duplicateCountry: "Ein Land mit diesem Namen existiert bereits.",
   duplicateRegion: "Eine passende Region existiert bereits.",
+  countryInUse: "Dieses Land wird bereits von Kunden verwendet und kann nicht geloescht werden.",
+  regionInUse: "Diese Region wird bereits von Kunden verwendet und kann nicht geloescht werden.",
   invalidForm: "Bitte pruefe die Eingaben im Formular.",
 };

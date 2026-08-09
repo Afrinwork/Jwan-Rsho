@@ -1,5 +1,5 @@
 import { StyleSheet, TextInput, TextInputProps, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Search20Regular } from "@fluentui/react-native-icons";
 
 import { spacing } from "@/src/constants/spacing";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
@@ -11,10 +11,10 @@ export function SearchInput(props: TextInputProps) {
     <View
       style={[
         styles.container,
-        { backgroundColor: colors.surface, borderColor: colors.border },
+        { backgroundColor: colors.surfaceElevated, borderColor: colors.border, shadowColor: colors.shadow },
       ]}
     >
-      <Ionicons color={colors.mutedText} name="search-outline" size={18} />
+      <Search20Regular color={colors.mutedText} />
       <TextInput
         placeholder="Suchen"
         placeholderTextColor={colors.mutedText}
@@ -31,9 +31,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: spacing.xs,
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
+    borderRadius: 18,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 12,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
   },
   input: {
     flex: 1,

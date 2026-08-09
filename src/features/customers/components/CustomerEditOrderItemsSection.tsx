@@ -7,8 +7,9 @@ import {
   UseFieldArrayRemove,
   UseFormSetValue,
 } from "react-hook-form";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
+import { FormSectionCard } from "@/src/components/ui/FormSectionCard";
 import { AppButton } from "@/src/components/ui/AppButton";
 import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
 import { ErrorState } from "@/src/components/ui/ErrorState";
@@ -16,7 +17,6 @@ import { spacing } from "@/src/constants/spacing";
 import { CustomerEditProductRow } from "@/src/features/customers/components/CustomerEditProductRow";
 import { CustomerEditFormValues } from "@/src/features/customers/validation/customerEditSchema";
 import { ProductPicker } from "@/src/features/products/components/ProductPicker";
-import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { Product } from "@/src/types/product";
 
 type CustomerEditOrderItemsSectionProps = {
@@ -39,7 +39,6 @@ export function CustomerEditOrderItemsSection({
   const [pickerVisible, setPickerVisible] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [removeIndex, setRemoveIndex] = useState<number | null>(null);
-  const colors = useThemeColors();
 
   const usedProductIds = fields.map((field) => field.productId).filter(Boolean);
   const rootError = errors?.root?.message ?? (typeof errors?.message === "string" ? errors.message : undefined);
@@ -67,24 +66,25 @@ export function CustomerEditOrderItemsSection({
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={[styles.heading, { color: colors.text }]}>Produkte</Text>
-      {fields.map((field, index) => (
-        <CustomerEditProductRow
-          control={control}
-          error={
-            errors?.[index]?.quantity?.message ??
-            errors?.[index]?.unit?.message ??
-            errors?.[index]?.productId?.message
-          }
-          index={index}
-          key={field.id}
-          onOpenPicker={() => openPickerFor(index)}
-          onRemove={() => setRemoveIndex(index)}
-        />
-      ))}
-      <AppButton label="Produkt hinzufuegen" onPress={handleAdd} variant="secondary" />
-      {rootError ? <ErrorState message={rootError} /> : null}
+    <FormSectionCard subtitle="Passe die offene Bestellung direkt auf der Karte an." title="Produkte">
+      <View style={styles.container}>
+        {fields.map((field, index) => (
+          <CustomerEditProductRow
+            control={control}
+            error={
+              errors?.[index]?.quantity?.message ??
+              errors?.[index]?.unit?.message ??
+              errors?.[index]?.productId?.message
+            }
+            index={index}
+            key={field.id}
+            onOpenPicker={() => openPickerFor(index)}
+            onRemove={() => setRemoveIndex(index)}
+          />
+        ))}
+        <AppButton label="Produkt hinzufuegen" onPress={handleAdd} variant="secondary" />
+        {rootError ? <ErrorState message={rootError} /> : null}
+      </View>
       <ProductPicker
         excludeIds={usedProductIds}
         onClose={() => setPickerVisible(false)}
@@ -105,16 +105,12 @@ export function CustomerEditOrderItemsSection({
         title="Produkt entfernen?"
         visible={removeIndex !== null}
       />
-    </View>
+    </FormSectionCard>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     gap: spacing.sm,
-  },
-  heading: {
-    fontSize: 16,
-    fontWeight: "700",
   },
 });

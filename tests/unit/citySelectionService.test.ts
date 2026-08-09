@@ -11,8 +11,8 @@ test("single customer selection toggles on and off", () => {
 
 test("select all open only returns open customer ids", () => {
   const selected = selectAllOpenCustomerIds([
-    { id: "c1", fullName: "A", phone: "1", street: "S", houseNumber: "1", postalCode: "1", city: "H", currentOpenOrderId: "o1", currentOpenOrderLabel: "Offen", status: "open" },
-    { id: "c2", fullName: "B", phone: "2", street: "S", houseNumber: "2", postalCode: "2", city: "H", currentOpenOrderId: null, currentOpenOrderLabel: null, status: "completed" },
+    { id: "c1", fullName: "A", phone: "1", address: "S 1", city: "H", currentOpenOrderId: "o1", currentOpenOrderLabel: "Offen", status: "open" },
+    { id: "c2", fullName: "B", phone: "2", address: "S 2", city: "H", currentOpenOrderId: null, currentOpenOrderLabel: null, status: "completed" },
   ]);
 
   assert.deepEqual(selected, ["c1"]);

@@ -4,6 +4,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { SettingsBootstrap } from "@/src/features/settings/components/SettingsBootstrap";
 import { useAppTheme } from "@/src/hooks/useAppTheme";
+import { StartupSplash } from "@/src/components/layout/StartupSplash";
 
 export function AppProviders({ children }: PropsWithChildren) {
   const theme = useAppTheme();
@@ -13,6 +14,7 @@ export function AppProviders({ children }: PropsWithChildren) {
       <ThemeProvider value={theme === "dark" ? DarkTheme : DefaultTheme}>
         <SettingsBootstrap />
         {children}
+        <StartupSplash />
       </ThemeProvider>
     </GestureHandlerRootView>
   );

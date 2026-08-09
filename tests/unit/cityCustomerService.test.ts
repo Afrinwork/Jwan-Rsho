@@ -5,8 +5,8 @@ import { buildCityCustomerItems, filterCityCustomerItems } from "@/src/features/
 
 test("city customer items expose current open order and status", () => {
   const items = buildCityCustomerItems([
-    { id: "c1", ownerId: "u1", fullName: "Ahmad", phone: "123", street: "Main", houseNumber: "1", postalCode: "1", city: "Hamburg", normalizedCity: "hamburg", country: "DE", isActive: true, createdAt: "", updatedAt: "" },
-    { id: "c2", ownerId: "u1", fullName: "Sara", phone: "456", street: "River", houseNumber: "2", postalCode: "2", city: "Hamburg", normalizedCity: "hamburg", country: "DE", isActive: true, createdAt: "", updatedAt: "" },
+    { id: "c1", ownerId: "u1", fullName: "Ahmad", phone: "123", address: "Main 1", city: "Hamburg", normalizedCity: "hamburg", country: "DE", isActive: true, createdAt: "", updatedAt: "" },
+    { id: "c2", ownerId: "u1", fullName: "Sara", phone: "456", address: "River 2", city: "Hamburg", normalizedCity: "hamburg", country: "DE", isActive: true, createdAt: "", updatedAt: "" },
   ], [
     { id: "o1", ownerId: "u1", customerId: "c1", status: "open", orderedAt: "2026-08-08T10:00:00.000Z", createdAt: "", updatedAt: "" },
     { id: "o2", ownerId: "u1", customerId: "c2", status: "completed", orderedAt: "2026-08-07T10:00:00.000Z", createdAt: "", updatedAt: "" },
@@ -20,8 +20,8 @@ test("city customer items expose current open order and status", () => {
 
 test("city customer filters search and status correctly", () => {
   const items = [
-    { id: "c1", fullName: "Ahmad", phone: "123", street: "Main", houseNumber: "1", postalCode: "1", city: "Hamburg", currentOpenOrderId: "o1", currentOpenOrderLabel: "Offen seit 8/8/2026", status: "open" as const },
-    { id: "c2", fullName: "Sara", phone: "456", street: "River", houseNumber: "2", postalCode: "2", city: "Hamburg", currentOpenOrderId: null, currentOpenOrderLabel: null, status: "no-open-order" as const },
+    { id: "c1", fullName: "Ahmad", phone: "123", address: "Main 1", city: "Hamburg", currentOpenOrderId: "o1", currentOpenOrderLabel: "Offen seit 8/8/2026", status: "open" as const },
+    { id: "c2", fullName: "Sara", phone: "456", address: "River 2", city: "Hamburg", currentOpenOrderId: null, currentOpenOrderLabel: null, status: "no-open-order" as const },
   ];
 
   assert.equal(filterCityCustomerItems(items, "Ahm", "all").length, 1);

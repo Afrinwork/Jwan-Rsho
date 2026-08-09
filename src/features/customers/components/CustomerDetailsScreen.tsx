@@ -24,7 +24,7 @@ export function CustomerDetailsScreen(props: CustomerDetailsScreenProps) {
 
   return (
     <ScreenContainer>
-      <CustomerDetailsHeader city={customer.city} fullName={customer.fullName} houseNumber={customer.houseNumber} phone={customer.phone} postalCode={customer.postalCode} street={customer.street} />
+      <CustomerDetailsHeader address={customer.address} city={customer.city} fullName={customer.fullName} phone={customer.phone} />
       {error ? <ErrorState message={error} /> : null}
       <CustomerOrderSection orders={openOrders} title="Offene Bestellung" />
       <CustomerOrderSection orders={historyOrders} title="Bestellverlauf" />

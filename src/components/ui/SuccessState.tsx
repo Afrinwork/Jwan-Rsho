@@ -1,27 +1,38 @@
 import { StyleSheet, Text, View } from "react-native";
 
+import { spacing } from "@/src/constants/spacing";
+import { useThemeColors } from "@/src/hooks/useThemeColors";
+
 type SuccessStateProps = {
   message: string;
 };
 
 export function SuccessState({ message }: SuccessStateProps) {
+  const colors = useThemeColors();
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>{message}</Text>
+    <View style={[styles.container, { backgroundColor: colors.successBackground, borderColor: colors.successBorder }]}>
+      <Text style={[styles.eyebrow, { color: colors.success }]}>Erfolg</Text>
+      <Text style={[styles.label, { color: colors.success }]}>{message}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 12,
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: "#bbf7d0",
-    backgroundColor: "#f0fdf4",
-    padding: 12,
+    padding: spacing.md,
+    gap: 6,
+  },
+  eyebrow: {
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 0.4,
+    textTransform: "uppercase",
   },
   label: {
-    color: "#166534",
     fontSize: 14,
+    lineHeight: 21,
   },
 });

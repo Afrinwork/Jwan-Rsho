@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { colors } from "@/src/constants/colors";
+import { spacing } from "@/src/constants/spacing";
+import { useThemeColors } from "@/src/hooks/useThemeColors";
 
 type EmptyStateProps = {
   title: string;
@@ -8,10 +9,12 @@ type EmptyStateProps = {
 };
 
 export function EmptyState({ title, message }: EmptyStateProps) {
+  const colors = useThemeColors();
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.message}>{message}</Text>
+    <View style={[styles.container, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+      <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+      <Text style={[styles.message, { color: colors.mutedText }]}>{message}</Text>
     </View>
   );
 }
@@ -19,14 +22,15 @@ export function EmptyState({ title, message }: EmptyStateProps) {
 const styles = StyleSheet.create({
   container: {
     gap: 8,
+    borderRadius: 22,
+    borderWidth: 1,
+    padding: spacing.lg,
   },
   title: {
-    color: colors.text,
     fontSize: 22,
     fontWeight: "700",
   },
   message: {
-    color: colors.mutedText,
     fontSize: 15,
     lineHeight: 22,
   },

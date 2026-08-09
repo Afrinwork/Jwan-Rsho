@@ -65,3 +65,14 @@ test("empty marker list never crashes and returns no ids", () => {
   assert.deepEqual(mapSelectionService.getMarkerIdsInCircle([], { latitude: 0, longitude: 0, radiusKm: 1 }), []);
   assert.deepEqual(mapSelectionService.getMarkerIdsInPolygon([], []), []);
 });
+
+test("polygon drawing skips points that are too close together", () => {
+  assert.equal(
+    mapSelectionService.shouldAppendPolygonPoint([{ latitude: 52.52, longitude: 13.405 }], { latitude: 52.5201, longitude: 13.4051 }),
+    false,
+  );
+  assert.equal(
+    mapSelectionService.shouldAppendPolygonPoint([{ latitude: 52.52, longitude: 13.405 }], { latitude: 52.521, longitude: 13.406 }),
+    true,
+  );
+});

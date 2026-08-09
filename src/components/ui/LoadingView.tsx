@@ -6,7 +6,7 @@ type LoadingViewProps = {
   label?: string;
 };
 
-export function LoadingView({ label = "Loading..." }: LoadingViewProps) {
+export function LoadingView({ label = "Wird geladen..." }: LoadingViewProps) {
   return (
     <View style={styles.container}>
       <ActivityIndicator color={colors.primary} size="large" />

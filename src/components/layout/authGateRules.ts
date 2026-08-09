@@ -10,7 +10,7 @@ export function resolveAuthRedirect({
   isAuthenticated,
   isAdmin,
   firstSegment,
-}: ResolveAuthRedirectInput): typeof routes.login | typeof routes.cities | null {
+}: ResolveAuthRedirectInput): typeof routes.login | typeof routes.overview | null {
   const inAuthGroup = firstSegment === "(auth)";
   const inAdminArea = firstSegment === "admin";
 
@@ -19,11 +19,11 @@ export function resolveAuthRedirect({
   }
 
   if (isAuthenticated && inAuthGroup) {
-    return routes.cities;
+    return routes.overview;
   }
 
   if (inAdminArea && !isAdmin) {
-    return routes.cities;
+    return routes.overview;
   }
 
   return null;

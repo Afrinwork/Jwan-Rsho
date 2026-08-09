@@ -1,9 +1,7 @@
 import * as Location from "expo-location";
 
 type AddressInput = {
-  street: string;
-  houseNumber: string;
-  postalCode: string;
+  address: string;
   city: string;
   country: string;
   region?: string;
@@ -16,12 +14,7 @@ type Coordinates = {
 
 export const geocodingService = {
   composeAddress(input: AddressInput) {
-    return [
-      `${input.street.trim()} ${input.houseNumber.trim()}`,
-      `${input.postalCode.trim()} ${input.city.trim()}`,
-      input.region?.trim(),
-      input.country.trim(),
-    ]
+    return [input.address.trim(), input.city.trim(), input.region?.trim(), input.country.trim()]
       .filter(Boolean)
       .join(", ");
   },
@@ -35,5 +28,13 @@ export const geocodingService = {
 
   async geocodeCustomerAddress(input: AddressInput) {
     return this.geocodeAddress(this.composeAddress(input));
+  },
+
+  async geocodeCustomerAddressSafely(input: AddressInput) {
+    try {
+      return await this.geocodeCustomerAddress(input);
+    } catch {
+      return null;
+    }
   },
 };

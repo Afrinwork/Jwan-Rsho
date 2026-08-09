@@ -17,7 +17,7 @@ export function requireCurrentUserId() {
   const uid = auth?.currentUser?.uid;
 
   if (!uid) {
-    throw new AppError("Authentication required.", "auth/unauthenticated");
+    throw new AppError(errorMessages.authRequired, "auth/unauthenticated");
   }
 
   return uid;

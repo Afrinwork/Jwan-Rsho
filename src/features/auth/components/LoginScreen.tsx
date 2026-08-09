@@ -2,40 +2,63 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
 import { ErrorState } from "@/src/components/ui/ErrorState";
-import { colors } from "@/src/constants/colors";
+import { spacing } from "@/src/constants/spacing";
 import { LoginForm } from "@/src/features/auth/components/LoginForm";
+import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { useAuthStore } from "@/src/store/authStore";
 
 export function LoginScreen() {
   const authError = useAuthStore((state) => state.authError);
+  const colors = useThemeColors();
 
   return (
     <ScreenContainer>
-      <View style={styles.header}>
-        <Text style={styles.title}>Welcome back</Text>
-        <Text style={styles.subtitle}>
-          Sign in to manage your customers and orders.
-        </Text>
+      <View style={styles.shell}>
+        <View style={styles.header}>
+          <Text style={[styles.kicker, { color: colors.primary }]}>RSHO ORDERS</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Willkommen zurueck</Text>
+          <Text style={[styles.subtitle, { color: colors.mutedText }]}>
+          Melde dich an, um deine Kunden, Bestellungen und Kartenansicht zu verwalten.
+          </Text>
+        </View>
+        <View style={[styles.panel, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, shadowColor: colors.shadow }]}>
+          {authError ? <ErrorState message={authError} /> : null}
+          <LoginForm />
+        </View>
       </View>
-      {authError ? <ErrorState message={authError} /> : null}
-      <LoginForm />
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
+  shell: {
+    flex: 1,
+    justifyContent: "center",
+    gap: spacing.lg,
+  },
   header: {
     gap: 8,
-    paddingTop: 24,
+  },
+  kicker: {
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 1.6,
   },
   title: {
-    color: colors.text,
-    fontSize: 28,
-    fontWeight: "700",
+    fontSize: 34,
+    fontWeight: "800",
   },
   subtitle: {
-    color: colors.mutedText,
     fontSize: 15,
     lineHeight: 22,
+  },
+  panel: {
+    borderRadius: 28,
+    borderWidth: 1,
+    padding: spacing.lg,
+    gap: spacing.md,
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
   },
 });

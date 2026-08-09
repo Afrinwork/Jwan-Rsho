@@ -1,9 +1,10 @@
 import {
   collection,
+  deleteDoc,
   doc,
+  getCountFromServer,
   getDoc,
   getDocs,
-  orderBy,
   query,
   setDoc,
   updateDoc,
@@ -35,8 +36,24 @@ export const countryRepository = {
 
   async getCountries() {
     const ownerId = requireCurrentUserId();
-    const countryQuery = query(collection(requireDb(), "countries"), where("ownerId", "==", ownerId), orderBy("sortOrder"), orderBy("name"));
-    return (await getDocs(countryQuery)).docs.map((value) => mapSnapshot<Country>(value));
+    const countryQuery = query(collection(requireDb(), "countries"), where("ownerId", "==", ownerId));
+    return sortCountries((await getDocs(countryQuery)).docs.map((value) => mapSnapshot<Country>(value)));
+  },
+
+  async deleteCountry(id: string) {
+    const snapshot = await getOwnedCountry(id);
+    const customerQuery = query(
+      collection(requireDb(), "customers"),
+      where("ownerId", "==", snapshot.data().ownerId),
+      where("country", "==", snapshot.data().name),
+    );
+    const usageCount = (await getCountFromServer(customerQuery)).data().count;
+
+    if (usageCount > 0) {
+      throw new AppError(errorMessages.countryInUse);
+    }
+
+    await deleteDoc(snapshot.ref);
   },
 };
 
@@ -73,4 +90,13 @@ function withCreateTimestamps<T extends object>(value: T) {
 
 function clean<T extends object>(value: T) {
   return Object.fromEntries(Object.entries(value).filter(([, current]) => current !== undefined)) as T;
+}
+
+function sortCountries(countries: Country[]) {
+  return [...countries].sort((left, right) => {
+    if (left.sortOrder !== right.sortOrder) {
+      return left.sortOrder - right.sortOrder;
+    }
+    return left.name.localeCompare(right.name, "de");
+  });
 }

@@ -12,6 +12,7 @@ type AuthStore = {
   setAuthLoading: (value: boolean) => void;
   setAuthError: (value: string | null) => void;
   updateDisplayName: (value: string) => void;
+  updateEmail: (value: string) => void;
 };
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -27,6 +28,12 @@ export const useAuthStore = create<AuthStore>((set) => ({
     set((state) => ({
       currentUser: state.currentUser
         ? { ...state.currentUser, displayName: value }
+        : null,
+    })),
+  updateEmail: (value) =>
+    set((state) => ({
+      currentUser: state.currentUser
+        ? { ...state.currentUser, email: value }
         : null,
     })),
 }));

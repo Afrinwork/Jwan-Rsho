@@ -1,3 +1,4 @@
+import { ArrowCircleDown20Regular, ArrowCircleUp20Regular, Box20Regular } from "@fluentui/react-native-icons";
 import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
 
 import { spacing } from "@/src/constants/spacing";
@@ -14,58 +15,55 @@ type ProductListItemProps = {
   onMoveDown?: () => void;
 };
 
-export function ProductListItem({
-  product,
-  onPress,
-  onToggleActive,
-  onEdit,
-  onDelete,
-  onMoveUp,
-  onMoveDown,
-}: ProductListItemProps) {
+export function ProductListItem(props: ProductListItemProps) {
   const colors = useThemeColors();
 
   return (
     <Pressable
-      disabled={!onPress}
-      onPress={onPress}
-      style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}
+      disabled={!props.onPress}
+      onPress={props.onPress}
+      style={[styles.card, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, shadowColor: colors.shadow }]}
     >
-      <View style={styles.text}>
-        <Text style={[styles.name, { color: colors.text }, !product.isActive && { color: colors.mutedText }]}>
-          {product.name}
-        </Text>
-        <Text style={[styles.unit, { color: colors.mutedText }]}>
-          {product.defaultUnit} · Sortierung {product.sortOrder}
-        </Text>
+      <View style={styles.topRow}>
+        <View style={[styles.thumbnail, { backgroundColor: colors.primaryMuted, borderColor: colors.border }]}>
+          <Box20Regular color={colors.primary} />
+        </View>
+        <View style={styles.info}>
+          <Text
+            numberOfLines={2}
+            style={[styles.name, { color: colors.text }, !props.product.isActive && { color: colors.mutedText }]}
+          >
+            {props.product.name}
+          </Text>
+          <Text style={[styles.unit, { color: colors.mutedText }]}>
+            {props.product.defaultUnit} · Sortierung {props.product.sortOrder}
+          </Text>
+        </View>
+        {props.onToggleActive ? (
+          <Switch onValueChange={props.onToggleActive} trackColor={{ true: colors.primary }} value={props.product.isActive} />
+        ) : null}
       </View>
-      <View style={styles.actions}>
-        {onMoveUp ? (
-          <Pressable onPress={onMoveUp}>
-            <Text style={[styles.edit, { color: colors.primary }]}>Hoch</Text>
+      <View style={styles.actionsRow}>
+        {props.onMoveUp ? (
+          <Pressable onPress={props.onMoveUp} style={styles.iconAction}>
+            <ArrowCircleUp20Regular color={colors.primary} />
           </Pressable>
         ) : null}
-        {onMoveDown ? (
-          <Pressable onPress={onMoveDown}>
-            <Text style={[styles.edit, { color: colors.primary }]}>Runter</Text>
+        {props.onMoveDown ? (
+          <Pressable onPress={props.onMoveDown} style={styles.iconAction}>
+            <ArrowCircleDown20Regular color={colors.primary} />
           </Pressable>
         ) : null}
-        {onEdit ? (
-          <Pressable onPress={onEdit}>
-            <Text style={[styles.edit, { color: colors.primary }]}>Bearbeiten</Text>
+        <View style={styles.spacer} />
+        {props.onEdit ? (
+          <Pressable onPress={props.onEdit}>
+            <Text style={[styles.action, { color: colors.primary }]}>Bearbeiten</Text>
           </Pressable>
         ) : null}
-        {onDelete ? (
-          <Pressable onPress={onDelete}>
-            <Text style={[styles.edit, { color: colors.danger }]}>Loeschen</Text>
+        {props.onDelete ? (
+          <Pressable onPress={props.onDelete}>
+            <Text style={[styles.action, { color: colors.danger }]}>Loeschen</Text>
           </Pressable>
-        ) : null}
-        {onToggleActive ? (
-          <Switch
-            onValueChange={onToggleActive}
-            trackColor={{ true: colors.primary }}
-            value={product.isActive}
-          />
         ) : null}
       </View>
     </Pressable>
@@ -73,30 +71,51 @@ export function ProductListItem({
 }
 
 const styles = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  card: {
     borderWidth: 1,
-    borderRadius: 12,
-    padding: spacing.sm,
+    borderRadius: 18,
+    padding: spacing.md,
+    gap: spacing.sm,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
   },
-  text: {
-    gap: 2,
-  },
-  name: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
-  unit: {
-    fontSize: 13,
-  },
-  actions: {
+  topRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.sm,
   },
-  edit: {
+  thumbnail: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  info: {
+    flex: 1,
+    gap: 2,
+  },
+  name: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  unit: {
+    fontSize: 13,
+  },
+  actionsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+  },
+  iconAction: {
+    padding: 4,
+  },
+  spacer: {
+    flex: 1,
+  },
+  action: {
     fontSize: 14,
     fontWeight: "600",
   },

@@ -6,7 +6,6 @@ import {
   getCountFromServer,
   getDoc,
   getDocs,
-  orderBy,
   query,
   setDoc,
   updateDoc,
@@ -54,8 +53,8 @@ export const productRepository = {
 
   async getProducts() {
     const ownerId = requireCurrentUserId();
-    const productQuery = query(collection(requireDb(), "products"), where("ownerId", "==", ownerId), orderBy("sortOrder"), orderBy("name"));
-    return (await getDocs(productQuery)).docs.map((value) => mapSnapshot<Product>(value));
+    const productQuery = query(collection(requireDb(), "products"), where("ownerId", "==", ownerId));
+    return sortProducts((await getDocs(productQuery)).docs.map((value) => mapSnapshot<Product>(value)));
   },
 };
 
@@ -97,4 +96,13 @@ function withCreateTimestamps<T extends object>(value: T) {
 
 function clean<T extends object>(value: T) {
   return Object.fromEntries(Object.entries(value).filter(([, current]) => current !== undefined)) as T;
+}
+
+function sortProducts(products: Product[]) {
+  return [...products].sort((left, right) => {
+    if (left.sortOrder !== right.sortOrder) {
+      return left.sortOrder - right.sortOrder;
+    }
+    return left.name.localeCompare(right.name, "de");
+  });
 }

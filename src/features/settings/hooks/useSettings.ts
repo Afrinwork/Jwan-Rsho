@@ -25,6 +25,7 @@ const emptyStats: SettingsStats = {
 export function useSettings() {
   const user = useCurrentUser();
   const updateDisplayName = useAuthStore((state) => state.updateDisplayName);
+  const updateEmail = useAuthStore((state) => state.updateEmail);
   const {
     themeMode,
     preferredNavigationApp,
@@ -36,9 +37,10 @@ export function useSettings() {
     setShareOptions,
   } = useAppStore();
   const [fullName, setFullName] = useState(user?.displayName ?? "");
+  const [email, setEmail] = useState(user?.email ?? "");
+  const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [resettingPassword, setResettingPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [stats, setStats] = useState(emptyStats);
@@ -46,6 +48,7 @@ export function useSettings() {
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       setFullName(user?.displayName ?? "");
+      setEmail(user?.email ?? "");
     }, 0);
 
     return () => clearTimeout(timeoutId);
@@ -87,7 +90,19 @@ export function useSettings() {
       setSaving(true);
       setError(null);
       setSuccessMessage(null);
-      await userRepository.updateOwnProfile({ fullName });
+      const normalizedEmail = email.trim().toLowerCase();
+      const hasEmailChanged = normalizedEmail !== (user.email ?? "").trim().toLowerCase();
+      const normalizedPassword = newPassword.trim();
+
+      if (hasEmailChanged) {
+        await authService.updateEmail(normalizedEmail);
+      }
+
+      if (normalizedPassword) {
+        await authService.updatePassword(normalizedPassword);
+      }
+
+      await userRepository.updateOwnProfile({ fullName, email: normalizedEmail });
       await userPreferencesRepository.savePreferences({
         ownerId: user.uid,
         themeMode,
@@ -97,6 +112,10 @@ export function useSettings() {
         shareIncludeTotals,
       });
       updateDisplayName(fullName.trim());
+      if (hasEmailChanged) {
+        updateEmail(normalizedEmail);
+      }
+      setNewPassword("");
       setSuccessMessage("Einstellungen wurden gespeichert.");
     } catch (value) {
       setError(formatError(value).message);
@@ -106,41 +125,28 @@ export function useSettings() {
     }
   }, [
     fullName,
+    email,
     preferredNavigationApp,
     shareIncludeAddress,
     shareIncludePhone,
     shareIncludeTotals,
     themeMode,
     updateDisplayName,
+    updateEmail,
+    newPassword,
     user,
   ]);
-
-  const resetPassword = useCallback(async () => {
-    if (!user?.email) {
-      setError("Keine E-Mail fuer Passwort-Reset vorhanden.");
-      return;
-    }
-
-    try {
-      setResettingPassword(true);
-      setError(null);
-      setSuccessMessage(null);
-      await authService.resetPassword(user.email);
-      setSuccessMessage("Passwort-Reset wurde per E-Mail versendet.");
-    } catch (value) {
-      setError(formatError(value).message);
-    } finally {
-      setResettingPassword(false);
-    }
-  }, [user]);
 
   return {
     user,
     fullName,
     setFullName,
+    email,
+    setEmail,
+    newPassword,
+    setNewPassword,
     loading,
     saving,
-    resettingPassword,
     error,
     successMessage,
     stats,
@@ -153,6 +159,5 @@ export function useSettings() {
     setPreferredNavigationApp,
     setShareOptions,
     save,
-    resetPassword,
   };
 }

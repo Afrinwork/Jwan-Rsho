@@ -46,5 +46,10 @@ export function useRegions() {
     await load();
   }, [load]);
 
-  return { regions, loading, error, addRegion, updateRegion, toggleActive };
+  const deleteRegion = useCallback(async (region: Region) => {
+    await regionRepository.deleteRegion(region.id);
+    await load();
+  }, [load]);
+
+  return { regions, loading, error, addRegion, updateRegion, toggleActive, deleteRegion };
 }

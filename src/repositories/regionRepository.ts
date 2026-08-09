@@ -1,9 +1,10 @@
 import {
   collection,
+  deleteDoc,
   doc,
+  getCountFromServer,
   getDoc,
   getDocs,
-  orderBy,
   query,
   setDoc,
   updateDoc,
@@ -47,10 +48,25 @@ export const regionRepository = {
     const regionQuery = query(
       collection(requireDb(), "regions"),
       where("ownerId", "==", ownerId),
-      orderBy("country"),
-      orderBy("name"),
     );
-    return (await getDocs(regionQuery)).docs.map((value) => mapSnapshot<Region>(value));
+    return sortRegions((await getDocs(regionQuery)).docs.map((value) => mapSnapshot<Region>(value)));
+  },
+
+  async deleteRegion(id: string) {
+    const snapshot = await getOwnedRegion(id);
+    const customerQuery = query(
+      collection(requireDb(), "customers"),
+      where("ownerId", "==", snapshot.data().ownerId),
+      where("country", "==", snapshot.data().country),
+      where("region", "==", snapshot.data().name),
+    );
+    const usageCount = (await getCountFromServer(customerQuery)).data().count;
+
+    if (usageCount > 0) {
+      throw new AppError(errorMessages.regionInUse);
+    }
+
+    await deleteDoc(snapshot.ref);
   },
 };
 
@@ -93,4 +109,14 @@ function withCreateTimestamps<T extends object>(value: T) {
 
 function clean<T extends object>(value: T) {
   return Object.fromEntries(Object.entries(value).filter(([, current]) => current !== undefined)) as T;
+}
+
+function sortRegions(regions: Region[]) {
+  return [...regions].sort((left, right) => {
+    const countryCompare = left.country.localeCompare(right.country, "de");
+    if (countryCompare !== 0) {
+      return countryCompare;
+    }
+    return left.name.localeCompare(right.name, "de");
+  });
 }

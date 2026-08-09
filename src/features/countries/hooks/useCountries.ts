@@ -46,5 +46,10 @@ export function useCountries() {
     await load();
   }, [load]);
 
-  return { countries, loading, error, addCountry, updateCountry, toggleActive };
+  const deleteCountry = useCallback(async (country: Country) => {
+    await countryRepository.deleteCountry(country.id);
+    await load();
+  }, [load]);
+
+  return { countries, loading, error, addCountry, updateCountry, toggleActive, deleteCountry };
 }

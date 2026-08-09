@@ -1,5 +1,7 @@
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text } from "react-native";
+import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableWithoutFeedback, View } from "react-native";
 
+import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
+import { CompactScreenHeader } from "@/src/components/ui/CompactScreenHeader";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
 import { SuccessState } from "@/src/components/ui/SuccessState";
@@ -10,7 +12,6 @@ import { NewCustomerSection } from "@/src/features/orders/components/NewCustomer
 import { OrderItemsSection } from "@/src/features/orders/components/OrderItemsSection";
 import { SaveOrderButton } from "@/src/features/orders/components/SaveOrderButton";
 import { useAddOrder } from "@/src/features/orders/hooks/useAddOrder";
-import { useThemeColors } from "@/src/hooks/useThemeColors";
 
 export function AddOrderScreen() {
   const {
@@ -24,37 +25,62 @@ export function AddOrderScreen() {
     submitError,
     successMessage,
   } = useAddOrder();
-  const colors = useThemeColors();
   const errors = form.formState.errors;
+
+  function handleSave() {
+    Keyboard.dismiss();
+    setTimeout(() => {
+      void submit();
+    }, 120);
+  }
 
   return (
     <ScreenContainer>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.flex}>
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-          <Text style={[styles.title, { color: colors.text }]}>Hinzufuegen</Text>
-          <CustomerModeSelector mode={customerMode} onChange={setMode} />
-          {customerMode === "existing" ? (
-            <ExistingCustomerSection
-              error={errors.customerId?.message}
-              onSelect={selectCustomer}
-              selectedCustomer={selectedCustomer}
-            />
-          ) : (
-            <NewCustomerSection control={form.control} errors={errors.customer} />
-          )}
-          <OrderItemsSection
-            append={items.append}
-            control={form.control}
-            errors={errors.items}
-            fields={items.fields}
-            remove={items.remove}
-            setValue={form.setValue}
-          />
-          {submitError ? <ErrorState message={submitError} /> : null}
-          {successMessage ? <SuccessState message={successMessage} /> : null}
-          <SaveOrderButton isSubmitting={form.formState.isSubmitting} onPress={submit} />
-        </ScrollView>
-      </KeyboardAvoidingView>
+      <TouchableWithoutFeedback accessible={false} onPress={Keyboard.dismiss}>
+        <View style={styles.flex}>
+          <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.flex}>
+            <ScrollView
+              contentContainerStyle={styles.scrollContent}
+              keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+              keyboardShouldPersistTaps="always"
+            >
+              <AnimatedEntrance>
+                <CompactScreenHeader subtitle="Bestellung direkt erfassen." title="Hinzufuegen" />
+              </AnimatedEntrance>
+              <AnimatedEntrance delay={60}>
+                <CustomerModeSelector mode={customerMode} onChange={setMode} />
+              </AnimatedEntrance>
+              <AnimatedEntrance delay={110}>
+                {customerMode === "existing" ? (
+                  <ExistingCustomerSection
+                    error={errors.customerId?.message}
+                    onSelect={selectCustomer}
+                    selectedCustomer={selectedCustomer}
+                  />
+                ) : (
+                  <NewCustomerSection control={form.control} errors={errors.customer} />
+                )}
+              </AnimatedEntrance>
+              <AnimatedEntrance delay={150}>
+                <OrderItemsSection
+                  append={items.append}
+                  control={form.control}
+                  errors={errors.items}
+                  fields={items.fields}
+                  remove={items.remove}
+                  setValue={form.setValue}
+                />
+              </AnimatedEntrance>
+              {submitError ? <AnimatedEntrance delay={190}><ErrorState message={submitError} /></AnimatedEntrance> : null}
+              {successMessage ? <AnimatedEntrance delay={220}><SuccessState message={successMessage} /></AnimatedEntrance> : null}
+              <AnimatedEntrance delay={250}>
+                <SaveOrderButton isSubmitting={form.formState.isSubmitting} onPress={handleSave} />
+              </AnimatedEntrance>
+              <View style={styles.footerSpacer} />
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </View>
+      </TouchableWithoutFeedback>
     </ScreenContainer>
   );
 }
@@ -65,10 +91,10 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     gap: spacing.md,
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.xl * 3,
+    flexGrow: 1,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
+  footerSpacer: {
+    height: spacing.xl * 2,
   },
 });

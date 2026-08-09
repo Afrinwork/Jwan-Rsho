@@ -4,9 +4,7 @@ export type CityCustomerItem = {
   id: string;
   fullName: string;
   phone: string;
-  street: string;
-  houseNumber: string;
-  postalCode: string;
+  address: string;
   city: string;
   currentOpenOrderId: string | null;
   currentOpenOrderLabel: string | null;

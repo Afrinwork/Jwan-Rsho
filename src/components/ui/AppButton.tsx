@@ -1,7 +1,7 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from "react-native";
 
-import { colors } from "@/src/constants/colors";
 import { spacing } from "@/src/constants/spacing";
+import { useThemeColors } from "@/src/hooks/useThemeColors";
 
 type AppButtonProps = {
   label: string;
@@ -18,28 +18,28 @@ export function AppButton({
   loading,
   variant = "primary",
 }: AppButtonProps) {
+  const colors = useThemeColors();
   const isDisabled = disabled || loading;
 
   return (
     <Pressable
       disabled={isDisabled}
       onPress={onPress}
-      style={[
+      style={({ pressed }) => [
         styles.button,
-        variant === "secondary" && styles.secondaryButton,
-        variant === "danger" && styles.dangerButton,
-        isDisabled && styles.disabled,
+        {
+          backgroundColor: variant === "secondary" ? colors.surface : variant === "danger" ? colors.danger : colors.primary,
+          borderColor: variant === "secondary" ? colors.borderStrong : variant === "danger" ? colors.danger : colors.primaryStrong,
+          opacity: isDisabled ? 0.55 : pressed ? 0.92 : 1,
+          transform: [{ scale: pressed && !isDisabled ? 0.99 : 1 }],
+          shadowColor: colors.shadow,
+        },
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={variant === "secondary" ? colors.primary : colors.surface} />
+        <ActivityIndicator color={variant === "secondary" ? colors.primary : colors.primaryContrast} />
       ) : (
-        <Text
-          style={[
-            styles.label,
-            variant === "secondary" && styles.secondaryLabel,
-          ]}
-        >
+        <Text style={[styles.label, { color: variant === "secondary" ? colors.text : colors.primaryContrast }]}>
           {label}
         </Text>
       )}
@@ -49,29 +49,20 @@ export function AppButton({
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    alignItems: "center",
-  },
-  secondaryButton: {
-    backgroundColor: colors.surface,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: colors.border,
-  },
-  dangerButton: {
-    backgroundColor: colors.danger,
-  },
-  disabled: {
-    opacity: 0.5,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.18,
+    shadowRadius: 18,
+    elevation: 4,
   },
   label: {
-    color: colors.surface,
     fontSize: 16,
-    fontWeight: "600",
-  },
-  secondaryLabel: {
-    color: colors.text,
+    fontWeight: "700",
+    letterSpacing: 0.2,
   },
 });

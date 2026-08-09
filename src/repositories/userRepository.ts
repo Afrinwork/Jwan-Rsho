@@ -29,7 +29,7 @@ export const userRepository = {
     return snapshot.data().count;
   },
 
-  async updateOwnProfile(input: { fullName: string }) {
+  async updateOwnProfile(input: { fullName: string; email?: string }) {
     if (!db) {
       return;
     }
@@ -37,6 +37,7 @@ export const userRepository = {
     const ownerId = requireCurrentUserId();
     await updateDoc(doc(db, "users", ownerId), {
       fullName: input.fullName.trim(),
+      ...(input.email ? { email: input.email.trim().toLowerCase() } : {}),
     });
   },
 };

@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { colors } from "@/src/constants/colors";
+import { spacing } from "@/src/constants/spacing";
+import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { MapFilterState } from "@/src/features/map/types/mapTypes";
 
 type MapFiltersProps = {
@@ -15,8 +16,10 @@ type MapFiltersProps = {
 };
 
 export function MapFilters(props: MapFiltersProps) {
+  const colors = useThemeColors();
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, shadowColor: colors.shadow }]}>
       <FilterRow label="Alle" options={["Alle"]} selectedValue="" onChange={() => props.onReset()} />
       <FilterRow label="Land" options={props.countryOptions} selectedValue={props.filters.country} onChange={props.onCountryChange} />
       <FilterRow label="Stadt" options={props.cityOptions} selectedValue={props.filters.city} onChange={props.onCityChange} />
@@ -33,11 +36,12 @@ type FilterRowProps = {
 };
 
 function FilterRow({ label, options, selectedValue, onChange }: FilterRowProps) {
+  const colors = useThemeColors();
   const values = label === "Alle" ? options : ["Alle", ...options];
 
   return (
     <View style={styles.rowGroup}>
-      <Text style={styles.rowLabel}>{label}</Text>
+      <Text style={[styles.rowLabel, { color: colors.mutedText }]}>{label}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={styles.row}>
           {values.map((value) => {
@@ -46,9 +50,15 @@ function FilterRow({ label, options, selectedValue, onChange }: FilterRowProps) 
               <Pressable
                 key={`${label}-${value}`}
                 onPress={() => onChange(value === "Alle" ? "" : value)}
-                style={[styles.chip, active && styles.activeChip]}
+                style={[
+                  styles.chip,
+                  {
+                    backgroundColor: active ? colors.primary : colors.surface,
+                    borderColor: active ? colors.primaryStrong : colors.border,
+                  },
+                ]}
               >
-                <Text style={[styles.chipLabel, active && styles.activeLabel]}>{value}</Text>
+                <Text style={[styles.chipLabel, { color: active ? colors.primaryContrast : colors.text }]}>{value}</Text>
               </Pressable>
             );
           })}
@@ -59,12 +69,18 @@ function FilterRow({ label, options, selectedValue, onChange }: FilterRowProps) 
 }
 
 const styles = StyleSheet.create({
-  container: { gap: 10 },
+  container: {
+    gap: 10,
+    borderRadius: 22,
+    borderWidth: 1,
+    padding: spacing.md,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+  },
   rowGroup: { gap: 6 },
-  rowLabel: { color: colors.mutedText, fontSize: 13, fontWeight: "600" },
+  rowLabel: { fontSize: 13, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.6 },
   row: { flexDirection: "row", gap: 8 },
-  chip: { borderWidth: 1, borderColor: colors.border, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: colors.surface },
-  activeChip: { backgroundColor: colors.primary, borderColor: colors.primary },
-  chipLabel: { color: colors.text, fontSize: 14 },
-  activeLabel: { color: colors.surface, fontWeight: "600" },
+  chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  chipLabel: { fontSize: 14, fontWeight: "600" },
 });

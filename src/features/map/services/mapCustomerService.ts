@@ -34,5 +34,5 @@ function hasValidCoordinates(
 }
 
 function formatCustomerAddress(customer: Customer) {
-  return `${customer.street} ${customer.houseNumber}, ${customer.postalCode} ${customer.city}`;
+  return `${customer.address}, ${customer.city}`;
 }

@@ -54,7 +54,7 @@ export function buildSelectionShareMessage(
 
       if (customer.items.length) {
         customer.items.forEach((item) =>
-          lines.push(`- ${item.productName}: ${item.quantity} ${item.unit}`),
+          lines.push(`• ${item.productName}: ${item.quantity} ${item.unit}`),
         );
       } else {
         lines.push("Keine offene Bestellung");
@@ -67,7 +67,7 @@ export function buildSelectionShareMessage(
   if (includeTotal && totals.length) {
     lines.push("Gesamt:", "");
     totals.forEach((total) =>
-      lines.push(`- ${total.productName}: ${total.quantity} ${total.unit}`),
+      lines.push(`• ${total.productName}: ${total.quantity} ${total.unit}`),
     );
   }
 

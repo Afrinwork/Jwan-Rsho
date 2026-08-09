@@ -16,7 +16,7 @@ export function CustomerMapCard({ details }: CustomerMapCardProps) {
       <Text style={[styles.name, { color: colors.text }]}>{details.customer.fullName}</Text>
       <Text style={[styles.meta, { color: colors.mutedText }]}>{details.customer.phone}</Text>
       <Text style={[styles.meta, { color: colors.mutedText }]}>
-        {details.customer.street} {details.customer.houseNumber}, {details.customer.postalCode} {details.customer.city}, {details.customer.country}
+        {details.customer.address}, {details.customer.city}, {details.customer.country}
       </Text>
       {details.customer.region ? <Text style={[styles.meta, { color: colors.mutedText }]}>Region: {details.customer.region}</Text> : null}
       {details.customer.note ? (

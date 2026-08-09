@@ -10,7 +10,7 @@ export function buildCountryCreateData(input: CountryWrite, ownerId: string) {
     ownerId,
     name: parsed.name.trim(),
     normalizedName: parsed.name.trim().toLowerCase(),
-    isoCode: parsed.isoCode?.trim().toUpperCase(),
+    ...(parsed.isoCode ? { isoCode: parsed.isoCode.trim().toUpperCase() } : {}),
     sortOrder: parsed.sortOrder ?? 0,
     isActive: parsed.isActive ?? true,
   };

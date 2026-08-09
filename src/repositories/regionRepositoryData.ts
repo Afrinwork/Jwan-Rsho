@@ -12,8 +12,7 @@ export function buildRegionCreateData(input: RegionWrite, ownerId: string) {
     normalizedName: parsed.name.trim().toLowerCase(),
     country: parsed.country.trim(),
     normalizedCountry: parsed.country.trim().toLowerCase(),
-    city: parsed.city?.trim(),
-    normalizedCity: parsed.city?.trim().toLowerCase(),
+    ...(parsed.city ? { city: parsed.city.trim(), normalizedCity: parsed.city.trim().toLowerCase() } : {}),
     isActive: parsed.isActive ?? true,
   };
 }

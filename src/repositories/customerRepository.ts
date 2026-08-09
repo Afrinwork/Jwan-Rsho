@@ -5,7 +5,6 @@ import {
   getCountFromServer,
   getDoc,
   getDocs,
-  orderBy,
   query,
   setDoc,
   updateDoc,
@@ -41,8 +40,8 @@ export const customerRepository = {
 
   async getCustomers() {
     const ownerId = requireCurrentUserId();
-    const customerQuery = query(collection(requireDb(), "customers"), where("ownerId", "==", ownerId), orderBy("fullName"));
-    return (await getDocs(customerQuery)).docs.map((value) => mapSnapshot<Customer>(value));
+    const customerQuery = query(collection(requireDb(), "customers"), where("ownerId", "==", ownerId));
+    return sortCustomers((await getDocs(customerQuery)).docs.map((value) => mapSnapshot<Customer>(value)));
   },
 
   async getCustomersByNormalizedCity(normalizedCity: string) {
@@ -51,15 +50,14 @@ export const customerRepository = {
       collection(requireDb(), "customers"),
       where("ownerId", "==", ownerId),
       where("normalizedCity", "==", normalizedCity),
-      orderBy("fullName"),
     );
-    return (await getDocs(customerQuery)).docs.map((value) => mapSnapshot<Customer>(value));
+    return sortCustomers((await getDocs(customerQuery)).docs.map((value) => mapSnapshot<Customer>(value)));
   },
 
   async searchCustomers(searchTerm: string) {
     const term = searchTerm.trim().toLowerCase();
     const customers = await this.getCustomers();
-    return customers.filter((value) => [value.fullName, value.phone, value.city, value.street].some((field) => field.toLowerCase().includes(term)));
+    return customers.filter((value) => [value.fullName, value.phone, value.city, value.address].some((field) => field.toLowerCase().includes(term)));
   },
 
   async countCustomersByOwner(ownerId: string) {
@@ -86,4 +84,8 @@ function clean<T extends object>(value: T) {
 function withCreateTimestamps<T extends object>(value: T) {
   const timestamp = new Date().toISOString();
   return { ...value, createdAt: timestamp, updatedAt: timestamp };
+}
+
+function sortCustomers(customers: Customer[]) {
+  return [...customers].sort((left, right) => left.fullName.localeCompare(right.fullName, "de"));
 }

@@ -4,7 +4,6 @@ import {
   getCountFromServer,
   getDoc,
   getDocs,
-  orderBy,
   query,
   runTransaction,
   updateDoc,
@@ -46,7 +45,7 @@ export const orderRepository = {
       transaction.set(orderRef, withCreateTimestamps(buildOrderCreateData(input, ownerId, customerId)));
       input.items.forEach((item, index) => {
         const itemRef = doc(collection(orderRef, "items"));
-        transaction.set(itemRef, buildOrderItemData({ ...item, sortOrder: item.sortOrder ?? index }, itemRef.id));
+        transaction.set(itemRef, buildOrderItemData({ ...item, sortOrder: item.sortOrder ?? index }, itemRef.id, ownerId));
       });
 
       return { customerId, orderId };
@@ -64,8 +63,8 @@ export const orderRepository = {
 
   async getOpenOrders() {
     const ownerId = requireCurrentUserId();
-    const orderQuery = query(collection(requireDb(), "orders"), where("ownerId", "==", ownerId), where("status", "==", "open"), orderBy("orderedAt", "desc"));
-    return (await getDocs(orderQuery)).docs.map((value) => mapSnapshot<Order>(value));
+    const orderQuery = query(collection(requireDb(), "orders"), where("ownerId", "==", ownerId), where("status", "==", "open"));
+    return sortOrdersByDateDesc((await getDocs(orderQuery)).docs.map((value) => mapSnapshot<Order>(value)));
   },
 
   async getOpenOrdersByCustomerIds(customerIds: string[]) {
@@ -74,12 +73,8 @@ export const orderRepository = {
 
   async getOrders() {
     const ownerId = requireCurrentUserId();
-    const orderQuery = query(
-      collection(requireDb(), "orders"),
-      where("ownerId", "==", ownerId),
-      orderBy("orderedAt", "desc"),
-    );
-    return (await getDocs(orderQuery)).docs.map((value) => mapSnapshot<Order>(value));
+    const orderQuery = query(collection(requireDb(), "orders"), where("ownerId", "==", ownerId));
+    return sortOrdersByDateDesc((await getDocs(orderQuery)).docs.map((value) => mapSnapshot<Order>(value)));
   },
 
   async completeOrder(id: string) {
@@ -93,6 +88,7 @@ export const orderRepository = {
     customer: Partial<CustomerWrite>;
     items: (Partial<OrderItem> & Pick<OrderItem, "productId" | "productNameSnapshot" | "quantity" | "unit">)[];
   }) {
+    const ownerId = requireCurrentUserId();
     const customerSnapshot = await getOwnedCustomer(input.customerId);
     const orderSnapshot = await getOwnedOrder(input.orderId);
 
@@ -117,7 +113,7 @@ export const orderRepository = {
     existingItemSnapshots.docs.forEach((value) => batch.delete(value.ref));
     input.items.forEach((item, index) => {
       const itemRef = doc(orderItemsCollection);
-      batch.set(itemRef, buildOrderItemData({ ...item, sortOrder: item.sortOrder ?? index }, itemRef.id));
+      batch.set(itemRef, buildOrderItemData({ ...item, sortOrder: item.sortOrder ?? index }, itemRef.id, ownerId));
     });
 
     await batch.commit();
@@ -167,9 +163,8 @@ export async function getOrdersByCustomer(customerId: string) {
     collection(requireDb(), "orders"),
     where("ownerId", "==", ownerId),
     where("customerId", "==", customerId),
-    orderBy("orderedAt", "desc"),
   );
-  return (await getDocs(orderQuery)).docs.map((value) => mapSnapshot<Order>(value));
+  return sortOrdersByDateDesc((await getDocs(orderQuery)).docs.map((value) => mapSnapshot<Order>(value)));
 }
 
 export async function getOpenOrdersByCustomerIds(customerIds: string[]) {
@@ -185,4 +180,8 @@ function withCreateTimestamps<T extends object>(value: T) {
 
 function clean<T extends object>(value: T) {
   return Object.fromEntries(Object.entries(value).filter(([, current]) => current !== undefined)) as T;
+}
+
+function sortOrdersByDateDesc(orders: Order[]) {
+  return [...orders].sort((left, right) => right.orderedAt.localeCompare(left.orderedAt));
 }
