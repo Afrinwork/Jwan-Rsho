@@ -7,13 +7,12 @@ import MapView from "react-native-maps";
 import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
 import { LoadingView } from "@/src/components/ui/LoadingView";
 import { spacing } from "@/src/constants/spacing";
-import { CircleSelectionOverlay } from "@/src/features/map/components/CircleSelectionOverlay";
 import { CustomerMarker } from "@/src/features/map/components/CustomerMarker";
 import { MapCustomerSheet } from "@/src/features/map/components/MapCustomerSheet";
 import { MapFilters } from "@/src/features/map/components/MapFilters";
 import { MapSelectionToolbar } from "@/src/features/map/components/MapSelectionToolbar";
 import { MapToolbar } from "@/src/features/map/components/MapToolbar";
-import { NavigationAppSheet } from "@/src/features/map/components/NavigationAppSheet";
+import { PolygonDrawOverlay } from "@/src/features/map/components/PolygonDrawOverlay";
 import { PolygonSelectionOverlay } from "@/src/features/map/components/PolygonSelectionOverlay";
 import { SelectedCustomersBar } from "@/src/features/map/components/SelectedCustomersBar";
 import { SelectedCustomersList } from "@/src/features/map/components/SelectedCustomersList";
@@ -36,8 +35,10 @@ export function MapScreen() {
   const { details, error: detailsError, isLoading: detailsLoading, reload: reloadDetails } = useMapCustomerDetails(selectedCustomerId);
   const selectedMarker = useMemo(() => filteredMarkers.find((value) => value.id === selectedCustomerId) ?? null, [filteredMarkers, selectedCustomerId]);
   const mapActions = useMapActions(details, selectedMarker);
-  const customerSelection = useMapCustomerSelection(markers, filteredMarkers);
+  const productEmojiById = useMemo(() => new Map(mapActions.products.map((product) => [product.id, product.emoji])), [mapActions.products]);
+  const customerSelection = useMapCustomerSelection(markers, filteredMarkers, productEmojiById);
   const selectedIdSet = useMemo(() => new Set(customerSelection.selection.selectedIds), [customerSelection.selection.selectedIds]);
+  const drawingSelection = customerSelection.selection.activeTool === "polygon";
 
   useFocusEffect(useCallback(() => {
     void reloadCustomers();
@@ -63,7 +64,11 @@ export function MapScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        scrollEnabled={!drawingSelection}
+        showsVerticalScrollIndicator={false}
+      >
         <AnimatedEntrance>
           <MapToolbar
             customersError={customersError}
@@ -75,49 +80,7 @@ export function MapScreen() {
             onRetryLocation={() => void reload()}
           />
         </AnimatedEntrance>
-        <MapView
-          initialRegion={region}
-          onPress={(event) => {
-            if (customerSelection.selection.activeTool === "circle" || customerSelection.selection.activeTool === "polygon") {
-              customerSelection.selection.handleMapPress(event.nativeEvent.coordinate);
-            }
-          }}
-          onPanDrag={(event) => {
-            if (customerSelection.selection.activeTool === "polygon") {
-              customerSelection.selection.handleMapDrag(event.nativeEvent.coordinate);
-            }
-          }}
-          ref={mapRef}
-          showsCompass
-          showsUserLocation={hasPermission}
-          style={[styles.map, { borderColor: colors.border }]}
-        >
-          {filteredMarkers.map((marker) => (
-            <CustomerMarker
-              key={marker.id}
-              marker={marker}
-              onPress={() => {
-                if (customerSelection.selection.activeTool === "single") return customerSelection.selection.handleMarkerPress(marker);
-                if (customerSelection.selection.activeTool !== "none") return;
-                setSelectedCustomerId(marker.id);
-              }}
-              selected={selectedIdSet.has(marker.id)}
-            />
-          ))}
-          <CircleSelectionOverlay confirmedCircle={customerSelection.selection.circleConfirmed} draftCenter={customerSelection.selection.circleDraftCenter} />
-          <PolygonSelectionOverlay confirmedPolygon={customerSelection.selection.polygonConfirmed} draftPoints={customerSelection.selection.polygonPoints} />
-        </MapView>
-        <AnimatedEntrance delay={60}>
-          <MapSelectionToolbar
-            activeTool={customerSelection.selection.activeTool}
-            onClosePolygon={customerSelection.selection.closePolygon}
-            onResetSelection={customerSelection.resetSelection}
-            onSelectTool={customerSelection.selection.selectTool}
-            onUndoPolygonPoint={customerSelection.selection.undoPolygonPoint}
-            polygonPointCount={customerSelection.selection.polygonPoints.length}
-          />
-        </AnimatedEntrance>
-        <AnimatedEntrance delay={100}>
+        <AnimatedEntrance delay={40}>
           <MapFilters
             cityOptions={cityOptions}
             countryOptions={countryOptions}
@@ -129,13 +92,60 @@ export function MapScreen() {
             regionOptions={regionOptions}
           />
         </AnimatedEntrance>
-        <SelectedCustomersBar
-          onResetSelection={customerSelection.resetSelection}
-          onShare={() => void customerSelection.share()}
-          onViewSelection={customerSelection.openList}
-          selectedCount={customerSelection.selectedMarkers.length}
-          shareError={customerSelection.shareError}
-          sharing={customerSelection.sharing}
+        {!drawingSelection ? (
+          <SelectedCustomersBar
+            onResetSelection={customerSelection.resetSelection}
+            onShare={() => void customerSelection.share()}
+            onViewSelection={customerSelection.openList}
+            selectedCount={customerSelection.selectedMarkers.length}
+            shareError={customerSelection.shareError}
+            sharing={customerSelection.sharing}
+          />
+        ) : null}
+        <AnimatedEntrance delay={60}>
+          <MapSelectionToolbar
+            activeTool={customerSelection.selection.activeTool}
+            onResetSelection={customerSelection.resetSelection}
+            onSelectTool={customerSelection.selection.selectTool}
+          />
+        </AnimatedEntrance>
+        <View style={styles.mapWrapper}>
+          <MapView
+            initialRegion={region}
+            onPanDrag={(event) => {
+              if (customerSelection.selection.activeTool === "polygon") {
+                customerSelection.selection.handleMapDrag(event.nativeEvent.coordinate);
+              }
+            }}
+            ref={mapRef}
+            pitchEnabled={!drawingSelection}
+            rotateEnabled={!drawingSelection}
+            scrollEnabled={!drawingSelection}
+            showsCompass
+            showsUserLocation={hasPermission}
+            style={[styles.map, { borderColor: colors.border }]}
+            zoomEnabled={!drawingSelection}
+          >
+            {filteredMarkers.map((marker) => (
+              <CustomerMarker
+                key={marker.id}
+                marker={marker}
+                onPress={() => {
+                  if (customerSelection.selection.activeTool === "single") return customerSelection.selection.handleMarkerPress(marker);
+                  if (customerSelection.selection.activeTool !== "none") return;
+                  setSelectedCustomerId(marker.id);
+                }}
+                selected={selectedIdSet.has(marker.id)}
+              />
+            ))}
+            <PolygonSelectionOverlay confirmedPolygon={customerSelection.selection.polygonConfirmed} draftPoints={customerSelection.selection.polygonPoints} />
+          </MapView>
+        </View>
+        <PolygonDrawOverlay
+          onClosePolygon={customerSelection.selection.closePolygon}
+          onUndoPolygonPoint={customerSelection.selection.undoPolygonPoint}
+          polygonPointCount={customerSelection.selection.polygonPoints.length}
+          visible={customerSelection.selection.activeTool === "polygon"}
         />
       </ScrollView>
       <SelectedCustomersList
@@ -166,13 +176,8 @@ export function MapScreen() {
         onNavigate={() => void mapActions.openNavigationMenu()}
         onRetry={() => void reloadDetails()}
         onShare={() => void mapActions.shareLocation()}
+        onShareOrder={() => void mapActions.shareOrder()}
         visible={selectedCustomerId !== null}
-      />
-      <NavigationAppSheet
-        apps={mapActions.navigationApps}
-        onClose={mapActions.closeNavigationSheet}
-        onSelect={(appId) => void mapActions.openNavigationApp(appId)}
-        visible={mapActions.navigationSheetVisible}
       />
     </View>
   );
@@ -184,12 +189,15 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: spacing.md,
-    gap: spacing.md,
+    gap: spacing.sm,
     paddingBottom: spacing.xl,
   },
+  mapWrapper: {
+    position: "relative",
+  },
   map: {
-    height: 440,
-    borderRadius: 28,
+    height: 420,
+    borderRadius: 24,
     borderWidth: 1,
   },
 });

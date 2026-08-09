@@ -8,6 +8,7 @@ test("app preferences reset to defaults after custom values", () => {
     ...defaultAppPreferences,
     themeMode: "dark",
     preferredNavigationApp: "waze",
+    shopName: "🧀 Rsho Kaeserei",
     shareIncludeAddress: false,
     shareIncludePhone: true,
     shareIncludeTotals: false,
@@ -19,6 +20,7 @@ test("app preferences reset to defaults after custom values", () => {
     {
       themeMode: useAppStore.getState().themeMode,
       preferredNavigationApp: useAppStore.getState().preferredNavigationApp,
+      shopName: useAppStore.getState().shopName,
       shareIncludeAddress: useAppStore.getState().shareIncludeAddress,
       shareIncludePhone: useAppStore.getState().shareIncludePhone,
       shareIncludeTotals: useAppStore.getState().shareIncludeTotals,

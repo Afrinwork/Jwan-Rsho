@@ -4,9 +4,27 @@ import { customerSchema } from "@/src/features/customers/validation/customerSche
 import { orderItemSchema } from "@/src/features/orders/validation/orderItemSchema";
 import { CustomerMode } from "@/src/features/orders/types/orderFormTypes";
 
+// Deliberately lenient: in "existing customer" mode this slice of the form stays at its
+// empty default (see buildEmptyOrderCustomer) and is never shown or filled in. It must not
+// be checked against customerSchema's required-field rules (min-length etc.), otherwise the
+// whole form silently fails validation for a section the user can't even see. The real,
+// strict check for "new customer" mode happens in the superRefine below.
+const looseCustomerDraft = z.object({
+  fullName: z.string().optional(),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  city: z.string().optional(),
+  country: z.string().optional(),
+  region: z.string().optional(),
+  note: z.string().optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  isActive: z.boolean().optional(),
+});
+
 const addOrderBaseSchema = z.object({
   customerId: z.string(),
-  customer: customerSchema.partial(),
+  customer: looseCustomerDraft,
   items: z.array(orderItemSchema).min(1, "Mindestens ein Produkt hinzufuegen"),
 });
 

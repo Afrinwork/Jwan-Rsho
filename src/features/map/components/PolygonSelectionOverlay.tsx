@@ -1,7 +1,8 @@
-import { Marker, Polygon, Polyline } from "react-native-maps";
-
-import { colors } from "@/src/constants/colors";
+import { Polygon, Polyline } from "react-native-maps";
 import { MapSelectionPoint } from "@/src/features/map/types/mapSelectionTypes";
+
+const polygonStroke = "#F97316";
+const polygonFill = "rgba(249, 115, 22, 0.16)";
 
 type PolygonSelectionOverlayProps = {
   draftPoints: MapSelectionPoint[];
@@ -11,18 +12,15 @@ type PolygonSelectionOverlayProps = {
 export function PolygonSelectionOverlay({ draftPoints, confirmedPolygon }: PolygonSelectionOverlayProps) {
   return (
     <>
-      {draftPoints.map((point, index) => (
-        <Marker coordinate={point} key={`draft-${index}`} pinColor={colors.primary} />
-      ))}
       {draftPoints.length >= 2 ? (
-        <Polyline coordinates={draftPoints} strokeColor={colors.primary} strokeWidth={2} />
+        <Polyline coordinates={draftPoints} strokeColor={polygonStroke} strokeWidth={4} />
       ) : null}
       {confirmedPolygon ? (
         <Polygon
           coordinates={confirmedPolygon}
-          fillColor="rgba(15, 118, 110, 0.15)"
-          strokeColor={colors.primary}
-          strokeWidth={2}
+          fillColor={polygonFill}
+          strokeColor={polygonStroke}
+          strokeWidth={4}
         />
       ) : null}
     </>

@@ -10,6 +10,7 @@ type CustomerMapCardProps = {
 
 export function CustomerMapCard({ details }: CustomerMapCardProps) {
   const colors = useThemeColors();
+  const openOrders = details.openOrders;
 
   return (
     <>
@@ -25,21 +26,28 @@ export function CustomerMapCard({ details }: CustomerMapCardProps) {
           <Text style={[styles.noteText, { color: colors.mutedText }]}>{details.customer.note}</Text>
         </View>
       ) : null}
-      <View style={[styles.card, { backgroundColor: colors.background, borderColor: colors.border }]}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Offene Bestellung</Text>
-        {details.openOrder ? (
-          <View style={styles.items}>
-            {details.openOrder.items.map((item) => (
-              <View key={item.id} style={styles.itemRow}>
-                <Text style={[styles.itemName, { color: colors.text }]}>{item.productNameSnapshot}</Text>
-                <Text style={[styles.itemQuantity, { color: colors.mutedText }]}>{item.quantity} {item.unit}</Text>
-              </View>
-            ))}
+      {openOrders.length ? (
+        openOrders.map((order, index) => (
+          <View key={order.id} style={[styles.card, { backgroundColor: colors.background, borderColor: colors.border }]}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              {openOrders.length > 1 ? `Offene Bestellung ${index + 1} von ${openOrders.length}` : "Offene Bestellung"}
+            </Text>
+            <View style={styles.items}>
+              {order.items.map((item) => (
+                <View key={item.id} style={styles.itemRow}>
+                  <Text style={[styles.itemName, { color: colors.text }]}>{item.productNameSnapshot}</Text>
+                  <Text style={[styles.itemQuantity, { color: colors.mutedText }]}>{item.quantity} {item.unit}</Text>
+                </View>
+              ))}
+            </View>
           </View>
-        ) : (
+        ))
+      ) : (
+        <View style={[styles.card, { backgroundColor: colors.background, borderColor: colors.border }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Offene Bestellung</Text>
           <Text style={[styles.meta, { color: colors.mutedText }]}>Keine offene Bestellung gefunden.</Text>
-        )}
-      </View>
+        </View>
+      )}
     </>
   );
 }

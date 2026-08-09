@@ -29,11 +29,13 @@ export function useSettings() {
   const {
     themeMode,
     preferredNavigationApp,
+    shopName,
     shareIncludeAddress,
     shareIncludePhone,
     shareIncludeTotals,
     setThemeMode,
     setPreferredNavigationApp,
+    setShopName,
     setShareOptions,
   } = useAppStore();
   const [fullName, setFullName] = useState(user?.displayName ?? "");
@@ -107,6 +109,7 @@ export function useSettings() {
         ownerId: user.uid,
         themeMode,
         preferredNavigationApp,
+        shopName,
         shareIncludeAddress,
         shareIncludePhone,
         shareIncludeTotals,
@@ -127,6 +130,7 @@ export function useSettings() {
     fullName,
     email,
     preferredNavigationApp,
+    shopName,
     shareIncludeAddress,
     shareIncludePhone,
     shareIncludeTotals,
@@ -152,11 +156,13 @@ export function useSettings() {
     stats,
     themeMode,
     preferredNavigationApp,
+    shopName,
     shareIncludeAddress,
     shareIncludePhone,
     shareIncludeTotals,
     setThemeMode,
     setPreferredNavigationApp,
+    setShopName,
     setShareOptions,
     save,
   };

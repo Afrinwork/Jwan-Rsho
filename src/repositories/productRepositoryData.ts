@@ -11,6 +11,7 @@ export function buildProductCreateData(input: ProductWrite, ownerId: string) {
     name: parsed.name.trim(),
     normalizedName: parsed.name.trim().toLowerCase(),
     defaultUnit: parsed.defaultUnit.trim(),
+    ...(parsed.emoji ? { emoji: parsed.emoji.trim() } : {}),
     isActive: parsed.isActive ?? true,
     sortOrder: parsed.sortOrder ?? 0,
   };

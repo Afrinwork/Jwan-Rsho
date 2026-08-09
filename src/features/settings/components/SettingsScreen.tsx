@@ -77,6 +77,13 @@ export function SettingsScreen() {
           />
         </SettingsSection></AnimatedEntrance>
         <AnimatedEntrance delay={210}><SettingsSection title="Teilen">
+          <FormField label="Geschaeftsname (im Sammeltext)">
+            <AppInput
+              onChangeText={settings.setShopName}
+              placeholder="z. B. 🧀 Rsho Kaeserei"
+              value={settings.shopName}
+            />
+          </FormField>
           <SettingsToggleRow
             label="Adresse im Share-Text"
             onChange={(value) => settings.setShareOptions({

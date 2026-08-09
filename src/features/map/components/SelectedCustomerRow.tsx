@@ -21,7 +21,11 @@ export function SelectedCustomerRow({ marker, onRemove }: SelectedCustomerRowPro
       <Text style={[styles.meta, { color: colors.mutedText }]}>{marker.description}</Text>
       <Text style={[styles.meta, { color: colors.mutedText }]}>{marker.phone}</Text>
       <Text style={[styles.meta, { color: colors.mutedText }]}>
-        {marker.currentOpenOrderId ? "Offene Bestellung vorhanden" : "Keine offene Bestellung"}
+        {marker.openOrderCount > 1
+          ? `${marker.openOrderCount} offene Bestellungen`
+          : marker.openOrderCount === 1
+            ? "Offene Bestellung vorhanden"
+            : "Keine offene Bestellung"}
       </Text>
       <AppButton label="Entfernen" onPress={onRemove} variant="secondary" />
     </View>

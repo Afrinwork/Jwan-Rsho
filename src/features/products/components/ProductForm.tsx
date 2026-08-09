@@ -12,8 +12,10 @@ import { spacing } from "@/src/constants/spacing";
 import { productSchema } from "@/src/features/products/validation/productSchema";
 import { formatError } from "@/src/utils/formatError";
 
-const productFormSchema = productSchema.pick({ name: true, defaultUnit: true, sortOrder: true });
+const productFormSchema = productSchema.pick({ name: true, defaultUnit: true, emoji: true, sortOrder: true });
 export type ProductFormValues = z.input<typeof productFormSchema>;
+
+const emptyProductValues: ProductFormValues = { name: "", defaultUnit: "", emoji: "", sortOrder: 0 };
 
 type ProductFormProps = {
   initialValues?: ProductFormValues;
@@ -26,14 +28,14 @@ export function ProductForm({ initialValues, submitLabel, onCancel, onSubmit }: 
   const [submitError, setSubmitError] = useState<string | null>(null);
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
-    defaultValues: initialValues ?? { name: "", defaultUnit: "", sortOrder: 0 },
+    defaultValues: initialValues ?? emptyProductValues,
   });
 
   const submit = form.handleSubmit(async (values) => {
     try {
       setSubmitError(null);
       await onSubmit(values);
-      form.reset({ name: "", defaultUnit: "", sortOrder: 0 });
+      form.reset(emptyProductValues);
     } catch (error) {
       setSubmitError(formatError(error).message);
     }
@@ -56,6 +58,15 @@ export function ProductForm({ initialValues, submitLabel, onCancel, onSubmit }: 
           name="defaultUnit"
           render={({ field }) => (
             <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder="z. B. Stueck, kg" value={field.value} />
+          )}
+        />
+      </FormField>
+      <FormField error={form.formState.errors.emoji?.message} label="Emoji (optional, fuer den Sammeltext)">
+        <Controller
+          control={form.control}
+          name="emoji"
+          render={({ field }) => (
+            <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder="z. B. 🧀" value={field.value ?? ""} />
           )}
         />
       </FormField>

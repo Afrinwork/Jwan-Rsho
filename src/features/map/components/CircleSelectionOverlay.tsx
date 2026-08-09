@@ -1,7 +1,8 @@
-import { Circle, Marker } from "react-native-maps";
-
-import { colors } from "@/src/constants/colors";
+import { Circle } from "react-native-maps";
 import { MapCircleSelection, MapSelectionPoint } from "@/src/features/map/types/mapSelectionTypes";
+
+const circleStroke = "#F97316";
+const circleFill = "rgba(249, 115, 22, 0.16)";
 
 type CircleSelectionOverlayProps = {
   draftCenter: MapSelectionPoint | null;
@@ -11,16 +12,22 @@ type CircleSelectionOverlayProps = {
 export function CircleSelectionOverlay({ draftCenter, confirmedCircle }: CircleSelectionOverlayProps) {
   return (
     <>
-      {draftCenter ? (
-        <Marker coordinate={draftCenter} pinColor={colors.primary} title="Mittelpunkt gesetzt" />
-      ) : null}
       {confirmedCircle ? (
         <Circle
           center={confirmedCircle}
-          fillColor="rgba(15, 118, 110, 0.15)"
+          fillColor={circleFill}
           radius={confirmedCircle.radiusKm * 1000}
-          strokeColor={colors.primary}
-          strokeWidth={2}
+          strokeColor={circleStroke}
+          strokeWidth={4}
+        />
+      ) : null}
+      {draftCenter ? (
+        <Circle
+          center={draftCenter}
+          fillColor="rgba(249, 115, 22, 0.06)"
+          radius={22}
+          strokeColor={circleStroke}
+          strokeWidth={3}
         />
       ) : null}
     </>

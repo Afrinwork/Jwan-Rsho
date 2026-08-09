@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 
-import { buildSelectionShareMessage, SelectionShareCustomer } from "@/src/features/map/services/mapShareFormatterService";
+import { buildSelectionShareMessage, SelectionShareCustomer, SelectionShareItem } from "@/src/features/map/services/mapShareFormatterService";
 import { useMapSelection } from "@/src/features/map/hooks/useMapSelection";
 import { useSelectionSummary } from "@/src/features/map/hooks/useSelectionSummary";
 import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
@@ -8,9 +8,15 @@ import { sharingService } from "@/src/services/sharingService";
 import { useAppStore } from "@/src/store/appStore";
 import { buildProductTotals } from "@/src/utils/orderItemTotals";
 import { OrderWithItems } from "@/src/types/order";
+import { ProductTotal } from "@/src/types/productTotal";
 import { formatError } from "@/src/utils/formatError";
 
-export function useMapCustomerSelection(allMarkers: MapCustomerMarker[], visibleMarkers: MapCustomerMarker[]) {
+export function useMapCustomerSelection(
+  allMarkers: MapCustomerMarker[],
+  visibleMarkers: MapCustomerMarker[],
+  productEmojiById: Map<string, string | undefined>,
+) {
+  const shopName = useAppStore((state) => state.shopName);
   const shareIncludeAddress = useAppStore((state) => state.shareIncludeAddress);
   const shareIncludePhone = useAppStore((state) => state.shareIncludePhone);
   const shareIncludeTotals = useAppStore((state) => state.shareIncludeTotals);
@@ -44,12 +50,13 @@ export function useMapCustomerSelection(allMarkers: MapCustomerMarker[], visible
     try {
       const orders = await summary.ensureLoaded();
       const message = buildSelectionShareMessage(
-        buildShareCustomers(selectedMarkers, orders),
-        buildProductTotals(orders),
+        buildShareCustomers(selectedMarkers, orders, productEmojiById),
+        enrichTotalsWithEmoji(buildProductTotals(orders), productEmojiById),
         {
           includeAddress: shareIncludeAddress,
           includePhone: shareIncludePhone,
           includeTotal: shareIncludeTotals,
+          shopName,
         },
       );
 
@@ -64,7 +71,7 @@ export function useMapCustomerSelection(allMarkers: MapCustomerMarker[], visible
     } finally {
       setSharing(false);
     }
-  }, [selectedMarkers, shareIncludeAddress, shareIncludePhone, shareIncludeTotals, summary]);
+  }, [productEmojiById, selectedMarkers, shareIncludeAddress, shareIncludePhone, shareIncludeTotals, shopName, summary]);
 
   return {
     selection,
@@ -81,18 +88,48 @@ export function useMapCustomerSelection(allMarkers: MapCustomerMarker[], visible
   };
 }
 
-function buildShareCustomers(markers: MapCustomerMarker[], orders: OrderWithItems[]): SelectionShareCustomer[] {
-  const ordersByCustomerId = new Map(orders.map((order) => [order.customerId, order]));
+function buildShareCustomers(
+  markers: MapCustomerMarker[],
+  orders: OrderWithItems[],
+  productEmojiById: Map<string, string | undefined>,
+): SelectionShareCustomer[] {
+  const ordersByCustomerId = new Map<string, OrderWithItems[]>();
+  orders.forEach((order) => {
+    ordersByCustomerId.set(order.customerId, [...(ordersByCustomerId.get(order.customerId) ?? []), order]);
+  });
 
-  return markers.map((marker) => ({
-    fullName: marker.title,
-    address: marker.description,
-    phone: marker.phone,
-    city: marker.city,
-    items: (ordersByCustomerId.get(marker.id)?.items ?? []).map((item) => ({
-      productName: item.productNameSnapshot,
-      quantity: item.quantity,
-      unit: item.unit,
-    })),
+  return markers.map((marker) => {
+    const customerOrders = ordersByCustomerId.get(marker.id) ?? [];
+
+    return {
+      fullName: marker.title,
+      address: marker.description,
+      phone: marker.phone,
+      city: marker.city,
+      note: marker.note,
+      orderCount: customerOrders.length,
+      items: customerOrders.flatMap((order) =>
+        order.items.map((item) => ({
+          productName: item.productNameSnapshot,
+          quantity: item.quantity,
+          unit: item.unit,
+          emoji: productEmojiById.get(item.productId),
+        })),
+      ),
+    };
+  });
+}
+
+// ProductTotal.productKey is built as `${productId}:${unit}` (see src/utils/orderItemTotals.ts),
+// so the productId can be recovered from it to look up that product's current emoji.
+function enrichTotalsWithEmoji(
+  totals: ProductTotal[],
+  productEmojiById: Map<string, string | undefined>,
+): SelectionShareItem[] {
+  return totals.map((total) => ({
+    productName: total.productName,
+    quantity: total.quantity,
+    unit: total.unit,
+    emoji: productEmojiById.get(total.productKey.split(":")[0]),
   }));
 }

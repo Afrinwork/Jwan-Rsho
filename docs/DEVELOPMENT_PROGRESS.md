@@ -793,3 +793,54 @@ Tests:
 Offene Punkte:
 
 - Der eigentliche offene Test bleibt: "bestehender Kunde auswaehlen und Bestellung speichern" nach dem kompletten Neu-Login noch einmal bestaetigen.
+
+Nachtrag 5 (Abschluss dieser Debugging-Runde): Nach dem Regel-Republish kam gar kein Fehler mehr, aber die Bestellung wurde auch nicht gespeichert - kein `[formatError]`-Log ueberhaupt, was bedeutet, dass die Anfrage Firestore nie erreicht hat. Fuenfter und letzter Bug in dieser Kette gefunden:
+
+- `addOrderFormSchema.ts`s Basis-Schema hatte `customer: customerSchema.partial()`. `.partial()` macht Felder nur optional (duerfen fehlen), entschaerft aber nicht die Feld-eigenen Validatoren (`.min(1, "...")`) fuer tatsaechlich vorhandene Werte. Das Formular haelt aber IMMER ein `customer`-Teilobjekt im State (`buildEmptyOrderCustomer()`: leere Strings fuer fullName/phone/address/etc.), unabhaengig vom gewaehlten Modus - im "Bestehender Kunde"-Modus ist dieser Teil nur unsichtbar, nicht entfernt. Dadurch schlugen die Pflichtfeld-Regeln (Name/Telefon/Adresse duerfen nicht leer sein) bei JEDEM "Bestehender Kunde"-Versuch fehl, obwohl der Nutzer diese Felder gar nicht sieht - `form.handleSubmit()` hat den eigentlichen Speichern-Callback deshalb nie aufgerufen, und da `ExistingCustomerSection` nur `errors.customerId` anzeigt (nicht `errors.customer`), blieb das komplett unsichtbar.
+- Fix: neues, bewusst lockeres `looseCustomerDraft`-Schema (alle Felder rein optional, keine Mindestlaenge) fuer das Basis-`customer`-Feld. Die strikte Pruefung mit der echten `customerSchema` passiert weiterhin, aber nur noch dort, wo sie hingehoert: in `superRefine()`, ausschliesslich fuer `mode === "new"`.
+- Danach vom Nutzer bestaetigt: "bestehender Kunde auswaehlen und Bestellung speichern" funktioniert jetzt ("Bestellung wurde gespeichert.").
+
+Welche Dateien zusaetzlich erweitert wurden:
+
+- `src/features/orders/validation/addOrderFormSchema.ts`
+
+Tests:
+
+- `npx tsc --noEmit` (0 Fehler)
+- `npm run lint` (0 Fehler)
+- `npm test` (91 Tests)
+
+Status: Die komplette Fehlerkette rund um "Kunde/Bestellung anlegen" ist damit vom Nutzer live bestaetigt geloest (Firestore-Regeln, Transaktions-Timing, undefined-Felder, Auth-Persistenz, Formular-Validierung). Noch nicht erneut end-to-end auf dem Geraet bestaetigt: Bestehende Bestellung bearbeiten (`CustomerEditScreen`), Karten-Ansicht mit echten Daten, Teilen-Funktion.
+
+## Phase 13 - WhatsApp-Sammeltext im Emoji-Format, Produkt-Emojis, kompakte Karten-Filter
+
+Der Nutzer hat ein konkretes WhatsApp-Beispiel (arabisch, mit Emoji-Trennlinien, durchnummerierten Kunden, Mengen-Zusammenfassung) geschickt und gebeten, dass die "Teilen"-Funktion auf der Karte genau in diesem Format generiert wird - passend zu den vorhandenen Feldern und skalierend mit der Anzahl der ausgewaehlten Kunden.
+
+Was fertig ist:
+
+- Neues Einstellungsfeld "Geschaeftsname (im Sammeltext)" in den Einstellungen; der eingegebene Text (z. B. "🧀 Rsho Kaeserei") erscheint unveraendert als Kopf- und Fusszeile im Sammeltext. Kein Emoji ist hart codiert - der Nutzer traegt es selbst ein, falls gewuenscht.
+- Neues optionales Emoji-Feld pro Produkt (Verwaltung -> Produkte), wird in der Produktliste als Vorschau-Icon angezeigt und im Sammeltext vor jeder Positionszeile verwendet; ohne gesetztes Emoji faellt die Zeile auf ein generisches 📦 zurueck.
+- Neues Notiz-Feld an Karten-Markern (`MapCustomerMarker.note`), wird im Sammeltext pro Kunde als "📝 ملاحظة: ..." angehaengt, wenn vorhanden.
+- `mapShareFormatterService.ts` komplett neu geschrieben: Kopf (optionaler Geschaeftsname, Stadt oder "Mehrere Staedte" bei gemischten Staedten, Bestellanzahl), Trennlinien, pro Kunde durchnummeriert mit Keycap-Emoji (1️⃣, 2️⃣, ... skaliert automatisch auf mehrstellige Zahlen), Adresse/Stadt, optional Telefon, Produktzeilen mit Emoji, optionale Notiz, danach optionale Summenzeile "📊 المجموع" ueber alle ausgewaehlten Kunden, Fusszeile mit Kundenanzahl und optionalem Geschaeftsnamen.
+- `useMapCustomerSelection.ts` verbindet Produkt-Emoji-Lookup, Kunden-Notiz und Geschaeftsname mit dem Formatter.
+- Kompakte Karten-Filter: `MapFilters.tsx` zeigt Land/Stadt/Region jetzt als drei kleine Chips nebeneinander in einer Zeile (statt vier volle Zeilen untereinander); Tippen auf einen Chip oeffnet ein kleines Auswahl-Menue (Bottom-Sheet-Modal) mit den verfuegbaren Werten. Zusaetzlicher "Alle"-Chip setzt alle drei Filter auf einmal zurueck.
+- Layout auf der Kartenseite umsortiert: Filter-Chips und die Auswahl-Leiste ("N Kunden ausgewaehlt" mit Teilen/Ansehen/Loeschen) erscheinen jetzt direkt unter der oberen Werkzeugleiste, statt ganz unten nach Karte und Zeichentools - damit sind sie sofort sichtbar, sobald eine Auswahl getroffen wird, ohne erst herunterscrollen zu muessen.
+
+Welche Dateien geaendert/erstellt wurden:
+
+- `src/types/userPreferences.ts`, `src/store/appStore.ts`, `src/features/settings/hooks/useSettings.ts`, `src/features/settings/hooks/useUserPreferences.ts`, `src/features/settings/components/SettingsScreen.tsx`
+- `src/types/product.ts`, `src/features/products/validation/productSchema.ts`, `src/repositories/productRepositoryData.ts`, `src/features/products/components/ProductForm.tsx`, `src/features/products/components/ProductManagementSection.tsx`, `src/features/products/components/ProductListItem.tsx`
+- `src/features/map/types/mapTypes.ts`, `src/features/map/services/mapCustomerService.ts`, `src/features/map/services/mapShareFormatterService.ts`, `src/features/map/hooks/useMapCustomerSelection.ts`
+- `src/features/map/components/MapFilters.tsx`, `src/features/map/components/MapScreen.tsx`
+- Tests: `tests/unit/mapShareFormatterService.test.ts` (komplett neu), `tests/unit/mapCustomerService.test.ts`, `tests/unit/mapFilterService.test.ts`, `tests/unit/mapLargeData.test.ts`, `tests/unit/mapSelectionService.test.ts` (alle wegen des jetzt erforderlichen `note`-Felds angepasst), `tests/unit/appStore.test.ts` (wegen `shopName` in den Standardwerten angepasst)
+
+Tests:
+
+- `npx tsc --noEmit` (0 Fehler)
+- `npm run lint` (0 Fehler)
+- `npm test` (95 Tests)
+
+Offene Punkte:
+
+- Noch nicht auf dem echten Geraet getestet: die "Teilen"-Funktion muss vom Nutzer selbst gegen echte Firestore-Daten und den echten WhatsApp-Share-Sheet ausprobiert werden (in dieser Sandbox nicht moeglich).
+- Bewusste Abweichung vom Nutzer-Beispiel: Kopfzeile zeigt "📦 عدد الطلبات: N" (Anzahl ausgewaehlter Bestellungen) statt woertlich "طلبات اليوم" (Bestellungen heute) aus der Vorlage, da nicht sichergestellt werden kann, dass alle offenen Bestellungen tatsaechlich von heute sind. Falls der Nutzer die woertliche "heute"-Formulierung will, muss das explizit nachgezogen werden.

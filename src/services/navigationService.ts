@@ -9,7 +9,7 @@ import {
 } from "@/src/services/navigationService.shared";
 
 async function openIfAvailable(url: string, fallbackUrl?: string) {
-  const supported = await Linking.canOpenURL(url);
+  const supported = await safeCanOpenURL(url);
 
   if (supported) {
     return Linking.openURL(url);
@@ -50,8 +50,8 @@ export const navigationService = {
     preferredNavigationApp: NavigationAppId,
   ): Promise<MapNavigationApp[]> {
     const [googleMapsAvailable, wazeAvailable] = await Promise.all([
-      Linking.canOpenURL(buildGoogleMapsUrl(target)),
-      Linking.canOpenURL(buildWazeUrl(target)),
+      safeCanOpenURL(buildGoogleMapsUrl(target)),
+      safeCanOpenURL(buildWazeUrl(target)),
     ]);
 
     return sortNavigationApps([
@@ -73,6 +73,14 @@ export const navigationService = {
     return this.openAppleMaps(target);
   },
 };
+
+async function safeCanOpenURL(url: string) {
+  try {
+    return await Linking.canOpenURL(url);
+  } catch {
+    return false;
+  }
+}
 
 function sortNavigationApps(apps: MapNavigationApp[], preferredNavigationApp: NavigationAppId) {
   return [...apps].sort((left, right) => {

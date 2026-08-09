@@ -34,8 +34,8 @@ export function useMapCustomerDetails(customerId: string | null): MapCustomerDet
         customerRepository.getCustomerById(customerId),
         orderDetailsRepository.getOrdersByCustomerWithItems(customerId),
       ]);
-      const openOrder = orders.find((value) => value.status === "open") ?? null;
-      setDetails({ customer, openOrder });
+      const openOrders = orders.filter((value) => value.status === "open");
+      setDetails({ customer, openOrders });
     } catch (loadError) {
       setError(formatError(loadError).message);
       setDetails(null);

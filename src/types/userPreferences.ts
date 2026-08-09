@@ -7,6 +7,7 @@ export type UserPreferences = {
   ownerId: string;
   themeMode: ThemeMode;
   preferredNavigationApp: NavigationAppId;
+  shopName: string;
   shareIncludeAddress: boolean;
   shareIncludePhone: boolean;
   shareIncludeTotals: boolean;

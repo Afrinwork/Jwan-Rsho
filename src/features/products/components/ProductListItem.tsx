@@ -26,7 +26,11 @@ export function ProductListItem(props: ProductListItemProps) {
     >
       <View style={styles.topRow}>
         <View style={[styles.thumbnail, { backgroundColor: colors.primaryMuted, borderColor: colors.border }]}>
-          <Box20Regular color={colors.primary} />
+          {props.product.emoji ? (
+            <Text style={styles.thumbnailEmoji}>{props.product.emoji}</Text>
+          ) : (
+            <Box20Regular color={colors.primary} />
+          )}
         </View>
         <View style={styles.info}>
           <Text
@@ -92,6 +96,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  thumbnailEmoji: {
+    fontSize: 20,
   },
   info: {
     flex: 1,

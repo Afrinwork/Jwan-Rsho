@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { mapSelectionService } from "@/src/features/map/services/mapSelectionService";
 import { distanceKm } from "@/src/features/map/utils/circleMath";
@@ -12,14 +12,57 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
   const [circleConfirmed, setCircleConfirmed] = useState<MapCircleSelection | null>(null);
   const [polygonPoints, setPolygonPoints] = useState<MapSelectionPoint[]>([]);
   const [polygonConfirmed, setPolygonConfirmed] = useState<MapSelectionPoint[] | null>(null);
+  const [polygonBaseSelectedIds, setPolygonBaseSelectedIds] = useState<string[]>([]);
+  const activeToolRef = useRef<MapSelectionTool>("none");
+  const polygonPointsRef = useRef<MapSelectionPoint[]>([]);
+  const polygonBaseSelectedIdsRef = useRef<string[]>([]);
+  const frameRef = useRef<number | null>(null);
+  const pendingPolygonPointsRef = useRef<MapSelectionPoint[] | null>(null);
+
+  useEffect(() => {
+    activeToolRef.current = activeTool;
+  }, [activeTool]);
+
+  useEffect(() => {
+    polygonPointsRef.current = polygonPoints;
+  }, [polygonPoints]);
+
+  useEffect(() => {
+    polygonBaseSelectedIdsRef.current = polygonBaseSelectedIds;
+  }, [polygonBaseSelectedIds]);
+
+  useEffect(() => () => {
+    if (frameRef.current !== null) {
+      cancelAnimationFrame(frameRef.current);
+    }
+  }, []);
 
   const selectTool = useCallback((tool: MapSelectionTool) => {
-    setActiveTool((current) => (current === tool ? "none" : tool));
+    const nextTool = activeToolRef.current === tool ? "none" : tool;
+
+    if (frameRef.current !== null) {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
+
+    pendingPolygonPointsRef.current = null;
+    setActiveTool(nextTool);
+    activeToolRef.current = nextTool;
+
+    if (nextTool === "polygon") {
+      setPolygonBaseSelectedIds(selectedIds);
+      polygonBaseSelectedIdsRef.current = selectedIds;
+    } else {
+      setPolygonBaseSelectedIds([]);
+      polygonBaseSelectedIdsRef.current = [];
+    }
+
     setCircleDraftCenter(null);
     setCircleConfirmed(null);
     setPolygonPoints([]);
+    polygonPointsRef.current = [];
     setPolygonConfirmed(null);
-  }, []);
+  }, [selectedIds]);
 
   const toggleSelection = useCallback((markerId: string) => {
     setSelectedIds((current) => mapSelectionService.toggleMarkerSelection(current, markerId));
@@ -50,51 +93,91 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
         );
         return;
       }
-
-      if (activeTool === "polygon") {
-        setPolygonPoints((current) =>
-          mapSelectionService.shouldAppendPolygonPoint(current, point) ? [...current, point] : current,
-        );
-      }
     },
     [activeTool, circleDraftCenter, markers],
   );
 
   const handleMapDrag = useCallback(
     (point: MapSelectionPoint) => {
-      if (activeTool !== "polygon") {
+      if (activeToolRef.current !== "polygon") {
         return;
       }
 
-      setPolygonPoints((current) =>
-        mapSelectionService.shouldAppendPolygonPoint(current, point) ? [...current, point] : current,
-      );
+      const currentPoints = pendingPolygonPointsRef.current ?? polygonPointsRef.current;
+
+      if (!mapSelectionService.shouldAppendPolygonPoint(currentPoints, point)) {
+        return;
+      }
+
+      pendingPolygonPointsRef.current = [...currentPoints, point];
+
+      if (frameRef.current !== null) {
+        return;
+      }
+
+      frameRef.current = requestAnimationFrame(() => {
+        frameRef.current = null;
+        const latestPoints = pendingPolygonPointsRef.current;
+
+        if (!latestPoints) {
+          return;
+        }
+
+        polygonPointsRef.current = latestPoints;
+        setPolygonPoints(latestPoints);
+        setSelectedIds(buildPolygonSelection(latestPoints, polygonBaseSelectedIdsRef.current, markers));
+      });
     },
-    [activeTool],
+    [markers],
   );
 
   const closePolygon = useCallback(() => {
-    if (polygonPoints.length < 3) {
+    const currentPoints = polygonPointsRef.current;
+
+    if (currentPoints.length < 3) {
       return;
     }
 
-    setPolygonConfirmed(polygonPoints);
-    setSelectedIds((current) =>
-      mapSelectionService.mergeSelection(current, mapSelectionService.getMarkerIdsInPolygon(markers, polygonPoints)),
-    );
+    if (frameRef.current !== null) {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
+
+    const nextSelection = buildPolygonSelection(currentPoints, polygonBaseSelectedIdsRef.current, markers);
+    setPolygonConfirmed(currentPoints);
+    setSelectedIds(nextSelection);
+    setPolygonBaseSelectedIds(nextSelection);
+    polygonBaseSelectedIdsRef.current = nextSelection;
     setPolygonPoints([]);
-  }, [markers, polygonPoints]);
+    polygonPointsRef.current = [];
+    pendingPolygonPointsRef.current = null;
+    setActiveTool("none");
+    activeToolRef.current = "none";
+  }, [markers]);
 
   const undoPolygonPoint = useCallback(() => {
-    setPolygonPoints((current) => current.slice(0, -1));
-  }, []);
+    const nextPoints = polygonPointsRef.current.slice(0, -1);
+    polygonPointsRef.current = nextPoints;
+    pendingPolygonPointsRef.current = nextPoints;
+    setPolygonPoints(nextPoints);
+    setSelectedIds(buildPolygonSelection(nextPoints, polygonBaseSelectedIdsRef.current, markers));
+  }, [markers]);
 
   const resetSelection = useCallback(() => {
+    if (frameRef.current !== null) {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
+
     setSelectedIds(mapSelectionService.resetSelection());
     setCircleDraftCenter(null);
     setCircleConfirmed(null);
     setPolygonPoints([]);
+    polygonPointsRef.current = [];
     setPolygonConfirmed(null);
+    setPolygonBaseSelectedIds([]);
+    polygonBaseSelectedIdsRef.current = [];
+    pendingPolygonPointsRef.current = null;
   }, []);
 
   return {
@@ -114,4 +197,19 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
     undoPolygonPoint,
     resetSelection,
   };
+}
+
+function buildPolygonSelection(
+  points: MapSelectionPoint[],
+  baseSelectedIds: string[],
+  markers: MapCustomerMarker[],
+) {
+  if (points.length < 3) {
+    return baseSelectedIds;
+  }
+
+  return mapSelectionService.mergeSelection(
+    baseSelectedIds,
+    mapSelectionService.getMarkerIdsInPolygon(markers, points),
+  );
 }

@@ -1,4 +1,4 @@
-import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableWithoutFeedback, View } from "react-native";
+import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 
 import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
 import { CompactScreenHeader } from "@/src/components/ui/CompactScreenHeader";
@@ -36,51 +36,50 @@ export function AddOrderScreen() {
 
   return (
     <ScreenContainer>
-      <TouchableWithoutFeedback accessible={false} onPress={Keyboard.dismiss}>
-        <View style={styles.flex}>
-          <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.flex}>
-            <ScrollView
-              contentContainerStyle={styles.scrollContent}
-              keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
-              keyboardShouldPersistTaps="always"
-            >
-              <AnimatedEntrance>
-                <CompactScreenHeader subtitle="Bestellung direkt erfassen." title="Hinzufuegen" />
-              </AnimatedEntrance>
-              <AnimatedEntrance delay={60}>
-                <CustomerModeSelector mode={customerMode} onChange={setMode} />
-              </AnimatedEntrance>
-              <AnimatedEntrance delay={110}>
-                {customerMode === "existing" ? (
-                  <ExistingCustomerSection
-                    error={errors.customerId?.message}
-                    onSelect={selectCustomer}
-                    selectedCustomer={selectedCustomer}
-                  />
-                ) : (
-                  <NewCustomerSection control={form.control} errors={errors.customer} />
-                )}
-              </AnimatedEntrance>
-              <AnimatedEntrance delay={150}>
-                <OrderItemsSection
-                  append={items.append}
-                  control={form.control}
-                  errors={errors.items}
-                  fields={items.fields}
-                  remove={items.remove}
-                  setValue={form.setValue}
+      <View style={styles.flex}>
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.flex}>
+          <ScrollView
+            automaticallyAdjustKeyboardInsets
+            contentContainerStyle={styles.scrollContent}
+            keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+            keyboardShouldPersistTaps="handled"
+          >
+            <AnimatedEntrance>
+              <CompactScreenHeader subtitle="Bestellung direkt erfassen." title="Hinzufuegen" />
+            </AnimatedEntrance>
+            <AnimatedEntrance delay={60}>
+              <CustomerModeSelector mode={customerMode} onChange={setMode} />
+            </AnimatedEntrance>
+            <AnimatedEntrance delay={110}>
+              {customerMode === "existing" ? (
+                <ExistingCustomerSection
+                  error={errors.customerId?.message}
+                  onSelect={selectCustomer}
+                  selectedCustomer={selectedCustomer}
                 />
-              </AnimatedEntrance>
-              {submitError ? <AnimatedEntrance delay={190}><ErrorState message={submitError} /></AnimatedEntrance> : null}
-              {successMessage ? <AnimatedEntrance delay={220}><SuccessState message={successMessage} /></AnimatedEntrance> : null}
-              <AnimatedEntrance delay={250}>
-                <SaveOrderButton isSubmitting={form.formState.isSubmitting} onPress={handleSave} />
-              </AnimatedEntrance>
-              <View style={styles.footerSpacer} />
-            </ScrollView>
-          </KeyboardAvoidingView>
-        </View>
-      </TouchableWithoutFeedback>
+              ) : (
+                <NewCustomerSection control={form.control} errors={errors.customer} />
+              )}
+            </AnimatedEntrance>
+            <AnimatedEntrance delay={150}>
+              <OrderItemsSection
+                append={items.append}
+                control={form.control}
+                errors={errors.items}
+                fields={items.fields}
+                remove={items.remove}
+                setValue={form.setValue}
+              />
+            </AnimatedEntrance>
+            {submitError ? <AnimatedEntrance delay={190}><ErrorState message={submitError} /></AnimatedEntrance> : null}
+            {successMessage ? <AnimatedEntrance delay={220}><SuccessState message={successMessage} /></AnimatedEntrance> : null}
+            <AnimatedEntrance delay={250}>
+              <SaveOrderButton isSubmitting={form.formState.isSubmitting} onPress={handleSave} />
+            </AnimatedEntrance>
+            <View style={styles.footerSpacer} />
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </View>
     </ScreenContainer>
   );
 }

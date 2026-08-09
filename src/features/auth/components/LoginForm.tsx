@@ -1,18 +1,14 @@
 import { Controller } from "react-hook-form";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useRouter } from "expo-router";
+import { StyleSheet, View } from "react-native";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { AppInput } from "@/src/components/ui/AppInput";
 import { ErrorState } from "@/src/components/ui/ErrorState";
-import { routes } from "@/src/constants/routes";
-import { colors } from "@/src/constants/colors";
 import { useLogin } from "@/src/features/auth/hooks/useLogin";
 import { PasswordField } from "@/src/features/auth/components/PasswordField";
 
 export function LoginForm() {
   const { form, submit, submitError } = useLogin();
-  const router = useRouter();
 
   return (
     <View style={styles.container}>
@@ -37,9 +33,6 @@ export function LoginForm() {
         label={form.formState.isSubmitting ? "Anmeldung laeuft..." : "Login"}
         onPress={submit}
       />
-      <Pressable onPress={() => router.push(routes.forgotPassword)}>
-        <Text style={styles.link}>Passwort vergessen?</Text>
-      </Pressable>
     </View>
   );
 }
@@ -47,10 +40,5 @@ export function LoginForm() {
 const styles = StyleSheet.create({
   container: {
     gap: 12,
-  },
-  link: {
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: "600",
   },
 });

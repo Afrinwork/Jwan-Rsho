@@ -9,6 +9,7 @@ type AppButtonProps = {
   disabled?: boolean;
   loading?: boolean;
   variant?: "primary" | "secondary" | "danger";
+  size?: "medium" | "compact";
 };
 
 export function AppButton({
@@ -17,9 +18,11 @@ export function AppButton({
   disabled,
   loading,
   variant = "primary",
+  size = "medium",
 }: AppButtonProps) {
   const colors = useThemeColors();
   const isDisabled = disabled || loading;
+  const compact = size === "compact";
 
   return (
     <Pressable
@@ -27,6 +30,7 @@ export function AppButton({
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
+        compact && styles.buttonCompact,
         {
           backgroundColor: variant === "secondary" ? colors.surface : variant === "danger" ? colors.danger : colors.primary,
           borderColor: variant === "secondary" ? colors.borderStrong : variant === "danger" ? colors.danger : colors.primaryStrong,
@@ -39,7 +43,10 @@ export function AppButton({
       {loading ? (
         <ActivityIndicator color={variant === "secondary" ? colors.primary : colors.primaryContrast} />
       ) : (
-        <Text style={[styles.label, { color: variant === "secondary" ? colors.text : colors.primaryContrast }]}>
+        <Text
+          numberOfLines={compact ? 1 : undefined}
+          style={[styles.label, compact && styles.labelCompact, { color: variant === "secondary" ? colors.text : colors.primaryContrast }]}
+        >
           {label}
         </Text>
       )}
@@ -60,9 +67,17 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
     elevation: 4,
   },
+  buttonCompact: {
+    borderRadius: 12,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 9,
+  },
   label: {
     fontSize: 16,
     fontWeight: "700",
     letterSpacing: 0.2,
+  },
+  labelCompact: {
+    fontSize: 13,
   },
 });

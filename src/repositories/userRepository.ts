@@ -1,4 +1,4 @@
-import { collection, doc, getCountFromServer, getDoc, query, updateDoc, where } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 
 import { db } from "@/src/firebase/firestore";
 import { requireCurrentUserId } from "@/src/repositories/repositoryContext";
@@ -14,19 +14,6 @@ export const userRepository = {
     return snapshot.exists()
       ? ({ id: snapshot.id, ...snapshot.data() } as UserProfile)
       : null;
-  },
-
-  async countActiveUsers() {
-    if (!db) {
-      return 0;
-    }
-
-    const activeUsersQuery = query(
-      collection(db, "users"),
-      where("isActive", "==", true),
-    );
-    const snapshot = await getCountFromServer(activeUsersQuery);
-    return snapshot.data().count;
   },
 
   async updateOwnProfile(input: { fullName: string; email?: string }) {

@@ -6,6 +6,7 @@ export type Product = {
   name: string;
   normalizedName: string;
   defaultUnit: string;
+  emoji?: string;
   isActive: boolean;
   sortOrder: number;
   createdAt: TimestampValue;

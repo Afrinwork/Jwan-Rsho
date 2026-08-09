@@ -20,6 +20,7 @@ export function CustomerSearchResult({ customer, onPress, selected }: CustomerSe
       style={[
         styles.row,
         { backgroundColor: colors.surface, borderColor: selected ? colors.primary : colors.border },
+        selected ? styles.selectedRow : null,
       ]}
     >
       <View style={styles.text}>
@@ -27,8 +28,11 @@ export function CustomerSearchResult({ customer, onPress, selected }: CustomerSe
         <Text style={[styles.meta, { color: colors.mutedText }]}>
           {formatAddress([customer.phone, customer.city])}
         </Text>
+        <Text numberOfLines={1} style={[styles.address, { color: colors.mutedText }]}>
+          {customer.address}
+        </Text>
       </View>
-      {selected ? <Text style={{ color: colors.primary }}>✓</Text> : null}
+      {selected ? <Text style={[styles.selectedLabel, { color: colors.primary }]}>Ausgewaehlt</Text> : null}
     </Pressable>
   );
 }
@@ -39,17 +43,29 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     padding: spacing.sm,
   },
+  selectedRow: {
+    borderWidth: 1.5,
+  },
   text: {
-    gap: 2,
+    gap: 3,
+    flex: 1,
   },
   name: {
     fontSize: 15,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   meta: {
     fontSize: 13,
+  },
+  address: {
+    fontSize: 12,
+  },
+  selectedLabel: {
+    fontSize: 12,
+    fontWeight: "700",
+    marginLeft: spacing.sm,
   },
 });

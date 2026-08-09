@@ -29,6 +29,7 @@ export function useUserPreferences() {
         hydratePreferences({
           themeMode: preferences.themeMode,
           preferredNavigationApp: preferences.preferredNavigationApp,
+          shopName: preferences.shopName ?? "",
           shareIncludeAddress: preferences.shareIncludeAddress,
           shareIncludePhone: preferences.shareIncludePhone,
           shareIncludeTotals: preferences.shareIncludeTotals,

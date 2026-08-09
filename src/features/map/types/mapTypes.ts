@@ -15,10 +15,11 @@ export type MapCustomerMarker = {
   title: string;
   description: string;
   phone: string;
+  note: string;
   latitude: number;
   longitude: number;
   numberLabel: string;
-  currentOpenOrderId: string | null;
+  openOrderCount: number;
   country: string;
   city: string;
   region: string;
@@ -26,7 +27,7 @@ export type MapCustomerMarker = {
 
 export type MapCustomerDetails = {
   customer: Customer;
-  openOrder: OrderWithItems | null;
+  openOrders: OrderWithItems[];
 };
 
 export type MapFilterState = {

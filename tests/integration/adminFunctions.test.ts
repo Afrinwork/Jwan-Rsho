@@ -7,6 +7,7 @@ import {
   callCreateUser,
   callDeleteUser,
   callDeleteUserData,
+  callGetActiveUserCount,
   createTestUser,
   signInAsClient,
   uniqueId,
@@ -134,6 +135,34 @@ test("a normal user calling deleteUserData is rejected", async () => {
       return true;
     },
   );
+});
+
+test("a normal user calling getActiveUserCount is rejected", async () => {
+  const normalUser = await createTestUser("user");
+  const session = await signInAsClient(normalUser.email, normalUser.password);
+
+  await assert.rejects(
+    () => callGetActiveUserCount(session),
+    (error: { code?: string }) => {
+      assert.match(String(error.code), /permission-denied/);
+      return true;
+    },
+  );
+});
+
+test("an admin calling getActiveUserCount gets the count of active users, ignoring inactive ones", async () => {
+  const db = adminFirestore();
+  await createTestUser("user");
+  const inactiveUser = await createTestUser("user");
+  await db.collection("users").doc(inactiveUser.uid).update({ isActive: false });
+
+  const session = await signInAsClient(adminUser.email, adminUser.password);
+  const result = await callGetActiveUserCount(session);
+  const count = (result.data as { count: number }).count;
+
+  const activeSnapshot = await db.collection("users").where("isActive", "==", true).count().get();
+  assert.equal(count, activeSnapshot.data().count);
+  assert.ok(count >= 2);
 });
 
 test("an admin calling deleteUserData wipes owned collections but leaves the Auth account and profile untouched", async () => {

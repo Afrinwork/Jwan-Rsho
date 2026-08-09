@@ -1,6 +1,8 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
-import { MapCustomerDetails, MapCustomerMarker, MapNavigationApp, NavigationAppId } from "@/src/features/map/types/mapTypes";
+import { MapCustomerDetails, MapCustomerMarker, NavigationAppId } from "@/src/features/map/types/mapTypes";
+import { buildSelectionShareMessage, SelectionShareCustomer } from "@/src/features/map/services/mapShareFormatterService";
+import { useProducts } from "@/src/features/products/hooks/useProducts";
 import { orderRepository } from "@/src/repositories/orderRepository";
 import { navigationService } from "@/src/services/navigationService";
 import { phoneService } from "@/src/services/phoneService";
@@ -10,12 +12,12 @@ import { useAppStore } from "@/src/store/appStore";
 import { formatError } from "@/src/utils/formatError";
 
 export function useMapActions(details: MapCustomerDetails | null, marker: MapCustomerMarker | null) {
-  const preferredNavigationApp = useAppStore((state) => state.preferredNavigationApp);
   const shareIncludeAddress = useAppStore((state) => state.shareIncludeAddress);
   const shareIncludePhone = useAppStore((state) => state.shareIncludePhone);
+  const shopName = useAppStore((state) => state.shopName);
+  const { products } = useProducts();
+  const productEmojiById = useMemo(() => new Map(products.map((product) => [product.id, product.emoji])), [products]);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [navigationApps, setNavigationApps] = useState<MapNavigationApp[]>([]);
-  const [navigationSheetVisible, setNavigationSheetVisible] = useState(false);
   const [completingOrder, setCompletingOrder] = useState(false);
 
   const callCustomer = useCallback(async () => {
@@ -40,12 +42,11 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
 
     try {
       setActionError(null);
-      setNavigationApps(await navigationService.getNavigationApps(buildNavigationTarget(details, marker), preferredNavigationApp));
-      setNavigationSheetVisible(true);
-    } catch (error) {
-      setActionError(formatError(error).message);
+      await navigationService.openDefaultNavigation(buildNavigationTarget(details, marker));
+    } catch (navigationError) {
+      setActionError(formatError(navigationError).message);
     }
-  }, [details, marker, preferredNavigationApp]);
+  }, [details, marker]);
 
   const openNavigationApp = useCallback(async (appId: NavigationAppId) => {
     if (!details && !marker) {
@@ -56,7 +57,6 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
     try {
       setActionError(null);
       await navigationService.openNavigationApp(appId, buildNavigationTarget(details, marker));
-      setNavigationSheetVisible(false);
     } catch (error) {
       setActionError(formatError(error).message);
     }
@@ -86,8 +86,51 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
     }
   }, [details, marker, shareIncludeAddress, shareIncludePhone]);
 
+  const shareOrder = useCallback(async () => {
+    if (!details) {
+      setActionError("Keine Kundendaten zum Teilen vorhanden.");
+      return;
+    }
+
+    try {
+      setActionError(null);
+      const shareCustomer: SelectionShareCustomer = {
+        fullName: details.customer.fullName,
+        address: details.customer.address,
+        phone: details.customer.phone,
+        city: details.customer.city,
+        note: details.customer.note,
+        orderCount: details.openOrders.length,
+        items: details.openOrders.flatMap((order) =>
+          order.items.map((item) => ({
+            productName: item.productNameSnapshot,
+            quantity: item.quantity,
+            unit: item.unit,
+            emoji: productEmojiById.get(item.productId),
+          })),
+        ),
+      };
+
+      const message = buildSelectionShareMessage([shareCustomer], [], {
+        includeAddress: shareIncludeAddress,
+        includePhone: shareIncludePhone,
+        includeTotal: false,
+        shopName,
+      });
+
+      if (!message) {
+        setActionError("Es gibt keine Daten zum Teilen.");
+        return;
+      }
+
+      await sharingService.shareText(message);
+    } catch (error) {
+      setActionError(formatError(error).message);
+    }
+  }, [details, productEmojiById, shareIncludeAddress, shareIncludePhone, shopName]);
+
   const completeOpenOrder = useCallback(async () => {
-    if (!details?.openOrder?.id) {
+    if (!details?.openOrders.length) {
       setActionError("Keine offene Bestellung fuer diesen Kunden gefunden.");
       return false;
     }
@@ -95,7 +138,7 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
     try {
       setActionError(null);
       setCompletingOrder(true);
-      await orderRepository.completeOrder(details.openOrder.id);
+      await Promise.all(details.openOrders.map((order) => orderRepository.completeOrder(order.id)));
       return true;
     } catch (error) {
       setActionError(formatError(error).message);
@@ -108,15 +151,14 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
   return {
     actionError,
     completingOrder,
-    navigationApps,
-    navigationSheetVisible,
+    products,
     callCustomer,
     completeOpenOrder,
     openNavigationMenu,
     openNavigationApp,
     shareLocation,
+    shareOrder,
     clearActionError: () => setActionError(null),
-    closeNavigationSheet: () => setNavigationSheetVisible(false),
   };
 }
 

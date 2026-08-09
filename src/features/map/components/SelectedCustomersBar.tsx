@@ -2,7 +2,6 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { ErrorState } from "@/src/components/ui/ErrorState";
-import { spacing } from "@/src/constants/spacing";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 
 type SelectedCustomersBarProps = {
@@ -27,13 +26,13 @@ export function SelectedCustomersBar(props: SelectedCustomersBarProps) {
       {props.shareError ? <ErrorState message={props.shareError} /> : null}
       <View style={styles.actions}>
         <View style={styles.actionButton}>
-          <AppButton label="Auswahl ansehen" onPress={props.onViewSelection} variant="secondary" />
+          <AppButton label="Ansehen" onPress={props.onViewSelection} size="compact" variant="secondary" />
         </View>
         <View style={styles.actionButton}>
-          <AppButton label="Teilen" loading={props.sharing} onPress={props.onShare} />
+          <AppButton label="Teilen" loading={props.sharing} onPress={props.onShare} size="compact" />
         </View>
         <View style={styles.actionButton}>
-          <AppButton label="Auswahl loeschen" onPress={props.onResetSelection} variant="secondary" />
+          <AppButton label="Loeschen" onPress={props.onResetSelection} size="compact" variant="secondary" />
         </View>
       </View>
     </View>
@@ -41,8 +40,8 @@ export function SelectedCustomersBar(props: SelectedCustomersBarProps) {
 }
 
 const styles = StyleSheet.create({
-  container: { borderWidth: 1, borderRadius: 20, padding: spacing.md, gap: spacing.sm },
-  label: { fontSize: 16, fontWeight: "700" },
-  actions: { flexDirection: "row", gap: spacing.sm },
+  container: { borderWidth: 1, borderRadius: 14, padding: 10, gap: 6 },
+  label: { fontSize: 13, fontWeight: "700" },
+  actions: { flexDirection: "row", gap: 6 },
   actionButton: { flex: 1 },
 });

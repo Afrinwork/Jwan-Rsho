@@ -73,3 +73,7 @@ export function callDeleteUser(session: ClientSession, data: unknown) {
 export function callDeleteUserData(session: ClientSession, data: unknown) {
   return httpsCallable(session.functions, "deleteUserData")(data);
 }
+
+export function callGetActiveUserCount(session: ClientSession) {
+  return httpsCallable(session.functions, "getActiveUserCount")();
+}

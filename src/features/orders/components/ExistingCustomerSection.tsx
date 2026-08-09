@@ -1,4 +1,4 @@
-import { StyleSheet, View } from "react-native";
+import { FlatList, Keyboard, StyleSheet, Text, View } from "react-native";
 
 import { FormSectionCard } from "@/src/components/ui/FormSectionCard";
 import { EmptyState } from "@/src/components/ui/EmptyState";
@@ -20,6 +20,8 @@ type ExistingCustomerSectionProps = {
 
 export function ExistingCustomerSection({ selectedCustomer, onSelect, error }: ExistingCustomerSectionProps) {
   const search = useCustomerSearch();
+  const hasQuery = search.query.trim().length > 0;
+  const hasResults = search.results.length > 0;
 
   return (
     <View style={styles.container}>
@@ -27,17 +29,31 @@ export function ExistingCustomerSection({ selectedCustomer, onSelect, error }: E
         <CustomerSearch onQueryChange={search.setQuery} query={search.query} />
         {search.loading ? <LoadingView label="Suche laeuft..." /> : null}
         {search.error ? <ErrorState message={search.error} /> : null}
-        {!search.loading && search.query.trim() && search.results.length === 0 ? (
+        {!search.loading && hasQuery && !hasResults ? (
           <EmptyState message="Kein Kunde gefunden." title="Keine Treffer" />
         ) : null}
-        {search.results.map((customer) => (
-          <CustomerSearchResult
-            customer={customer}
-            key={customer.id}
-            onPress={() => onSelect(customer)}
-            selected={selectedCustomer?.id === customer.id}
-          />
-        ))}
+        {!search.loading && hasResults ? (
+          <View style={styles.resultsWrap}>
+            <Text style={styles.resultsLabel}>{search.results.length} Treffer</Text>
+            <FlatList
+              data={search.results}
+              keyExtractor={(customer) => customer.id}
+              keyboardShouldPersistTaps="handled"
+              renderItem={({ item: customer }) => (
+                <CustomerSearchResult
+                  customer={customer}
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    onSelect(customer);
+                  }}
+                  selected={selectedCustomer?.id === customer.id}
+                />
+              )}
+              scrollEnabled={false}
+              ItemSeparatorComponent={() => <View style={styles.separator} />}
+            />
+          </View>
+        ) : null}
       </FormSectionCard>
       {selectedCustomer ? (
         <FormSectionCard subtitle="Die ausgewaehlte Adresse wird spaeter exakt fuer Navigation und Karte verwendet." title="Ausgewaehlter Kunde">
@@ -53,5 +69,15 @@ export function ExistingCustomerSection({ selectedCustomer, onSelect, error }: E
 const styles = StyleSheet.create({
   container: {
     gap: spacing.sm,
+  },
+  resultsWrap: {
+    gap: spacing.sm,
+  },
+  resultsLabel: {
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  separator: {
+    height: spacing.xs,
   },
 });

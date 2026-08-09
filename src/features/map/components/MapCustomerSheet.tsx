@@ -22,6 +22,7 @@ type MapCustomerSheetProps = {
   onCall: () => void;
   onNavigate: () => void;
   onShare: () => void;
+  onShareOrder: () => void;
 };
 
 export function MapCustomerSheet({
@@ -38,6 +39,7 @@ export function MapCustomerSheet({
   onCall,
   onNavigate,
   onShare,
+  onShareOrder,
 }: MapCustomerSheetProps) {
   const colors = useThemeColors();
 
@@ -62,11 +64,20 @@ export function MapCustomerSheet({
               {actionError ? <ErrorState message={actionError} /> : null}
               <View style={styles.actions}>
                 <AppButton label="Bearbeiten" onPress={onEdit} />
-                {details.openOrder ? (
-                  <AppButton label="Als erledigt markieren" loading={completing} onPress={onComplete} />
+                {details.openOrders.length ? (
+                  <AppButton
+                    label={details.openOrders.length > 1 ? `Alle ${details.openOrders.length} Bestellungen als erledigt markieren` : "Als erledigt markieren"}
+                    loading={completing}
+                    onPress={onComplete}
+                  />
                 ) : null}
-                <AppButton label="Anrufen" onPress={onCall} variant="secondary" />
+                <AppButton
+                  label={details.customer.phone ? `Telefonnummer anrufen` : "Telefonnummer fehlt"}
+                  onPress={onCall}
+                  variant="secondary"
+                />
                 <AppButton label="Navigation" onPress={onNavigate} variant="secondary" />
+                <AppButton label="Per WhatsApp teilen" onPress={onShareOrder} variant="secondary" />
                 <AppButton label="Standort teilen" onPress={onShare} variant="secondary" />
               </View>
             </ScrollView>

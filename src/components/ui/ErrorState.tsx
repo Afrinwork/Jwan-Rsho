@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { spacing } from "@/src/constants/spacing";
@@ -5,17 +6,35 @@ import { useThemeColors } from "@/src/hooks/useThemeColors";
 
 type ErrorStateProps = {
   message: string;
+  durationMs?: number;
 };
 
-export function ErrorState({ message }: ErrorStateProps) {
+const DEFAULT_DURATION_MS = 3600;
+
+export function ErrorState({ message, durationMs = DEFAULT_DURATION_MS }: ErrorStateProps) {
   const colors = useThemeColors();
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    setVisible(true);
+    const timeoutId = setTimeout(() => setVisible(false), durationMs);
+    return () => clearTimeout(timeoutId);
+  }, [durationMs, message]);
+
+  if (!visible) {
+    return null;
+  }
 
   return (
     <View style={[styles.container, { backgroundColor: colors.dangerBackground, borderColor: colors.dangerBorder }]}>
-      <Text style={[styles.eyebrow, { color: colors.danger }]}>Hinweis</Text>
-      <Text style={[styles.label, { color: colors.danger }]}>{message}</Text>
+      <Text style={[styles.eyebrow, { color: colors.danger }]}>Kurz stoppen</Text>
+      <Text style={[styles.label, { color: colors.danger }]}>{buildErrorMessage(message)}</Text>
     </View>
   );
+}
+
+function buildErrorMessage(message: string) {
+  return `Fast geschafft. ${message}`;
 }
 
 const styles = StyleSheet.create({

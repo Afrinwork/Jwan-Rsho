@@ -6,6 +6,7 @@ export const productSchema = z.object({
   name: z.string().trim().min(1, "Name erforderlich"),
   normalizedName: z.string().optional(),
   defaultUnit: z.string().trim().min(1, "Standard-Einheit erforderlich"),
+  emoji: z.string().trim().optional(),
   isActive: z.boolean().default(true),
   sortOrder: z.number().int().nonnegative().default(0),
   createdAt: z.string().optional(),

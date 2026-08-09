@@ -34,4 +34,17 @@ export const adminService = {
     );
     return callable({ email });
   },
+
+  async getActiveUserCount() {
+    if (!functionsClient) {
+      throw new AppError(errorMessages.firebaseNotConfigured);
+    }
+
+    const callable = httpsCallable<undefined, { count: number }>(
+      functionsClient,
+      "getActiveUserCount",
+    );
+    const result = await callable();
+    return result.data.count;
+  },
 };

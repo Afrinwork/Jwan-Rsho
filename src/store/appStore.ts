@@ -6,6 +6,7 @@ import { ThemeMode } from "@/src/types/userPreferences";
 export const defaultAppPreferences = {
   themeMode: "system" as ThemeMode,
   preferredNavigationApp: "apple-maps" as NavigationAppId,
+  shopName: "",
   shareIncludeAddress: true,
   shareIncludePhone: false,
   shareIncludeTotals: true,
@@ -14,11 +15,13 @@ export const defaultAppPreferences = {
 type AppStore = {
   themeMode: ThemeMode;
   preferredNavigationApp: NavigationAppId;
+  shopName: string;
   shareIncludeAddress: boolean;
   shareIncludePhone: boolean;
   shareIncludeTotals: boolean;
   setThemeMode: (value: ThemeMode) => void;
   setPreferredNavigationApp: (value: NavigationAppId) => void;
+  setShopName: (value: string) => void;
   resetPreferences: () => void;
   setShareOptions: (value: {
     shareIncludeAddress: boolean;
@@ -28,6 +31,7 @@ type AppStore = {
   hydratePreferences: (value: {
     themeMode: ThemeMode;
     preferredNavigationApp: NavigationAppId;
+    shopName: string;
     shareIncludeAddress: boolean;
     shareIncludePhone: boolean;
     shareIncludeTotals: boolean;
@@ -38,6 +42,7 @@ export const useAppStore = create<AppStore>((set) => ({
   ...defaultAppPreferences,
   setThemeMode: (value) => set({ themeMode: value }),
   setPreferredNavigationApp: (value) => set({ preferredNavigationApp: value }),
+  setShopName: (value) => set({ shopName: value }),
   resetPreferences: () => set(defaultAppPreferences),
   setShareOptions: (value) => set(value),
   hydratePreferences: (value) => set(value),

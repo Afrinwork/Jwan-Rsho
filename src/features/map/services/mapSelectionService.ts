@@ -26,7 +26,7 @@ export const mapSelectionService = {
     return markers.filter((marker) => isPointInsidePolygon(marker, polygon)).map((marker) => marker.id);
   },
 
-  shouldAppendPolygonPoint(points: MapSelectionPoint[], point: MapSelectionPoint, minDistanceKm = 0.05) {
+  shouldAppendPolygonPoint(points: MapSelectionPoint[], point: MapSelectionPoint, minDistanceKm = 0.015) {
     const lastPoint = points.at(-1);
     return !lastPoint || distanceKm(lastPoint, point) >= minDistanceKm;
   },
