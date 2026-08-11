@@ -6,6 +6,7 @@ import {
   City20Regular,
   ClipboardTask20Regular,
 } from "@fluentui/react-native-icons";
+import { useTranslation } from "react-i18next";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
@@ -20,73 +21,74 @@ import { useOverviewStats } from "@/src/features/overview/hooks/useOverviewStats
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 
 export function OverviewScreen() {
+  const { t } = useTranslation("overview");
   const colors = useThemeColors();
   const { stats, loading, error } = useOverviewStats();
-  const motivation = getMotivation(stats.openOrders, stats.completedOrders);
+  const motivation = getMotivation(t, stats.openOrders, stats.completedOrders);
 
   if (loading) {
-    return <LoadingView label="Uebersicht wird geladen..." />;
+    return <LoadingView label={t("screen.loading")} />;
   }
 
   return (
     <ScreenContainer>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <AnimatedEntrance>
-          <CompactScreenHeader subtitle="Dein schneller Blick auf Auftraege, Struktur und Fortschritt." title="Uebersicht" />
+          <CompactScreenHeader subtitle={t("screen.subtitle")} title={t("screen.title")} />
         </AnimatedEntrance>
         <AnimatedEntrance delay={50}>
           <OverviewHeroCard
             subtitle={motivation}
-            title="Fokus heute"
+            title={t("screen.heroTitle")}
             value={String(stats.openOrders)}
           />
         </AnimatedEntrance>
         <AnimatedEntrance delay={70}>
           <View style={[styles.messageCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, shadowColor: colors.shadow }]}>
-            <Text style={[styles.messageTitle, { color: colors.text }]}>Heute im Blick</Text>
-            <Text style={[styles.messageText, { color: colors.mutedText }]}>{buildProgressText(stats.openOrders, stats.completedOrders)}</Text>
+            <Text style={[styles.messageTitle, { color: colors.text }]}>{t("screen.messageTitle")}</Text>
+            <Text style={[styles.messageText, { color: colors.mutedText }]}>{buildProgressText(t, stats.openOrders, stats.completedOrders)}</Text>
           </View>
         </AnimatedEntrance>
         {error ? <AnimatedEntrance delay={80}><ErrorState message={error} /></AnimatedEntrance> : null}
         <AnimatedEntrance delay={100} style={styles.grid}>
-          <OverviewStatCard accent="primary" caption="aktiv im Verlauf" icon={ClipboardTask20Regular} title="Offene Bestellungen" value={String(stats.openOrders)} />
-          <OverviewStatCard accent="success" caption="bereits abgeschlossen" icon={CheckmarkCircle20Regular} title="Erledigte Bestellungen" value={String(stats.completedOrders)} />
-          <OverviewStatCard caption="aktive Struktur" icon={Building20Regular} title="Laender" value={String(stats.countries)} />
-          <OverviewStatCard caption="mit Kunden belegt" icon={City20Regular} title="Staedte" value={String(stats.cities)} />
-          <OverviewStatCard caption="fuer neue Auftraege" icon={Box20Regular} title="Produkte" value={String(stats.products)} />
-          <OverviewStatCard caption="im Bestand" icon={Board20Regular} title="Kunden" value={String(stats.customers)} />
+          <OverviewStatCard accent="primary" caption={t("stats.openOrders.caption")} icon={ClipboardTask20Regular} title={t("stats.openOrders.title")} value={String(stats.openOrders)} />
+          <OverviewStatCard accent="success" caption={t("stats.completedOrders.caption")} icon={CheckmarkCircle20Regular} title={t("stats.completedOrders.title")} value={String(stats.completedOrders)} />
+          <OverviewStatCard caption={t("stats.countries.caption")} icon={Building20Regular} title={t("stats.countries.title")} value={String(stats.countries)} />
+          <OverviewStatCard caption={t("stats.cities.caption")} icon={City20Regular} title={t("stats.cities.title")} value={String(stats.cities)} />
+          <OverviewStatCard caption={t("stats.products.caption")} icon={Box20Regular} title={t("stats.products.title")} value={String(stats.products)} />
+          <OverviewStatCard caption={t("stats.customers.caption")} icon={Board20Regular} title={t("stats.customers.title")} value={String(stats.customers)} />
         </AnimatedEntrance>
       </ScrollView>
     </ScreenContainer>
   );
 }
 
-function getMotivation(openOrders: number, completedOrders: number) {
+function getMotivation(t: ReturnType<typeof useTranslation>["t"], openOrders: number, completedOrders: number) {
   if (openOrders === 0) {
-    return "Stark. Aktuell ist keine offene Bestellung mehr uebrig.";
+    return t("motivation.none");
   }
 
   if (openOrders === 1) {
-    return "Nur noch eine offene Bestellung. Das ist fast geschafft.";
+    return t("motivation.one");
   }
 
   if (completedOrders > openOrders) {
-    return `Noch ${openOrders} offene Bestellungen. Du bist bereits sehr gut im Flow.`;
+    return t("motivation.aheadOfSchedule", { openOrders });
   }
 
-  return `Du hast noch ${openOrders} offene Bestellungen im Blick. Schritt fuer Schritt.`;
+  return t("motivation.inProgress", { openOrders });
 }
 
-function buildProgressText(openOrders: number, completedOrders: number) {
+function buildProgressText(t: ReturnType<typeof useTranslation>["t"], openOrders: number, completedOrders: number) {
   if (openOrders === 0 && completedOrders === 0) {
-    return "Sobald die ersten Bestellungen angelegt sind, siehst du hier deinen Fortschritt.";
+    return t("progress.empty");
   }
 
   if (openOrders === 0) {
-    return `${completedOrders} Bestellungen sind bereits erledigt. Heute sieht alles sauber aus.`;
+    return t("progress.allDone", { completedOrders });
   }
 
-  return `${completedOrders} Bestellungen sind bereits erledigt. ${openOrders} warten noch auf deinen naechsten Schritt.`;
+  return t("progress.inProgress", { completedOrders, openOrders });
 }
 
 const styles = StyleSheet.create({

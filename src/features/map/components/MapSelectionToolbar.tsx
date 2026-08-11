@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { spacing } from "@/src/constants/spacing";
@@ -13,6 +14,7 @@ type MapSelectionToolbarProps = {
 
 export function MapSelectionToolbar(props: MapSelectionToolbarProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation("map");
   const active = props.activeTool === "polygon";
 
   return (
@@ -25,11 +27,11 @@ export function MapSelectionToolbar(props: MapSelectionToolbarProps) {
         ]}
       >
         <Text style={[styles.toolLabel, { color: active ? colors.surface : colors.text }]}>
-          {active ? "Malen aktiv" : "Polygon malen"}
+          {active ? t("selectionToolbar.drawingActive") : t("selectionToolbar.drawPolygon")}
         </Text>
       </Pressable>
       <View style={styles.resetChip}>
-        <AppButton label="Auswahl loeschen" onPress={props.onResetSelection} size="compact" variant="secondary" />
+        <AppButton label={t("selectionToolbar.clearSelection")} onPress={props.onResetSelection} size="compact" variant="secondary" />
       </View>
     </View>
   );

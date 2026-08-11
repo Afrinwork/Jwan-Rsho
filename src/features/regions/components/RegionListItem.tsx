@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { spacing } from "@/src/constants/spacing";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
@@ -12,6 +13,7 @@ type RegionListItemProps = {
 };
 
 export function RegionListItem({ region, onEdit, onToggleActive, onDelete }: RegionListItemProps) {
+  const { t } = useTranslation("regions");
   const colors = useThemeColors();
 
   return (
@@ -28,8 +30,8 @@ export function RegionListItem({ region, onEdit, onToggleActive, onDelete }: Reg
         <Switch onValueChange={onToggleActive} trackColor={{ true: colors.primary }} value={region.isActive} />
       </View>
       <View style={styles.actions}>
-        <Pressable onPress={onEdit}><Text style={[styles.edit, { color: colors.primary }]}>Bearbeiten</Text></Pressable>
-        {onDelete ? <Pressable onPress={onDelete}><Text style={[styles.edit, { color: colors.danger }]}>Loeschen</Text></Pressable> : null}
+        <Pressable onPress={onEdit}><Text style={[styles.edit, { color: colors.primary }]}>{t("common:edit")}</Text></Pressable>
+        {onDelete ? <Pressable onPress={onDelete}><Text style={[styles.edit, { color: colors.danger }]}>{t("common:delete")}</Text></Pressable> : null}
       </View>
     </View>
   );

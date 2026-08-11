@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { spacing } from "@/src/constants/spacing";
@@ -12,6 +13,7 @@ type SelectedCustomerRowProps = {
 
 export function SelectedCustomerRow({ marker, onRemove }: SelectedCustomerRowProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation("map");
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -22,12 +24,12 @@ export function SelectedCustomerRow({ marker, onRemove }: SelectedCustomerRowPro
       <Text style={[styles.meta, { color: colors.mutedText }]}>{marker.phone}</Text>
       <Text style={[styles.meta, { color: colors.mutedText }]}>
         {marker.openOrderCount > 1
-          ? `${marker.openOrderCount} offene Bestellungen`
+          ? t("selectedRow.openOrdersCount", { count: marker.openOrderCount })
           : marker.openOrderCount === 1
-            ? "Offene Bestellung vorhanden"
-            : "Keine offene Bestellung"}
+            ? t("selectedRow.openOrderSingular")
+            : t("selectedRow.noOpenOrder")}
       </Text>
-      <AppButton label="Entfernen" onPress={onRemove} variant="secondary" />
+      <AppButton label={t("selectedRow.remove")} onPress={onRemove} variant="secondary" />
     </View>
   );
 }

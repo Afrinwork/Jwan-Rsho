@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { MapCustomerDetails, MapCustomerMarker, NavigationAppId } from "@/src/features/map/types/mapTypes";
 import { buildSelectionShareMessage, SelectionShareCustomer } from "@/src/features/map/services/mapShareFormatterService";
@@ -12,6 +13,7 @@ import { useAppStore } from "@/src/store/appStore";
 import { formatError } from "@/src/utils/formatError";
 
 export function useMapActions(details: MapCustomerDetails | null, marker: MapCustomerMarker | null) {
+  const { t } = useTranslation("map");
   const shareIncludeAddress = useAppStore((state) => state.shareIncludeAddress);
   const shareIncludePhone = useAppStore((state) => state.shareIncludePhone);
   const shopName = useAppStore((state) => state.shopName);
@@ -22,7 +24,7 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
 
   const callCustomer = useCallback(async () => {
     if (!details?.customer.phone) {
-      setActionError("Keine Telefonnummer fuer diesen Kunden vorhanden.");
+      setActionError(t("errors.noPhone"));
       return;
     }
 
@@ -32,11 +34,11 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
     } catch (error) {
       setActionError(formatError(error).message);
     }
-  }, [details]);
+  }, [details, t]);
 
   const openNavigationMenu = useCallback(async () => {
     if (!details && !marker) {
-      setActionError("Keine Navigationsdaten fuer diesen Kunden vorhanden.");
+      setActionError(t("errors.noNavigationData"));
       return;
     }
 
@@ -46,11 +48,11 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
     } catch (navigationError) {
       setActionError(formatError(navigationError).message);
     }
-  }, [details, marker]);
+  }, [details, marker, t]);
 
   const openNavigationApp = useCallback(async (appId: NavigationAppId) => {
     if (!details && !marker) {
-      setActionError("Keine Navigationsdaten fuer diesen Kunden vorhanden.");
+      setActionError(t("errors.noNavigationData"));
       return;
     }
 
@@ -60,11 +62,11 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
     } catch (error) {
       setActionError(formatError(error).message);
     }
-  }, [details, marker]);
+  }, [details, marker, t]);
 
   const shareLocation = useCallback(async () => {
     if (!details || !marker) {
-      setActionError("Standortdaten sind noch nicht verfuegbar.");
+      setActionError(t("errors.locationNotReady"));
       return;
     }
 
@@ -84,11 +86,11 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
     } catch (error) {
       setActionError(formatError(error).message);
     }
-  }, [details, marker, shareIncludeAddress, shareIncludePhone]);
+  }, [details, marker, shareIncludeAddress, shareIncludePhone, t]);
 
   const shareOrder = useCallback(async () => {
     if (!details) {
-      setActionError("Keine Kundendaten zum Teilen vorhanden.");
+      setActionError(t("errors.noCustomerDataToShare"));
       return;
     }
 
@@ -119,7 +121,7 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
       });
 
       if (!message) {
-        setActionError("Es gibt keine Daten zum Teilen.");
+        setActionError(t("errors.nothingToShare"));
         return;
       }
 
@@ -127,11 +129,11 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
     } catch (error) {
       setActionError(formatError(error).message);
     }
-  }, [details, productEmojiById, shareIncludeAddress, shareIncludePhone, shopName]);
+  }, [details, productEmojiById, shareIncludeAddress, shareIncludePhone, shopName, t]);
 
   const completeOpenOrder = useCallback(async () => {
     if (!details?.openOrders.length) {
-      setActionError("Keine offene Bestellung fuer diesen Kunden gefunden.");
+      setActionError(t("errors.noOpenOrderFound"));
       return false;
     }
 
@@ -146,7 +148,7 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
     } finally {
       setCompletingOrder(false);
     }
-  }, [details]);
+  }, [details, t]);
 
   return {
     actionError,

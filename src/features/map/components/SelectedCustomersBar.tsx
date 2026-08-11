@@ -18,6 +18,7 @@ type SelectedCustomersBarProps = {
 
 export function SelectedCustomersBar(props: SelectedCustomersBarProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation("map");
 
   if (props.selectedCount === 0) {
     return null;
@@ -25,20 +26,20 @@ export function SelectedCustomersBar(props: SelectedCustomersBarProps) {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
-      <Text style={[styles.label, { color: colors.text }]}>{props.selectedCount} Kunden ausgewaehlt</Text>
+      <Text style={[styles.label, { color: colors.text }]}>{t("selectedBar.count", { count: props.selectedCount })}</Text>
       {props.shareError ? <ErrorState message={props.shareError} /> : null}
       <View style={styles.actions}>
         <View style={styles.actionButton}>
-          <AppButton label="Ansehen" onPress={props.onViewSelection} size="compact" variant="secondary" />
+          <AppButton label={t("selectedBar.view")} onPress={props.onViewSelection} size="compact" variant="secondary" />
         </View>
         <View style={styles.actionButton}>
-          <AppButton label="WhatsApp" loading={props.sharing} onPress={props.onShare} size="compact" />
+          <AppButton label={t("selectedBar.whatsapp")} loading={props.sharing} onPress={props.onShare} size="compact" />
         </View>
         <View style={styles.actionButton}>
-          <AppButton label="E-Mail" loading={props.emailing} onPress={props.onShareByEmail} size="compact" variant="secondary" />
+          <AppButton label={t("selectedBar.email")} loading={props.emailing} onPress={props.onShareByEmail} size="compact" variant="secondary" />
         </View>
         <View style={styles.actionButton}>
-          <AppButton label="Loeschen" onPress={props.onResetSelection} size="compact" variant="secondary" />
+          <AppButton label={t("selectedBar.clear")} onPress={props.onResetSelection} size="compact" variant="secondary" />
         </View>
       </View>
     </View>

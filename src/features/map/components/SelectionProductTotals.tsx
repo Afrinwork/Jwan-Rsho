@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { spacing } from "@/src/constants/spacing";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
@@ -11,6 +12,7 @@ type SelectionProductTotalsProps = {
 
 export function SelectionProductTotals({ totals, loading }: SelectionProductTotalsProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation("map");
 
   if (!loading && !totals.length) {
     return null;
@@ -18,8 +20,8 @@ export function SelectionProductTotals({ totals, loading }: SelectionProductTota
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-      <Text style={[styles.title, { color: colors.text }]}>Produktsummen der Auswahl</Text>
-      {loading ? <Text style={[styles.item, { color: colors.mutedText }]}>Wird berechnet...</Text> : null}
+      <Text style={[styles.title, { color: colors.text }]}>{t("productTotals.title")}</Text>
+      {loading ? <Text style={[styles.item, { color: colors.mutedText }]}>{t("productTotals.calculating")}</Text> : null}
       {!loading &&
         totals.map((value) => (
           <Text key={value.productKey} style={[styles.item, { color: colors.mutedText }]}>

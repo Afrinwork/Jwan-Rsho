@@ -1,11 +1,13 @@
 import { z } from "zod";
 
+import { t } from "@/src/i18n/i18n";
+
 export const regionSchema = z.object({
   id: z.string().optional(),
   ownerId: z.string().optional(),
-  name: z.string().trim().min(1, "Region erforderlich"),
+  name: z.string().trim().min(1, t("regions:validation.nameRequired")),
   normalizedName: z.string().optional(),
-  country: z.string().trim().min(1, "Land erforderlich"),
+  country: z.string().trim().min(1, t("regions:validation.countryRequired")),
   normalizedCountry: z.string().optional(),
   city: z.string().trim().optional(),
   normalizedCity: z.string().optional(),

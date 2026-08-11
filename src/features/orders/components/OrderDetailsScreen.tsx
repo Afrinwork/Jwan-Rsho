@@ -35,7 +35,7 @@ export function OrderDetailsScreen({ orderId }: OrderDetailsScreenProps) {
       .then(setOrder)
       .catch((value) => setError(formatError(value).message))
       .finally(() => setLoading(false));
-  }, [orderId]);
+  }, [orderId, t]);
 
   if (loading) return <LoadingView label={t("details.loading")} />;
 

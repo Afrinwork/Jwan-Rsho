@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { spacing } from "@/src/constants/spacing";
 import { MapFilterState } from "@/src/features/map/types/mapTypes";
@@ -28,16 +29,18 @@ type FilterCategory = {
 
 export function MapFilters(props: MapFiltersProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation("map");
   const [openFilter, setOpenFilter] = useState<FilterKey | null>(null);
 
   const categories: FilterCategory[] = [
-    { key: "country", label: "Land", value: props.filters.country, options: props.countryOptions, onChange: props.onCountryChange },
-    { key: "city", label: "Stadt", value: props.filters.city, options: props.cityOptions, onChange: props.onCityChange },
-    { key: "region", label: "Region", value: props.filters.region, options: props.regionOptions, onChange: props.onRegionChange },
+    { key: "country", label: t("filters.country"), value: props.filters.country, options: props.countryOptions, onChange: props.onCountryChange },
+    { key: "city", label: t("filters.city"), value: props.filters.city, options: props.cityOptions, onChange: props.onCityChange },
+    { key: "region", label: t("filters.region"), value: props.filters.region, options: props.regionOptions, onChange: props.onRegionChange },
   ];
 
   const activeCategory = categories.find((category) => category.key === openFilter) ?? null;
   const hasActiveFilter = Boolean(props.filters.country || props.filters.city || props.filters.region);
+  const allLabel = t("filters.all");
 
   return (
     <View style={styles.container}>
@@ -56,7 +59,7 @@ export function MapFilters(props: MapFiltersProps) {
             ]}
           >
             <Text style={[styles.chipLabel, { color: hasActiveFilter ? colors.primaryContrast : colors.mutedText }]}>
-              Alle
+              {allLabel}
             </Text>
           </Pressable>
           {categories.map((category) => {
@@ -90,13 +93,13 @@ export function MapFilters(props: MapFiltersProps) {
           <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Text style={[styles.title, { color: colors.text }]}>{activeCategory?.label}</Text>
             <View style={styles.optionsWrap}>
-              {["Alle", ...(activeCategory?.options ?? [])].map((value) => {
-                const selected = (!activeCategory?.value && value === "Alle") || activeCategory?.value === value;
+              {[allLabel, ...(activeCategory?.options ?? [])].map((value) => {
+                const selected = (!activeCategory?.value && value === allLabel) || activeCategory?.value === value;
                 return (
                   <Pressable
                     key={value}
                     onPress={() => {
-                      activeCategory?.onChange(value === "Alle" ? "" : value);
+                      activeCategory?.onChange(value === allLabel ? "" : value);
                       setOpenFilter(null);
                     }}
                     style={[

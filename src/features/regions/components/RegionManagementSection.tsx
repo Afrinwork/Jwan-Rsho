@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 
 import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
@@ -14,6 +15,7 @@ import { useRegions } from "@/src/features/regions/hooks/useRegions";
 import { Region } from "@/src/types/region";
 
 export function RegionManagementSection() {
+  const { t } = useTranslation("regions");
   const { regions, loading, error, addRegion, updateRegion, toggleActive, deleteRegion } = useRegions();
   const [mode, setMode] = useState<"list" | "create">("list");
   const [editingRegion, setEditingRegion] = useState<Region | null>(null);
@@ -25,7 +27,7 @@ export function RegionManagementSection() {
     setActionError(null);
     setSuccessMessage(null);
     await addRegion(values);
-    setSuccessMessage("Region wurde erfolgreich hinzugefuegt.");
+    setSuccessMessage(t("management.addSuccess"));
     setMode("list");
   }
 
@@ -37,32 +39,32 @@ export function RegionManagementSection() {
     setActionError(null);
     setSuccessMessage(null);
     await updateRegion(editingRegion.id, values);
-    setSuccessMessage("Region wurde erfolgreich aktualisiert.");
+    setSuccessMessage(t("management.updateSuccess"));
     setEditingRegion(null);
   }
 
   return (
     <ManagementSectionShell
-      createLabel="Region hinzufuegen"
-      listLabel="Regionsansicht"
+      createLabel={t("management.createLabel")}
+      listLabel={t("management.listLabel")}
       mode={mode}
       onModeChange={setMode}
-      subtitle="Regionen passend zu Laendern strukturieren und fuer Filter aktiv halten."
-      title="Regionen"
+      subtitle={t("management.subtitle")}
+      title={t("management.title")}
     >
       {mode === "create" ? (
-        <RegionForm onCancel={() => setMode("list")} onSubmit={handleAdd} submitLabel="Region speichern" />
+        <RegionForm onCancel={() => setMode("list")} onSubmit={handleAdd} submitLabel={t("management.saveNewLabel")} />
       ) : null}
       {mode === "list" ? (
         <View style={styles.container}>
-          {loading ? <LoadingView label="Regionen laden..." /> : null}
+          {loading ? <LoadingView label={t("management.loading")} /> : null}
           {error ? <ErrorState message={error} /> : null}
           {actionError ? <ErrorState message={actionError} /> : null}
           {successMessage ? <SuccessState message={successMessage} /> : null}
           {!loading && !error && regions.length === 0 ? (
             <EmptyState
-              message="Regionen sind optional. Sie sind sinnvoll, wenn du Kunden spaeter nach Gebieten auf Karte und in Filtern ordnen willst."
-              title="Keine Regionen"
+              message={t("management.emptyMessage")}
+              title={t("management.emptyTitle")}
             />
           ) : null}
           {regions.map((region) =>
@@ -72,7 +74,7 @@ export function RegionManagementSection() {
                 key={region.id}
                 onCancel={() => setEditingRegion(null)}
                 onSubmit={handleEdit}
-                submitLabel="Aenderungen speichern"
+                submitLabel={t("management.saveChangesLabel")}
               />
             ) : (
               <RegionListItem
@@ -82,10 +84,10 @@ export function RegionManagementSection() {
                 onToggleActive={() => {
                   void toggleActive(region)
                     .then(() =>
-                      setSuccessMessage(region.isActive ? "Region wurde deaktiviert." : "Region wurde wieder aktiviert."),
+                      setSuccessMessage(region.isActive ? t("management.deactivatedSuccess") : t("management.activatedSuccess")),
                     )
                     .catch((value) =>
-                      setActionError(value instanceof Error ? value.message : "Region konnte nicht aktualisiert werden."),
+                      setActionError(value instanceof Error ? value.message : t("management.toggleError")),
                     );
                 }}
                 region={region}
@@ -95,21 +97,21 @@ export function RegionManagementSection() {
         </View>
       ) : null}
       <ConfirmDialog
-        confirmLabel="Loeschen"
+        confirmLabel={t("common:delete")}
         destructive
-        message="Diese Region wird nur geloescht, wenn sie noch von keinem Kunden verwendet wird."
+        message={t("management.deleteConfirmMessage")}
         onCancel={() => setDeleteTarget(null)}
         onConfirm={() => {
           if (deleteTarget) {
             void deleteRegion(deleteTarget)
-              .then(() => setSuccessMessage("Region wurde geloescht."))
+              .then(() => setSuccessMessage(t("management.deleteSuccess")))
               .catch((value) =>
-                setActionError(value instanceof Error ? value.message : "Region konnte nicht geloescht werden."),
+                setActionError(value instanceof Error ? value.message : t("management.deleteError")),
               );
           }
           setDeleteTarget(null);
         }}
-        title="Region wirklich loeschen?"
+        title={t("management.deleteConfirmTitle")}
         visible={Boolean(deleteTarget)}
       />
     </ManagementSectionShell>

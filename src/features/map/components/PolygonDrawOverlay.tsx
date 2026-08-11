@@ -1,4 +1,5 @@
 import { StyleSheet, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { spacing } from "@/src/constants/spacing";
@@ -13,6 +14,7 @@ type PolygonDrawOverlayProps = {
 
 export function PolygonDrawOverlay(props: PolygonDrawOverlayProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation("map");
 
   if (!props.visible) {
     return null;
@@ -24,7 +26,7 @@ export function PolygonDrawOverlay(props: PolygonDrawOverlayProps) {
         <View style={styles.flexButton}>
           <AppButton
             disabled={props.polygonPointCount === 0}
-            label="Zurueck"
+            label={t("polygonDraw.back")}
             onPress={props.onUndoPolygonPoint}
             size="compact"
             variant="secondary"
@@ -33,7 +35,7 @@ export function PolygonDrawOverlay(props: PolygonDrawOverlayProps) {
         <View style={styles.flexButton}>
           <AppButton
             disabled={props.polygonPointCount < 3}
-            label="Auswahl schliessen"
+            label={t("polygonDraw.closeSelection")}
             onPress={props.onClosePolygon}
             size="compact"
           />

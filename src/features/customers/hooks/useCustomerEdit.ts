@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { Resolver, useFieldArray, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
 import { customerSchema } from "@/src/features/customers/validation/customerSchema";
 import { customerRepository } from "@/src/repositories/customerRepository";
@@ -31,6 +32,7 @@ const defaultValues: CustomerEditFormValues = {
 };
 
 export function useCustomerEdit(customerId: string) {
+  const { t } = useTranslation("customers");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +58,7 @@ export function useCustomerEdit(customerId: string) {
         const openOrder = orders.find((value) => value.status === "open");
 
         if (!openOrder) {
-          throw new Error("Keine offene Bestellung fuer diesen Kunden gefunden.");
+          throw new Error(t("edit.noOpenOrder"));
         }
 
         setOpenOrderId(openOrder.id);
@@ -64,11 +66,11 @@ export function useCustomerEdit(customerId: string) {
       })
       .catch((loadError) => setError(formatError(loadError).message))
       .finally(() => setLoading(false));
-  }, [customerId, form]);
+  }, [customerId, form, t]);
 
   const submit = form.handleSubmit(async (values) => {
     if (!openOrderId) {
-      setError("Keine offene Bestellung fuer diesen Kunden gefunden.");
+      setError(t("edit.noOpenOrder"));
       return false;
     }
 
@@ -99,7 +101,7 @@ export function useCustomerEdit(customerId: string) {
         })),
       });
 
-      setSuccessMessage("Kunde und offene Bestellung wurden gespeichert.");
+      setSuccessMessage(t("edit.saveSuccess"));
       return true;
     } catch (submitError) {
       setError(formatError(submitError).message);

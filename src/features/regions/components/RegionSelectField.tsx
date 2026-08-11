@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { FormField } from "@/src/components/forms/FormField";
 import { AppInput } from "@/src/components/ui/AppInput";
@@ -14,21 +15,22 @@ type RegionSelectFieldProps = {
 };
 
 export function RegionSelectField({ value, onChange, country, error }: RegionSelectFieldProps) {
+  const { t } = useTranslation("regions");
   const { regions, loading } = useRegions();
   const colors = useThemeColors();
   const options = regions.filter((region) => region.isActive && (!country || region.country === country));
 
   return (
-    <FormField error={error} label="Region (optional)">
+    <FormField error={error} label={t("selectField.label")}>
       <View style={styles.container}>
         <AppInput
           autoCapitalize="words"
           onChangeText={onChange}
-          placeholder={country ? "Region zu diesem Land" : "Erst ein Land waehlen"}
+          placeholder={country ? t("selectField.placeholderWithCountry") : t("selectField.placeholderNoCountry")}
           value={value}
         />
         {loading ? (
-          <Text style={[styles.hint, { color: colors.mutedText }]}>Regionen laden...</Text>
+          <Text style={[styles.hint, { color: colors.mutedText }]}>{t("selectField.loading")}</Text>
         ) : options.length > 0 ? (
           <View style={styles.row}>
             {options.map((option) => {
@@ -54,7 +56,7 @@ export function RegionSelectField({ value, onChange, country, error }: RegionSel
           </View>
         ) : (
           <Text style={[styles.hint, { color: colors.mutedText }]}>
-            {country ? "Keine Region vorhanden." : "Zuerst Land waehlen."}
+            {country ? t("selectField.emptyWithCountry") : t("selectField.emptyNoCountry")}
           </Text>
         )}
       </View>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FlatList, Modal, StyleSheet, Text } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { EmptyState } from "@/src/components/ui/EmptyState";
 import { ErrorState } from "@/src/components/ui/ErrorState";
@@ -22,6 +23,7 @@ export function ProductPicker({ visible, excludeIds = [], onSelect, onClose }: P
   const { products, loading, error } = useProducts();
   const [query, setQuery] = useState("");
   const colors = useThemeColors();
+  const { t } = useTranslation("products");
 
   const normalized = query.trim().toLowerCase();
   const available = products.filter(
@@ -34,12 +36,12 @@ export function ProductPicker({ visible, excludeIds = [], onSelect, onClose }: P
   return (
     <Modal animationType="slide" onRequestClose={onClose} presentationStyle="pageSheet" visible={visible}>
       <ScreenContainer>
-        <Text style={[styles.title, { color: colors.text }]}>Produkt auswaehlen</Text>
-        <SearchInput onChangeText={setQuery} placeholder="Produkt suchen" value={query} />
-        {loading ? <LoadingView label="Produkte laden..." /> : null}
+        <Text style={[styles.title, { color: colors.text }]}>{t("picker.title")}</Text>
+        <SearchInput onChangeText={setQuery} placeholder={t("picker.searchPlaceholder")} value={query} />
+        {loading ? <LoadingView label={t("loadingProducts")} /> : null}
         {error ? <ErrorState message={error} /> : null}
         {!loading && !error && available.length === 0 ? (
-          <EmptyState message="Kein passendes Produkt gefunden." title="Keine Ergebnisse" />
+          <EmptyState message={t("picker.emptyMessage")} title={t("picker.emptyTitle")} />
         ) : null}
         <FlatList
           data={available}

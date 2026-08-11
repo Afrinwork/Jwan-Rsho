@@ -22,12 +22,13 @@ export function ProductManagementSection() {
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const { t } = useTranslation("products");
 
   async function handleAdd(values: ProductFormValues) {
     setActionError(null);
     setSuccessMessage(null);
     await addProduct(values);
-    setSuccessMessage("Produkt wurde erfolgreich hinzugefuegt.");
+    setSuccessMessage(t("management.addSuccess"));
     setMode("list");
   }
 
@@ -39,7 +40,7 @@ export function ProductManagementSection() {
     setActionError(null);
     setSuccessMessage(null);
     await updateProduct(editingProduct.id, values);
-    setSuccessMessage("Produkt wurde erfolgreich aktualisiert.");
+    setSuccessMessage(t("management.updateSuccess"));
     setEditingProduct(null);
   }
 
@@ -50,34 +51,34 @@ export function ProductManagementSection() {
     }
 
     void toggleActive(product)
-      .then(() => setSuccessMessage("Produkt wurde wieder aktiviert."))
+      .then(() => setSuccessMessage(t("management.activateSuccess")))
       .catch((error) =>
-        setActionError(error instanceof Error ? error.message : "Produkt konnte nicht aktualisiert werden."),
+        setActionError(error instanceof Error ? error.message : t("management.updateError")),
       );
   }
 
   return (
     <ManagementSectionShell
-      createLabel="Produkt hinzufuegen"
-      listLabel="Produktansicht"
+      createLabel={t("management.createLabel")}
+      listLabel={t("management.listLabel")}
       mode={mode}
       onModeChange={setMode}
-      subtitle="Produkte anlegen, sortieren, bearbeiten, deaktivieren und sicher loeschen."
-      title="Produkte"
+      subtitle={t("management.subtitle")}
+      title={t("management.title")}
     >
       {mode === "create" ? (
-        <ProductForm onCancel={() => setMode("list")} onSubmit={handleAdd} submitLabel="Produkt speichern" />
+        <ProductForm onCancel={() => setMode("list")} onSubmit={handleAdd} submitLabel={t("management.addSubmitLabel")} />
       ) : null}
       {mode === "list" ? (
         <View style={styles.container}>
-          {loading ? <LoadingView label="Produkte laden..." /> : null}
+          {loading ? <LoadingView label={t("loadingProducts")} /> : null}
           {error ? <ErrorState message={error} /> : null}
           {actionError ? <ErrorState message={actionError} /> : null}
           {successMessage ? <SuccessState message={successMessage} /> : null}
           {!loading && !error && products.length === 0 ? (
             <EmptyState
-              message="Lege hier mindestens ein Produkt an. Ohne Produkte kann keine Bestellung gespeichert werden."
-              title="Keine Produkte"
+              message={t("management.emptyMessage")}
+              title={t("management.emptyTitle")}
             />
           ) : null}
           {products.map((product) =>
@@ -87,7 +88,7 @@ export function ProductManagementSection() {
                 key={product.id}
                 onCancel={() => setEditingProduct(null)}
                 onSubmit={handleEdit}
-                submitLabel="Aenderungen speichern"
+                submitLabel={t("management.editSubmitLabel")}
               />
             ) : (
               <ProductListItem
@@ -96,12 +97,12 @@ export function ProductManagementSection() {
                 onEdit={() => setEditingProduct(product)}
                 onMoveDown={() =>
                   void moveProduct(product, "down").catch((error) =>
-                    setActionError(error instanceof Error ? error.message : "Sortierung konnte nicht geaendert werden."),
+                    setActionError(error instanceof Error ? error.message : t("management.reorderError")),
                   )
                 }
                 onMoveUp={() =>
                   void moveProduct(product, "up").catch((error) =>
-                    setActionError(error instanceof Error ? error.message : "Sortierung konnte nicht geaendert werden."),
+                    setActionError(error instanceof Error ? error.message : t("management.reorderError")),
                   )
                 }
                 onToggleActive={() => requestToggle(product)}
@@ -112,39 +113,39 @@ export function ProductManagementSection() {
         </View>
       ) : null}
       <ConfirmDialog
-        confirmLabel="Deaktivieren"
+        confirmLabel={t("management.deactivateButton")}
         destructive
-        message="Dieses Produkt wird nicht mehr in der Produktauswahl angezeigt."
+        message={t("management.deactivateMessage")}
         onCancel={() => setDeactivateTarget(null)}
         onConfirm={() => {
           if (deactivateTarget) {
             void toggleActive(deactivateTarget)
-              .then(() => setSuccessMessage("Produkt wurde deaktiviert."))
+              .then(() => setSuccessMessage(t("management.deactivateSuccess")))
               .catch((error) =>
-                setActionError(error instanceof Error ? error.message : "Produkt konnte nicht deaktiviert werden."),
+                setActionError(error instanceof Error ? error.message : t("management.deactivateError")),
               );
           }
           setDeactivateTarget(null);
         }}
-        title="Produkt deaktivieren?"
+        title={t("management.deactivateTitle")}
         visible={Boolean(deactivateTarget)}
       />
       <ConfirmDialog
-        confirmLabel="Loeschen"
+        confirmLabel={t("common:delete")}
         destructive
-        message="Dieses Produkt wird nur geloescht, wenn es noch in keiner Bestellung verwendet wurde."
+        message={t("management.deleteMessage")}
         onCancel={() => setDeleteTarget(null)}
         onConfirm={() => {
           if (deleteTarget) {
             void deleteProduct(deleteTarget)
-              .then(() => setSuccessMessage("Produkt wurde geloescht."))
+              .then(() => setSuccessMessage(t("management.deleteSuccess")))
               .catch((error) =>
-                setActionError(error instanceof Error ? error.message : "Produkt konnte nicht geloescht werden."),
+                setActionError(error instanceof Error ? error.message : t("management.deleteError")),
               );
           }
           setDeleteTarget(null);
         }}
-        title="Produkt wirklich loeschen?"
+        title={t("management.deleteTitle")}
         visible={Boolean(deleteTarget)}
       />
     </ManagementSectionShell>

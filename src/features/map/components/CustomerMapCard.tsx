@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { spacing } from "@/src/constants/spacing";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
@@ -10,6 +11,7 @@ type CustomerMapCardProps = {
 
 export function CustomerMapCard({ details }: CustomerMapCardProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation("map");
   const openOrders = details.openOrders;
 
   return (
@@ -19,10 +21,12 @@ export function CustomerMapCard({ details }: CustomerMapCardProps) {
       <Text style={[styles.meta, { color: colors.mutedText }]}>
         {details.customer.address}, {details.customer.city}, {details.customer.country}
       </Text>
-      {details.customer.region ? <Text style={[styles.meta, { color: colors.mutedText }]}>Region: {details.customer.region}</Text> : null}
+      {details.customer.region ? (
+        <Text style={[styles.meta, { color: colors.mutedText }]}>{t("customerCard.region", { region: details.customer.region })}</Text>
+      ) : null}
       {details.customer.note ? (
         <View style={[styles.card, { backgroundColor: colors.background, borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Notiz</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t("customerCard.note")}</Text>
           <Text style={[styles.noteText, { color: colors.mutedText }]}>{details.customer.note}</Text>
         </View>
       ) : null}
@@ -30,7 +34,9 @@ export function CustomerMapCard({ details }: CustomerMapCardProps) {
         openOrders.map((order, index) => (
           <View key={order.id} style={[styles.card, { backgroundColor: colors.background, borderColor: colors.border }]}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              {openOrders.length > 1 ? `Offene Bestellung ${index + 1} von ${openOrders.length}` : "Offene Bestellung"}
+              {openOrders.length > 1
+                ? t("customerCard.openOrderIndexed", { index: index + 1, count: openOrders.length })
+                : t("customerCard.openOrder")}
             </Text>
             <View style={styles.items}>
               {order.items.map((item) => (
@@ -44,8 +50,8 @@ export function CustomerMapCard({ details }: CustomerMapCardProps) {
         ))
       ) : (
         <View style={[styles.card, { backgroundColor: colors.background, borderColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Offene Bestellung</Text>
-          <Text style={[styles.meta, { color: colors.mutedText }]}>Keine offene Bestellung gefunden.</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t("customerCard.openOrder")}</Text>
+          <Text style={[styles.meta, { color: colors.mutedText }]}>{t("customerCard.noOpenOrderFound")}</Text>
         </View>
       )}
     </>

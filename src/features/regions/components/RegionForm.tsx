@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { StyleSheet, View } from "react-native";
 
@@ -23,6 +24,7 @@ type RegionFormProps = {
 };
 
 export function RegionForm({ initialValues, submitLabel, onCancel, onSubmit }: RegionFormProps) {
+  const { t } = useTranslation("regions");
   const [submitError, setSubmitError] = useState<string | null>(null);
   const form = useForm<RegionFormValues>({
     resolver: zodResolver(regionFormSchema),
@@ -41,18 +43,18 @@ export function RegionForm({ initialValues, submitLabel, onCancel, onSubmit }: R
 
   return (
     <View style={styles.container}>
-      <FormField error={form.formState.errors.name?.message} label="Region">
-        <Controller control={form.control} name="name" render={({ field }) => <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder="Region" value={field.value} />} />
+      <FormField error={form.formState.errors.name?.message} label={t("form.nameLabel")}>
+        <Controller control={form.control} name="name" render={({ field }) => <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder={t("form.namePlaceholder")} value={field.value} />} />
       </FormField>
-      <FormField error={form.formState.errors.country?.message} label="Land">
-        <Controller control={form.control} name="country" render={({ field }) => <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder="Land" value={field.value} />} />
+      <FormField error={form.formState.errors.country?.message} label={t("form.countryLabel")}>
+        <Controller control={form.control} name="country" render={({ field }) => <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder={t("form.countryPlaceholder")} value={field.value} />} />
       </FormField>
-      <FormField error={form.formState.errors.city?.message} label="Stadt (optional)">
-        <Controller control={form.control} name="city" render={({ field }) => <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder="Stadt" value={field.value ?? ""} />} />
+      <FormField error={form.formState.errors.city?.message} label={t("form.cityLabel")}>
+        <Controller control={form.control} name="city" render={({ field }) => <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder={t("form.cityPlaceholder")} value={field.value ?? ""} />} />
       </FormField>
       {submitError ? <ErrorState message={submitError} /> : null}
       <View style={styles.actions}>
-        {onCancel ? <View style={styles.actionButton}><AppButton label="Abbrechen" onPress={onCancel} variant="secondary" /></View> : null}
+        {onCancel ? <View style={styles.actionButton}><AppButton label={t("common:cancel")} onPress={onCancel} variant="secondary" /></View> : null}
         <View style={styles.actionButton}><AppButton disabled={form.formState.isSubmitting} label={submitLabel} loading={form.formState.isSubmitting} onPress={submit} /></View>
       </View>
     </View>

@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { CompactScreenHeader } from "@/src/components/ui/CompactScreenHeader";
@@ -18,27 +19,28 @@ type MapToolbarProps = {
 
 export function MapToolbar(props: MapToolbarProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation("map");
 
   return (
     <View style={styles.container}>
-      <CompactScreenHeader subtitle="Kunden und Filter direkt auf der Karte." title="Karte" />
+      <CompactScreenHeader subtitle={t("toolbar.subtitle")} title={t("toolbar.title")} />
       {props.locationError ? (
         <View style={styles.banner}>
           <ErrorState message={props.locationError} />
           {props.locationPermissionDenied ? (
-            <AppButton label="Erneut fragen" onPress={props.onRetryLocation} variant="secondary" />
+            <AppButton label={t("toolbar.retryLocation")} onPress={props.onRetryLocation} variant="secondary" />
           ) : null}
         </View>
       ) : null}
       {props.customersError ? (
         <View style={styles.banner}>
           <ErrorState message={props.customersError} />
-          <AppButton label="Kunden neu laden" onPress={props.onRetryCustomers} variant="secondary" />
+          <AppButton label={t("toolbar.retryCustomers")} onPress={props.onRetryCustomers} variant="secondary" />
         </View>
       ) : null}
       {props.customersLoading ? (
         <View style={[styles.statusCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
-          <Text style={[styles.statusText, { color: colors.mutedText }]}>Kundenpins werden geladen...</Text>
+          <Text style={[styles.statusText, { color: colors.mutedText }]}>{t("toolbar.loadingCustomers")}</Text>
         </View>
       ) : null}
     </View>

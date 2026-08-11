@@ -1,4 +1,5 @@
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { spacing } from "@/src/constants/spacing";
@@ -14,25 +15,26 @@ type NavigationAppSheetProps = {
 
 export function NavigationAppSheet({ visible, apps, onClose, onSelect }: NavigationAppSheetProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation("map");
 
   return (
     <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
       <View style={styles.overlay}>
         <Pressable onPress={onClose} style={styles.backdrop} />
         <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <Text style={[styles.title, { color: colors.text }]}>Navigation oeffnen</Text>
-          <Text style={[styles.subtitle, { color: colors.mutedText }]}>Apple Maps ist immer die sichere Standardoption.</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{t("navigationSheet.title")}</Text>
+          <Text style={[styles.subtitle, { color: colors.mutedText }]}>{t("navigationSheet.subtitle")}</Text>
           {apps.map((app) => (
             <View key={app.id}>
               <AppButton
                 disabled={!app.available}
-                label={app.available ? app.label : `${app.label} nicht verfuegbar`}
+                label={app.available ? app.label : t("navigationSheet.unavailable", { label: app.label })}
                 onPress={() => onSelect(app.id)}
                 variant={app.id === "apple-maps" ? "primary" : "secondary"}
               />
             </View>
           ))}
-          <AppButton label="Schliessen" onPress={onClose} variant="secondary" />
+          <AppButton label={t("common:close")} onPress={onClose} variant="secondary" />
         </View>
       </View>
     </Modal>

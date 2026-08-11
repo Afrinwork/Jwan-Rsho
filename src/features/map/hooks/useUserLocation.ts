@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import * as Location from "expo-location";
 
@@ -34,6 +35,7 @@ type UserLocationState = {
 };
 
 export function useUserLocation(): UserLocationState {
+  const { t } = useTranslation("map");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasPermission, setHasPermission] = useState(false);
@@ -48,7 +50,7 @@ export function useUserLocation(): UserLocationState {
       if (!permission.granted) {
         setHasPermission(false);
         setRegion(FALLBACK_REGION);
-        setError("Standortzugriff wurde abgelehnt. Die Karte funktioniert trotzdem weiterhin.");
+        setError(t("errors.locationPermissionDenied"));
         return;
       }
 
@@ -65,7 +67,7 @@ export function useUserLocation(): UserLocationState {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {

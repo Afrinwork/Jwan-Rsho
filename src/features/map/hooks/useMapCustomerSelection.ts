@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { buildSelectionShareMessage, SelectionShareCustomer, SelectionShareItem } from "@/src/features/map/services/mapShareFormatterService";
 import { useMapSelection } from "@/src/features/map/hooks/useMapSelection";
@@ -17,6 +18,7 @@ export function useMapCustomerSelection(
   visibleMarkers: MapCustomerMarker[],
   productEmojiById: Map<string, string | undefined>,
 ) {
+  const { t } = useTranslation("map");
   const shopName = useAppStore((state) => state.shopName);
   const shareIncludeAddress = useAppStore((state) => state.shareIncludeAddress);
   const shareIncludePhone = useAppStore((state) => state.shareIncludePhone);
@@ -61,7 +63,7 @@ export function useMapCustomerSelection(
       });
 
       if (!message) {
-        setShareError("Es sind keine Kunden ausgewaehlt.");
+        setShareError(t("errors.noCustomersSelected"));
         return;
       }
 
@@ -71,7 +73,7 @@ export function useMapCustomerSelection(
     } finally {
       setSharing(false);
     }
-  }, [productEmojiById, selectedMarkers, shareIncludeAddress, shareIncludePhone, shareIncludeTotals, shopName, summary]);
+  }, [productEmojiById, selectedMarkers, shareIncludeAddress, shareIncludePhone, shareIncludeTotals, shopName, summary, t]);
 
   const shareByEmail = useCallback(async () => {
     setShareError(null);
@@ -89,17 +91,17 @@ export function useMapCustomerSelection(
       });
 
       if (!message) {
-        setShareError("Es sind keine Kunden ausgewaehlt.");
+        setShareError(t("errors.noCustomersSelected"));
         return;
       }
 
-      await emailService.compose(shopName?.trim() || "Kundenauswahl", message);
+      await emailService.compose(shopName?.trim() || t("share.defaultSubject"), message);
     } catch (error) {
       setShareError(formatError(error).message);
     } finally {
       setEmailing(false);
     }
-  }, [productEmojiById, selectedMarkers, shareIncludeAddress, shareIncludePhone, shareIncludeTotals, shopName, summary]);
+  }, [productEmojiById, selectedMarkers, shareIncludeAddress, shareIncludePhone, shareIncludeTotals, shopName, summary, t]);
 
   return {
     selection,

@@ -37,7 +37,7 @@ test("share message uses the emoji template: header, numbered customers, totals,
     message,
     [
       "📍 Hamburg",
-      "📦 عدد الطلبات: 2",
+      "📦 Anzahl Bestellungen: 2",
       "",
       SEPARATOR,
       "",
@@ -56,7 +56,7 @@ test("share message uses the emoji template: header, numbered customers, totals,
       "",
       SEPARATOR,
       "",
-      "📊 المجموع",
+      "📊 Gesamt",
       "",
       "📦 Kaese: 2 kg",
       "📦 Labneh: 1 kg",
@@ -64,8 +64,8 @@ test("share message uses the emoji template: header, numbered customers, totals,
       "",
       SEPARATOR,
       "",
-      "👥 عدد الزبائن: 2",
-      "📦 إجمالي الطلبات: 2",
+      "👥 Anzahl Kunden: 2",
+      "📦 Bestellungen insgesamt: 2",
     ].join("\n"),
   );
 });
@@ -115,8 +115,8 @@ test("customer note is appended when present, omitted otherwise", () => {
     { includeTotal: false },
   );
 
-  assert.ok(withNote.includes("📝 ملاحظة: Nach 17 Uhr"));
-  assert.ok(!withoutNote.includes("📝 ملاحظة"));
+  assert.ok(withNote.includes("📝 Notiz: Nach 17 Uhr"));
+  assert.ok(!withoutNote.includes("📝 Notiz"));
 });
 
 test("order count is shown when a customer has more than one order, omitted for exactly one", () => {
@@ -148,9 +148,9 @@ test("order counts in header and footer sum every customer's orders, not just th
     { includeTotal: false },
   );
 
-  assert.ok(message.includes("📦 عدد الطلبات: 8"));
-  assert.ok(message.includes("👥 عدد الزبائن: 5"));
-  assert.ok(message.includes("📦 إجمالي الطلبات: 8"));
+  assert.ok(message.includes("📦 Anzahl Bestellungen: 8"));
+  assert.ok(message.includes("👥 Anzahl Kunden: 5"));
+  assert.ok(message.includes("📦 Bestellungen insgesamt: 8"));
 });
 
 test("phone is only included when requested", () => {

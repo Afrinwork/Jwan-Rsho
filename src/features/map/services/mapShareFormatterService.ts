@@ -1,3 +1,5 @@
+import { t } from "@/src/i18n/i18n";
+
 const SEPARATOR = "━━━━━━━━━━━━━━";
 const DEFAULT_ITEM_EMOJI = "📦";
 const KEYCAP_DIGITS = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"];
@@ -51,12 +53,15 @@ export function buildSelectionShareMessage(
   });
 
   if (includeTotal && totals.length) {
-    lines.push("📊 المجموع", "");
+    lines.push(`📊 ${t("map:share.total")}`, "");
     totals.forEach((total) => lines.push(formatItemLine(total)));
     lines.push("", SEPARATOR, "");
   }
 
-  lines.push(`👥 عدد الزبائن: ${customers.length}`, `📦 إجمالي الطلبات: ${totalOrderCount(customers)}`);
+  lines.push(
+    `👥 ${t("map:share.customerCount", { count: customers.length })}`,
+    `📦 ${t("map:share.totalOrders", { count: totalOrderCount(customers) })}`,
+  );
 
   if (shopName) {
     lines.push("", shopName);
@@ -74,10 +79,10 @@ function pushHeader(lines: string[], customers: SelectionShareCustomer[], shopNa
   if (cities.length === 1) {
     lines.push(`📍 ${cities[0]}`);
   } else if (cities.length > 1) {
-    lines.push("📍 Mehrere Staedte");
+    lines.push(`📍 ${t("map:share.multipleCities")}`);
   }
 
-  lines.push(`📦 عدد الطلبات: ${totalOrderCount(customers)}`);
+  lines.push(`📦 ${t("map:share.headerOrderCount", { count: totalOrderCount(customers) })}`);
 }
 
 function totalOrderCount(customers: SelectionShareCustomer[]) {
@@ -104,7 +109,7 @@ function pushCustomerBlock(
   }
 
   if (customer.orderCount && customer.orderCount > 1) {
-    lines.push(`🧾 ${customer.orderCount} Bestellungen`);
+    lines.push(`🧾 ${t("map:share.ordersCountLine", { count: customer.orderCount })}`);
   }
 
   lines.push("");
@@ -112,11 +117,11 @@ function pushCustomerBlock(
   if (customer.items.length) {
     customer.items.forEach((item) => lines.push(formatItemLine(item)));
   } else {
-    lines.push("Keine offene Bestellung");
+    lines.push(t("map:share.noOpenOrder"));
   }
 
   if (customer.note?.trim()) {
-    lines.push("", `📝 ملاحظة: ${customer.note.trim()}`);
+    lines.push("", `📝 ${t("map:share.note", { note: customer.note.trim() })}`);
   }
 }
 
