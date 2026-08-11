@@ -34,7 +34,7 @@ export function CustomerSearchResult({ customer, onPress, selected }: CustomerSe
           {customer.address}
         </Text>
       </View>
-      {selected ? <Text style={[styles.selectedLabel, { color: colors.primary }]}>Ausgewaehlt</Text> : null}
+      {selected ? <Text style={[styles.selectedLabel, { color: colors.primary }]}>{t("search.selected")}</Text> : null}
     </Pressable>
   );
 }

@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { ErrorState } from "@/src/components/ui/ErrorState";
