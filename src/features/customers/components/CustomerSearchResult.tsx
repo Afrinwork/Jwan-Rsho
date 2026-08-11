@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { spacing } from "@/src/constants/spacing";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
@@ -13,6 +14,7 @@ type CustomerSearchResultProps = {
 
 export function CustomerSearchResult({ customer, onPress, selected }: CustomerSearchResultProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation("customers");
 
   return (
     <Pressable

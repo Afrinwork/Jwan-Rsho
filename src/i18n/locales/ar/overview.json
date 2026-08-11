@@ -1,0 +1,33 @@
+{
+  "screen": {
+    "loading": "جارٍ تحميل النظرة العامة...",
+    "title": "نظرة عامة",
+    "subtitle": "نظرة سريعة على الطلبات والتنظيم والتقدم.",
+    "heroTitle": "تركيز اليوم",
+    "messageTitle": "نظرة على اليوم"
+  },
+  "stats": {
+    "openOrders": { "title": "الطلبات المفتوحة", "caption": "نشطة قيد التنفيذ" },
+    "completedOrders": { "title": "الطلبات المكتملة", "caption": "تم إنجازها بالفعل" },
+    "countries": { "title": "الدول", "caption": "هيكل نشط" },
+    "cities": { "title": "المدن", "caption": "بها عملاء" },
+    "products": { "title": "المنتجات", "caption": "لطلبات جديدة" },
+    "customers": { "title": "العملاء", "caption": "في السجل" }
+  },
+  "motivation": {
+    "none": "رائع. لا توجد حاليًا أي طلبات مفتوحة.",
+    "one": "طلب واحد مفتوح فقط. أنت على وشك الإنجاز.",
+    "aheadOfSchedule": "لا يزال هناك {{openOrders}} طلبات مفتوحة. أنت في تقدم جيد جدًا.",
+    "inProgress": "لديك حاليًا {{openOrders}} طلبات مفتوحة قيد المتابعة. خطوة بخطوة."
+  },
+  "progress": {
+    "empty": "بمجرد إنشاء أول الطلبات، سيظهر هنا تقدمك.",
+    "allDone": "تم إنجاز {{completedOrders}} طلبات بالفعل. كل شيء يبدو منظمًا اليوم.",
+    "inProgress": "تم إنجاز {{completedOrders}} طلبات بالفعل. لا يزال هناك {{openOrders}} طلبات في الانتظار للخطوة التالية."
+  },
+  "quickActions": {
+    "newOrder": "طلب جديد",
+    "openCities": "فتح المدن",
+    "management": "الإدارة"
+  }
+}

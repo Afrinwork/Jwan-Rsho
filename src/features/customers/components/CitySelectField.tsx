@@ -1,5 +1,6 @@
 import { AddCircle20Regular } from "@fluentui/react-native-icons";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { FormField } from "@/src/components/forms/FormField";
@@ -18,21 +19,22 @@ type CitySelectFieldProps = {
 export function CitySelectField({ value, onChange, country, error }: CitySelectFieldProps) {
   const { cities, loading } = useCustomerCities();
   const colors = useThemeColors();
+  const { t } = useTranslation("customers");
   const options = cities.filter((city) => !country || city.country === country);
   const normalizedValue = value.trim().toLowerCase();
   const isNewCity = normalizedValue.length > 0 && !options.some((option) => option.city.trim().toLowerCase() === normalizedValue);
 
   return (
-    <FormField error={error} label="Stadt">
+    <FormField error={error} label={t("form.cityLabel")}>
       <View style={styles.container}>
         <AppInput
           autoCapitalize="words"
           onChangeText={onChange}
-          placeholder="z. B. Berlin"
+          placeholder={t("form.cityPlaceholder")}
           value={value}
         />
         {loading ? (
-          <Text style={[styles.hint, { color: colors.mutedText }]}>Bestehende Staedte laden...</Text>
+          <Text style={[styles.hint, { color: colors.mutedText }]}>{t("city.loadingHint")}</Text>
         ) : options.length > 0 ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.row}>
@@ -65,9 +67,9 @@ export function CitySelectField({ value, onChange, country, error }: CitySelectF
               <View style={styles.iconWrap}>
                 <AddCircle20Regular color={colors.primary} />
               </View>
-              <Text style={[styles.addText, { color: colors.text }]}>Neue Stadt hinzufuegen: {value.trim()}</Text>
+              <Text style={[styles.addText, { color: colors.text }]}>{t("city.addNew", { city: value.trim() })}</Text>
             </View>
-            <AppButton label="Uebernehmen" onPress={() => onChange(value.trim())} />
+            <AppButton label={t("city.apply")} onPress={() => onChange(value.trim())} />
           </View>
         ) : null}
       </View>

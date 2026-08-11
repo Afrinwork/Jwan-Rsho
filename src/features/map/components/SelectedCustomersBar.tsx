@@ -7,9 +7,11 @@ import { useThemeColors } from "@/src/hooks/useThemeColors";
 type SelectedCustomersBarProps = {
   selectedCount: number;
   sharing: boolean;
+  emailing: boolean;
   shareError: string | null;
   onViewSelection: () => void;
   onShare: () => void;
+  onShareByEmail: () => void;
   onResetSelection: () => void;
 };
 
@@ -29,7 +31,10 @@ export function SelectedCustomersBar(props: SelectedCustomersBarProps) {
           <AppButton label="Ansehen" onPress={props.onViewSelection} size="compact" variant="secondary" />
         </View>
         <View style={styles.actionButton}>
-          <AppButton label="Teilen" loading={props.sharing} onPress={props.onShare} size="compact" />
+          <AppButton label="WhatsApp" loading={props.sharing} onPress={props.onShare} size="compact" />
+        </View>
+        <View style={styles.actionButton}>
+          <AppButton label="E-Mail" loading={props.emailing} onPress={props.onShareByEmail} size="compact" variant="secondary" />
         </View>
         <View style={styles.actionButton}>
           <AppButton label="Loeschen" onPress={props.onResetSelection} size="compact" variant="secondary" />

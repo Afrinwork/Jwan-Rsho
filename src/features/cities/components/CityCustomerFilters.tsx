@@ -1,4 +1,5 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AppInput } from "@/src/components/ui/AppInput";
 import { colors } from "@/src/constants/colors";
@@ -10,17 +11,18 @@ type CityCustomerFiltersProps = {
   onStatusChange: (value: string) => void;
 };
 
-const options = [
-  { label: "Alle", value: "all" },
-  { label: "Offen", value: "open" },
-  { label: "Erledigt", value: "completed" },
-  { label: "Ohne offen", value: "no-open-order" },
-];
-
 export function CityCustomerFilters(props: CityCustomerFiltersProps) {
+  const { t } = useTranslation("cities");
+  const options = [
+    { label: t("customerFilters.all"), value: "all" },
+    { label: t("customerFilters.open"), value: "open" },
+    { label: t("customerFilters.completed"), value: "completed" },
+    { label: t("customerFilters.noOpenOrder"), value: "no-open-order" },
+  ];
+
   return (
     <View style={styles.container}>
-      <AppInput onChangeText={props.onSearchTermChange} placeholder="Suche nach Name, Telefon, Strasse" value={props.searchTerm} />
+      <AppInput onChangeText={props.onSearchTermChange} placeholder={t("customerFilters.searchPlaceholder")} value={props.searchTerm} />
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={styles.row}>
           {options.map((value) => (

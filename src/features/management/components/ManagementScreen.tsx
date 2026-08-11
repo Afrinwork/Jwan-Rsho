@@ -1,5 +1,6 @@
 import { ScrollView, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
 import { AppButton } from "@/src/components/ui/AppButton";
@@ -13,37 +14,42 @@ import { useAuthStore } from "@/src/store/authStore";
 export function ManagementScreen() {
   const isAdmin = useAuthStore((state) => state.isAdmin);
   const router = useRouter();
+  const { t } = useTranslation("management");
 
   return (
     <ScreenContainer>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <AnimatedEntrance>
           <CompactScreenHeader
-            rightSlot={isAdmin ? <AppButton label="Admin" onPress={() => router.push(routes.admin)} variant="secondary" /> : null}
-            subtitle="Waehle einen Bereich."
-            title="Verwaltung"
+            rightSlot={
+              isAdmin ? (
+                <AppButton label={t("screen.adminButton")} onPress={() => router.push(routes.admin)} variant="secondary" />
+              ) : null
+            }
+            subtitle={t("screen.subtitle")}
+            title={t("screen.title")}
           />
         </AnimatedEntrance>
         <AnimatedEntrance delay={50} style={styles.menu}>
           <ManagementMenuButton
             onPress={() => router.push(routes.managementProducts)}
-            subtitle="Produkte hinzufuegen, ansehen, bearbeiten und loeschen."
-            title="Produkte"
+            subtitle={t("menu.products.subtitle")}
+            title={t("menu.products.title")}
           />
           <ManagementMenuButton
             onPress={() => router.push("/management/countries" as never)}
-            subtitle="Laender pflegen, aktivieren, deaktivieren und loeschen."
-            title="Laender"
+            subtitle={t("menu.countries.subtitle")}
+            title={t("menu.countries.title")}
           />
           <ManagementMenuButton
             onPress={() => router.push(routes.managementRegions)}
-            subtitle="Regionen passend zu Laendern verwalten."
-            title="Regionen"
+            subtitle={t("menu.regions.subtitle")}
+            title={t("menu.regions.title")}
           />
           <ManagementMenuButton
             onPress={() => router.push(routes.managementCatalog)}
-            subtitle="Beispiel-Katalog fuer neue Nutzung laden."
-            title="Katalog laden"
+            subtitle={t("menu.catalog.subtitle")}
+            title={t("menu.catalog.title")}
           />
         </AnimatedEntrance>
       </ScrollView>

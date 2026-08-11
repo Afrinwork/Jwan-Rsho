@@ -1,4 +1,5 @@
 import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
 import { CompactScreenHeader } from "@/src/components/ui/CompactScreenHeader";
@@ -14,6 +15,7 @@ import { SaveOrderButton } from "@/src/features/orders/components/SaveOrderButto
 import { useAddOrder } from "@/src/features/orders/hooks/useAddOrder";
 
 export function AddOrderScreen() {
+  const { t } = useTranslation("orders");
   const {
     form,
     items,
@@ -45,7 +47,7 @@ export function AddOrderScreen() {
             keyboardShouldPersistTaps="handled"
           >
             <AnimatedEntrance>
-              <CompactScreenHeader subtitle="Bestellung direkt erfassen." title="Hinzufuegen" />
+              <CompactScreenHeader subtitle={t("addScreen.subtitle")} title={t("common:add")} />
             </AnimatedEntrance>
             <AnimatedEntrance delay={60}>
               <CustomerModeSelector mode={customerMode} onChange={setMode} />

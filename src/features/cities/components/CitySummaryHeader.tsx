@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { CompactScreenHeader } from "@/src/components/ui/CompactScreenHeader";
 
 type CitySummaryHeaderProps = {
@@ -6,8 +8,10 @@ type CitySummaryHeaderProps = {
   subtitle?: string;
 };
 
-export function CitySummaryHeader({ cityCount, title = "Staedte", subtitle }: CitySummaryHeaderProps) {
+export function CitySummaryHeader({ cityCount, title, subtitle }: CitySummaryHeaderProps) {
+  const { t } = useTranslation("cities");
+
   return (
-    <CompactScreenHeader subtitle={subtitle ?? "Aus deinen Kundendaten gruppiert."} title={title} />
+    <CompactScreenHeader subtitle={subtitle ?? t("summary.defaultSubtitle")} title={title ?? t("summary.defaultTitle")} />
   );
 }

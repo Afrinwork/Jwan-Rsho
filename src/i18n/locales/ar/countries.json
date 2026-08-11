@@ -1,0 +1,43 @@
+{
+  "form": {
+    "nameLabel": "الدولة",
+    "namePlaceholder": "الدولة",
+    "isoCodeLabel": "رمز ISO (اختياري)",
+    "isoCodePlaceholder": "DE",
+    "sortOrderLabel": "الترتيب",
+    "sortOrderPlaceholder": "0"
+  },
+  "listItem": {
+    "noIsoCode": "بدون رمز ISO",
+    "sortOrder": "الترتيب {{order}}"
+  },
+  "selectField": {
+    "label": "الدولة",
+    "loading": "جارٍ تحميل الدول...",
+    "empty": "لا توجد دول متاحة."
+  },
+  "management": {
+    "title": "الدول",
+    "subtitle": "إدارة الدول كقائمة ثابتة للعملاء وفلاتر الخريطة والمناطق.",
+    "createLabel": "إضافة دولة",
+    "listLabel": "عرض الدول",
+    "loading": "جارٍ تحميل الدول...",
+    "emptyTitle": "لا توجد دول",
+    "emptyMessage": "الدول اختيارية. أضف عناصر فقط إذا كنت تريد لاحقًا التصفية حسب الدولة أو التنظيم بشكل منظم.",
+    "saveNewLabel": "حفظ الدولة",
+    "saveChangesLabel": "حفظ التغييرات",
+    "addSuccess": "تمت إضافة الدولة بنجاح.",
+    "updateSuccess": "تم تحديث الدولة بنجاح.",
+    "activatedSuccess": "تم تفعيل الدولة مجددًا.",
+    "deactivatedSuccess": "تم إلغاء تفعيل الدولة.",
+    "toggleError": "تعذر تحديث الدولة.",
+    "deleteSuccess": "تم حذف الدولة.",
+    "deleteError": "تعذر حذف الدولة.",
+    "deleteConfirmTitle": "هل تريد بالفعل حذف هذه الدولة؟",
+    "deleteConfirmMessage": "سيتم حذف هذه الدولة فقط إذا لم تكن مستخدمة من قبل أي عميل بعد."
+  },
+  "validation": {
+    "nameRequired": "الدولة مطلوبة",
+    "isoCodeTooLong": "رمز ISO يجب ألا يتجاوز 3 أحرف"
+  }
+}

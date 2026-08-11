@@ -1,4 +1,5 @@
 import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { EmptyState } from "@/src/components/ui/EmptyState";
@@ -20,6 +21,7 @@ type SelectedCustomersListProps = {
 
 export function SelectedCustomersList(props: SelectedCustomersListProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation("map");
 
   return (
     <Modal animationType="slide" onRequestClose={props.onClose} transparent visible={props.visible}>
@@ -31,7 +33,7 @@ export function SelectedCustomersList(props: SelectedCustomersListProps) {
           </View>
           <ScrollView contentContainerStyle={styles.content}>
             {props.markers.length === 0 ? (
-              <EmptyState message="Es sind aktuell keine Kunden ausgewaehlt." title="Keine Auswahl" />
+              <EmptyState message={t("selectedList.emptyMessage")} title={t("selectedList.emptyTitle")} />
             ) : (
               <>
                 <SelectionProductTotals loading={props.totalsLoading} totals={props.totals} />
@@ -42,7 +44,7 @@ export function SelectedCustomersList(props: SelectedCustomersListProps) {
             )}
           </ScrollView>
           <View style={styles.footer}>
-            <AppButton label="Schliessen" onPress={props.onClose} variant="secondary" />
+            <AppButton label={t("common:close")} onPress={props.onClose} variant="secondary" />
           </View>
         </View>
       </View>
@@ -51,7 +53,7 @@ export function SelectedCustomersList(props: SelectedCustomersListProps) {
 }
 
 const styles = StyleSheet.create({
-  overlay: { flex: 1, justifyContent: "flex-end" },
+  overlay: { flex: 1, justifyContent: "flex-end", direction: "ltr" },
   backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.28)" },
   sheet: { maxHeight: "82%", borderTopLeftRadius: 24, borderTopRightRadius: 24, borderWidth: 1, borderBottomWidth: 0 },
   handleWrap: { alignItems: "center", paddingTop: spacing.sm, paddingBottom: spacing.xs },

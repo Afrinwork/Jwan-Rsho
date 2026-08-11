@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { EmptyState } from "@/src/components/ui/EmptyState";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { LoadingView } from "@/src/components/ui/LoadingView";
@@ -13,21 +15,22 @@ type CustomerDetailsScreenProps = {
 
 export function CustomerDetailsScreen(props: CustomerDetailsScreenProps) {
   const { loading, error, customer, openOrders, historyOrders } = useCustomerDetails(props.customerId);
+  const { t } = useTranslation("customers");
 
   if (loading) {
-    return <LoadingView label="Kundendetails werden geladen..." />;
+    return <LoadingView label={t("details.loading")} />;
   }
 
   if (!customer) {
-    return <EmptyState message="Dieser Kunde wurde nicht gefunden." title="Kein Kunde" />;
+    return <EmptyState message={t("details.notFoundMessage")} title={t("details.notFoundTitle")} />;
   }
 
   return (
     <ScreenContainer>
       <CustomerDetailsHeader address={customer.address} city={customer.city} fullName={customer.fullName} phone={customer.phone} />
       {error ? <ErrorState message={error} /> : null}
-      <CustomerOrderSection orders={openOrders} title="Offene Bestellung" />
-      <CustomerOrderSection orders={historyOrders} title="Bestellverlauf" />
+      <CustomerOrderSection orders={openOrders} title={t("orderStatus.open")} />
+      <CustomerOrderSection orders={historyOrders} title={t("details.orderHistory")} />
     </ScreenContainer>
   );
 }

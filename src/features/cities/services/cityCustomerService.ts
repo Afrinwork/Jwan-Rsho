@@ -1,6 +1,7 @@
 import { Customer } from "@/src/types/customer";
 import { Order } from "@/src/types/order";
 
+import { t } from "@/src/i18n/i18n";
 import { CityCustomerItem, CityCustomerStatus } from "@/src/features/cities/types/cityCustomerTypes";
 
 export function buildCityCustomerItems(customers: Customer[], orders: Order[]) {
@@ -48,5 +49,5 @@ function resolveStatus(orders: Order[]): CityCustomerStatus {
 }
 
 function formatOpenOrderLabel(orderedAt: string) {
-  return `Offen seit ${new Date(orderedAt).toLocaleDateString()}`;
+  return t("cities:customerList.openSince", { date: new Date(orderedAt).toLocaleDateString() });
 }

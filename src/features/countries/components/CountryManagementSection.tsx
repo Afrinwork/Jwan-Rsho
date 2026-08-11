@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 
 import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
@@ -14,6 +15,7 @@ import { ManagementSectionShell } from "@/src/features/management/components/Man
 import { Country } from "@/src/types/country";
 
 export function CountryManagementSection() {
+  const { t } = useTranslation("countries");
   const { countries, loading, error, addCountry, updateCountry, toggleActive, deleteCountry } = useCountries();
   const [mode, setMode] = useState<"list" | "create">("list");
   const [editingCountry, setEditingCountry] = useState<Country | null>(null);
@@ -25,7 +27,7 @@ export function CountryManagementSection() {
     setActionError(null);
     setSuccessMessage(null);
     await addCountry(values);
-    setSuccessMessage("Land wurde erfolgreich hinzugefuegt.");
+    setSuccessMessage(t("management.addSuccess"));
     setMode("list");
   }
 
@@ -37,32 +39,32 @@ export function CountryManagementSection() {
     setActionError(null);
     setSuccessMessage(null);
     await updateCountry(editingCountry.id, values);
-    setSuccessMessage("Land wurde erfolgreich aktualisiert.");
+    setSuccessMessage(t("management.updateSuccess"));
     setEditingCountry(null);
   }
 
   return (
     <ManagementSectionShell
-      createLabel="Land hinzufuegen"
-      listLabel="Landansicht"
+      createLabel={t("management.createLabel")}
+      listLabel={t("management.listLabel")}
       mode={mode}
       onModeChange={setMode}
-      subtitle="Laender als feste Auswahl fuer Kunden, Kartenfilter und Regionen pflegen."
-      title="Laender"
+      subtitle={t("management.subtitle")}
+      title={t("management.title")}
     >
       {mode === "create" ? (
-        <CountryForm onCancel={() => setMode("list")} onSubmit={handleAdd} submitLabel="Land speichern" />
+        <CountryForm onCancel={() => setMode("list")} onSubmit={handleAdd} submitLabel={t("management.saveNewLabel")} />
       ) : null}
       {mode === "list" ? (
         <View style={styles.container}>
-          {loading ? <LoadingView label="Laender laden..." /> : null}
+          {loading ? <LoadingView label={t("management.loading")} /> : null}
           {error ? <ErrorState message={error} /> : null}
           {actionError ? <ErrorState message={actionError} /> : null}
           {successMessage ? <SuccessState message={successMessage} /> : null}
           {!loading && !error && countries.length === 0 ? (
             <EmptyState
-              message="Laender sind optional. Lege nur Eintraege an, wenn du spaeter nach Land filtern oder sauber strukturieren willst."
-              title="Keine Laender"
+              message={t("management.emptyMessage")}
+              title={t("management.emptyTitle")}
             />
           ) : null}
           {countries.map((country) =>
@@ -72,7 +74,7 @@ export function CountryManagementSection() {
                 key={country.id}
                 onCancel={() => setEditingCountry(null)}
                 onSubmit={handleEdit}
-                submitLabel="Aenderungen speichern"
+                submitLabel={t("management.saveChangesLabel")}
               />
             ) : (
               <CountryListItem
@@ -83,10 +85,10 @@ export function CountryManagementSection() {
                 onToggleActive={() => {
                   void toggleActive(country)
                     .then(() =>
-                      setSuccessMessage(country.isActive ? "Land wurde deaktiviert." : "Land wurde wieder aktiviert."),
+                      setSuccessMessage(country.isActive ? t("management.deactivatedSuccess") : t("management.activatedSuccess")),
                     )
                     .catch((value) =>
-                      setActionError(value instanceof Error ? value.message : "Land konnte nicht aktualisiert werden."),
+                      setActionError(value instanceof Error ? value.message : t("management.toggleError")),
                     );
                 }}
               />
@@ -95,21 +97,21 @@ export function CountryManagementSection() {
         </View>
       ) : null}
       <ConfirmDialog
-        confirmLabel="Loeschen"
+        confirmLabel={t("common:delete")}
         destructive
-        message="Dieses Land wird nur geloescht, wenn es noch von keinem Kunden verwendet wird."
+        message={t("management.deleteConfirmMessage")}
         onCancel={() => setDeleteTarget(null)}
         onConfirm={() => {
           if (deleteTarget) {
             void deleteCountry(deleteTarget)
-              .then(() => setSuccessMessage("Land wurde geloescht."))
+              .then(() => setSuccessMessage(t("management.deleteSuccess")))
               .catch((value) =>
-                setActionError(value instanceof Error ? value.message : "Land konnte nicht geloescht werden."),
+                setActionError(value instanceof Error ? value.message : t("management.deleteError")),
               );
           }
           setDeleteTarget(null);
         }}
-        title="Land wirklich loeschen?"
+        title={t("management.deleteConfirmTitle")}
         visible={Boolean(deleteTarget)}
       />
     </ManagementSectionShell>

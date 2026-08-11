@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { spacing } from "@/src/constants/spacing";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
@@ -10,15 +11,16 @@ type ManagementWorkspaceTabsProps = {
   onChange: (value: ManagementWorkspaceId) => void;
 };
 
-const items: { id: ManagementWorkspaceId; label: string }[] = [
-  { id: "products", label: "Produkte" },
-  { id: "countries", label: "Laender" },
-  { id: "regions", label: "Regionen" },
-  { id: "seed", label: "Katalog" },
-];
-
 export function ManagementWorkspaceTabs(props: ManagementWorkspaceTabsProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation("management");
+
+  const items: { id: ManagementWorkspaceId; label: string }[] = [
+    { id: "products", label: t("workspaceTabs.products") },
+    { id: "countries", label: t("workspaceTabs.countries") },
+    { id: "regions", label: t("workspaceTabs.regions") },
+    { id: "seed", label: t("workspaceTabs.catalog") },
+  ];
 
   return (
     <View style={styles.grid}>

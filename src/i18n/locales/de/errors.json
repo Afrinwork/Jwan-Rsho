@@ -1,0 +1,22 @@
+{
+  "firebaseNotConfigured": "Firebase ist noch nicht konfiguriert.",
+  "invalidCredentials": "E-Mail oder Passwort sind nicht korrekt.",
+  "recentLoginRequired": "Bitte melde dich kurz neu an, bevor du die E-Mail-Adresse aenderst.",
+  "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+  "forbidden": "Du hast keinen Zugriff auf diesen Bereich.",
+  "authRequired": "Bitte melde dich erneut an.",
+  "emailAlreadyExists": "Diese E-Mail-Adresse ist bereits vergeben.",
+  "userNotFound": "Benutzer wurde nicht gefunden.",
+  "dataNotFound": "Die angeforderten Daten wurden nicht gefunden.",
+  "dataLoadFailed": "Daten konnten gerade nicht geladen werden. Bitte versuche es erneut.",
+  "adminSelfDelete": "Admins koennen das eigene Konto nicht loeschen.",
+  "cloudUnavailable": "Der Server ist gerade nicht erreichbar. Bitte spaeter erneut versuchen.",
+  "noInternet": "Keine Internetverbindung. Bitte Verbindung pruefen und erneut versuchen.",
+  "authTemporarilyLocked": "Zu viele Versuche. Bitte warte kurz und versuche es erneut.",
+  "duplicateProduct": "Ein Produkt mit diesem Namen existiert bereits.",
+  "duplicateCountry": "Ein Land mit diesem Namen existiert bereits.",
+  "duplicateRegion": "Eine passende Region existiert bereits.",
+  "countryInUse": "Dieses Land wird bereits von Kunden verwendet und kann nicht geloescht werden.",
+  "regionInUse": "Diese Region wird bereits von Kunden verwendet und kann nicht geloescht werden.",
+  "invalidForm": "Bitte pruefe die Eingaben im Formular."
+}

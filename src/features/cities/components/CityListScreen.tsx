@@ -1,4 +1,5 @@
 import { FlatList } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
 import { EmptyState } from "@/src/components/ui/EmptyState";
@@ -11,6 +12,7 @@ import { CitySummaryHeader } from "@/src/features/cities/components/CitySummaryH
 import { useCities } from "@/src/features/cities/hooks/useCities";
 
 export function CityListScreen() {
+  const { t } = useTranslation("cities");
   const {
     loading,
     error,
@@ -23,7 +25,7 @@ export function CityListScreen() {
   } = useCities();
 
   if (loading) {
-    return <LoadingView label="Staedte werden geladen..." />;
+    return <LoadingView label={t("listScreen.loading")} />;
   }
 
   return (
@@ -37,8 +39,8 @@ export function CityListScreen() {
       {error ? <AnimatedEntrance delay={100}><ErrorState message={error} /></AnimatedEntrance> : null}
       {!cities.length ? (
         <AnimatedEntrance delay={120}><EmptyState
-          message="Noch keine Staedte sichtbar. Lege zuerst im Tab Hinzufuegen einen Kunden oder eine Bestellung mit Stadt an."
-          title="Keine Staedte"
+          message={t("listScreen.emptyMessage")}
+          title={t("listScreen.emptyTitle")}
         /></AnimatedEntrance>
       ) : (
         <FlatList

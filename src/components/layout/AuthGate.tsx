@@ -1,11 +1,13 @@
 import { PropsWithChildren, useEffect } from "react";
 import { useRouter, useSegments } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 import { LoadingView } from "@/src/components/ui/LoadingView";
 import { resolveAuthRedirect } from "@/src/components/layout/authGateRules";
 import { useAuthSession } from "@/src/features/auth/hooks/useAuthSession";
 
 export function AuthGate({ children }: PropsWithChildren) {
+  const { t } = useTranslation("common");
   const { authLoading, isAdmin, isAuthenticated } = useAuthSession();
   const router = useRouter();
   const segments = useSegments();
@@ -23,7 +25,7 @@ export function AuthGate({ children }: PropsWithChildren) {
   }, [authLoading, isAdmin, isAuthenticated, router, segments]);
 
   if (authLoading) {
-    return <LoadingView label="Sitzung wird geprueft..." />;
+    return <LoadingView label={t("checkingSession")} />;
   }
 
   return <>{children}</>;

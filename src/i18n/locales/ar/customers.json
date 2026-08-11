@@ -1,0 +1,66 @@
+{
+  "form": {
+    "nameLabel": "الاسم الكامل",
+    "namePlaceholder": "الاسم الكامل",
+    "phoneLabel": "رقم الهاتف",
+    "phonePlaceholder": "رقم الهاتف",
+    "noteLabel": "ملاحظة (اختياري)",
+    "notePlaceholder": "ملاحظة",
+    "addressLabel": "العنوان",
+    "addressPlaceholder": "مثال: شارع النموذج 12، 10115 برلين",
+    "cityLabel": "المدينة",
+    "cityPlaceholder": "مثال: برلين"
+  },
+  "city": {
+    "loadingHint": "جارٍ تحميل المدن الحالية...",
+    "addNew": "إضافة مدينة جديدة: {{city}}",
+    "apply": "اعتماد"
+  },
+  "validation": {
+    "nameRequired": "الاسم مطلوب",
+    "phoneRequired": "رقم الهاتف مطلوب",
+    "addressRequired": "العنوان مطلوب",
+    "cityRequired": "المدينة مطلوبة",
+    "countryRequired": "الدولة مطلوبة",
+    "customerRequired": "الرجاء اختيار عميل",
+    "itemsRequired": "أضف منتجًا واحدًا على الأقل"
+  },
+  "details": {
+    "loading": "جارٍ تحميل بيانات العميل...",
+    "notFoundTitle": "لا يوجد عميل",
+    "notFoundMessage": "لم يتم العثور على هذا العميل.",
+    "orderHistory": "سجل الطلبات"
+  },
+  "edit": {
+    "loading": "جارٍ تحميل بيانات العميل للتعديل...",
+    "noCustomerTitle": "لا يوجد عميل",
+    "noCustomerMessage": "لم يتم اختيار أي عميل.",
+    "screenTitle": "تعديل العميل",
+    "screenSubtitle": "تعديل بيانات العميل والطلب المفتوح.",
+    "sectionTitle": "العميل والعنوان",
+    "sectionSubtitle": "البيانات الشخصية وعنوان وجهة منظم بوضوح.",
+    "backButton": "العودة إلى البطاقة",
+    "noOpenOrder": "لم يتم العثور على طلب مفتوح لهذا العميل.",
+    "saveSuccess": "تم حفظ بيانات العميل والطلب المفتوح."
+  },
+  "orderItems": {
+    "sectionTitle": "المنتجات",
+    "sectionSubtitle": "عدّل الطلب المفتوح مباشرة على البطاقة.",
+    "addProduct": "إضافة منتج",
+    "change": "تغيير",
+    "remove": "إزالة",
+    "quantityPlaceholder": "الكمية",
+    "unitPlaceholder": "الوحدة",
+    "removeConfirmTitle": "إزالة المنتج؟",
+    "removeConfirmMessage": "سيتم إزالة هذا المنتج من الطلب."
+  },
+  "search": {
+    "placeholder": "الاسم، الهاتف، المدينة أو الشارع",
+    "selected": "محدد"
+  },
+  "orderStatus": {
+    "open": "طلب مفتوح",
+    "completed": "طلب مكتمل",
+    "cancelled": "طلب ملغى"
+  }
+}

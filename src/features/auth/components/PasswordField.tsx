@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Controller, Control } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
 import { AppInput } from "@/src/components/ui/AppInput";
 import { colors } from "@/src/constants/colors";
@@ -11,6 +12,7 @@ type PasswordFieldProps = {
 };
 
 export function PasswordField({ control }: PasswordFieldProps) {
+  const { t } = useTranslation("auth");
   const [secureTextEntry, setSecureTextEntry] = useState(true);
 
   return (
@@ -22,12 +24,14 @@ export function PasswordField({ control }: PasswordFieldProps) {
           <AppInput
             onBlur={onBlur}
             onChangeText={onChange}
-            placeholder="Password"
+            placeholder={t("login.passwordPlaceholder")}
             secureTextEntry={secureTextEntry}
             value={value}
           />
           <Pressable onPress={() => setSecureTextEntry((current) => !current)}>
-            <Text style={styles.toggle}>{secureTextEntry ? "Show" : "Hide"}</Text>
+            <Text style={styles.toggle}>
+              {secureTextEntry ? t("login.showPassword") : t("login.hidePassword")}
+            </Text>
           </Pressable>
         </View>
       )}

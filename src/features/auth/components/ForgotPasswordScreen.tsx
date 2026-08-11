@@ -1,17 +1,18 @@
 import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
 import { colors } from "@/src/constants/colors";
 import { ForgotPasswordForm } from "@/src/features/auth/components/ForgotPasswordForm";
 
 export function ForgotPasswordScreen() {
+  const { t } = useTranslation("auth");
+
   return (
     <ScreenContainer>
       <View style={styles.header}>
-        <Text style={styles.title}>Passwort vergessen</Text>
-        <Text style={styles.body}>
-          Gib deine E-Mail ein, damit wir dir einen Reset-Link schicken.
-        </Text>
+        <Text style={styles.title}>{t("forgotPassword.title")}</Text>
+        <Text style={styles.body}>{t("forgotPassword.body")}</Text>
       </View>
       <ForgotPasswordForm />
     </ScreenContainer>

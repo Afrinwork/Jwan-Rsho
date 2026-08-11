@@ -1,0 +1,51 @@
+{
+  "listScreen": {
+    "loading": "Staedte werden geladen...",
+    "emptyTitle": "Keine Staedte",
+    "emptyMessage": "Noch keine Staedte sichtbar. Lege zuerst im Tab Hinzufuegen einen Kunden oder eine Bestellung mit Stadt an."
+  },
+  "summary": {
+    "defaultTitle": "Staedte",
+    "defaultSubtitle": "Aus deinen Kundendaten gruppiert."
+  },
+  "filters": {
+    "searchPlaceholder": "Suche nach Stadt",
+    "countryKicker": "Landesfilter",
+    "allCountries": "Alle"
+  },
+  "card": {
+    "customers": "{{count}} Kunden",
+    "openOrders": "{{count}} offen"
+  },
+  "customerList": {
+    "loading": "Kunden dieser Stadt werden geladen...",
+    "emptyTitle": "Keine Kunden",
+    "emptyMessage": "Keine passenden Kunden fuer diese Stadt gefunden.",
+    "openSince": "Offen seit {{date}}",
+    "noOpenOrder": "Keine offene Bestellung"
+  },
+  "customerFilters": {
+    "searchPlaceholder": "Suche nach Name, Telefon, Strasse",
+    "all": "Alle",
+    "open": "Offen",
+    "completed": "Erledigt",
+    "noOpenOrder": "Ohne offen"
+  },
+  "customerStatus": {
+    "open": "Status: offen",
+    "completed": "Status: erledigt",
+    "noOpenOrder": "Status: ohne offene Bestellung"
+  },
+  "customerActions": {
+    "select": "Auswaehlen",
+    "deselect": "Abwaehlen",
+    "details": "Details",
+    "complete": "Erledigt"
+  },
+  "selectionBar": {
+    "selectedCount": "{{count}} ausgewaehlt"
+  },
+  "productTotals": {
+    "title": "Produktsummen offen"
+  }
+}

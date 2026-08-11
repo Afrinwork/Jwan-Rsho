@@ -16,14 +16,17 @@
           "locationWhenInUsePermission": "Rsho Orders verwendet deinen Standort, um deine Position auf der Karte anzuzeigen und Navigation zu Kunden zu starten."
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-updates"
     ],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.rsho.cheeseorders",
       "buildNumber": "1",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Rsho Orders verwendet deinen Standort, um deine Position auf der Karte anzuzeigen und Navigation zu Kunden zu starten."
+        "NSLocationWhenInUseUsageDescription": "Rsho Orders verwendet deinen Standort, um deine Position auf der Karte anzuzeigen und Navigation zu Kunden zu starten.",
+        "CFBundleLocalizations": ["de", "ar"],
+        "CFBundleDevelopmentRegion": "de"
       }
     },
     "experiments": {

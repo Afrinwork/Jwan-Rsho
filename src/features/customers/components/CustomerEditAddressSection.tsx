@@ -1,5 +1,6 @@
 import { Control, Controller, FieldErrors, useWatch } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { FormField } from "@/src/components/forms/FormField";
 import { AppInput } from "@/src/components/ui/AppInput";
@@ -19,10 +20,11 @@ export function CustomerEditAddressSection({
   errors,
 }: CustomerEditAddressSectionProps) {
   const countryValue = useWatch({ control, name: "customer.country" }) ?? "";
+  const { t } = useTranslation("customers");
 
   return (
     <View style={styles.container}>
-      <FormField error={errors?.address?.message} label="Adresse">
+      <FormField error={errors?.address?.message} label={t("form.addressLabel")}>
         <Controller
           control={control}
           name="customer.address"
@@ -33,7 +35,7 @@ export function CustomerEditAddressSection({
               numberOfLines={3}
               onBlur={field.onBlur}
               onChangeText={field.onChange}
-              placeholder="z. B. Musterstrasse 12, 10115 Berlin"
+              placeholder={t("form.addressPlaceholder")}
               textAlignVertical="top"
               value={field.value}
             />

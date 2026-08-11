@@ -1,5 +1,6 @@
 import { Controller } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { AppInput } from "@/src/components/ui/AppInput";
@@ -8,6 +9,7 @@ import { useLogin } from "@/src/features/auth/hooks/useLogin";
 import { PasswordField } from "@/src/features/auth/components/PasswordField";
 
 export function LoginForm() {
+  const { t } = useTranslation("auth");
   const { form, submit, submitError } = useLogin();
 
   return (
@@ -21,7 +23,7 @@ export function LoginForm() {
             keyboardType="email-address"
             onBlur={onBlur}
             onChangeText={onChange}
-            placeholder="Email"
+            placeholder={t("login.emailPlaceholder")}
             value={value}
           />
         )}
@@ -30,7 +32,7 @@ export function LoginForm() {
       {submitError ? <ErrorState message={submitError} /> : null}
       <AppButton
         disabled={form.formState.isSubmitting}
-        label={form.formState.isSubmitting ? "Anmeldung laeuft..." : "Login"}
+        label={form.formState.isSubmitting ? t("login.submitting") : t("login.submit")}
         onPress={submit}
       />
     </View>

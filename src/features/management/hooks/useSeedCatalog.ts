@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useCountries } from "@/src/features/countries/hooks/useCountries";
 import { seedCountries, seedProducts } from "@/src/features/management/data/seedCatalog";
@@ -11,6 +12,7 @@ export function useSeedCatalog() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation("management");
 
   const seed = useCallback(async () => {
     setLoading(true);
@@ -34,15 +36,15 @@ export function useSeedCatalog() {
 
       setResult(
         missingProducts.length === 0 && missingCountries.length === 0
-          ? "Alle Beispieldaten sind bereits vorhanden."
-          : `${missingProducts.length} Produkt(e) und ${missingCountries.length} Land/Laender hinzugefuegt.`,
+          ? t("seed.allPresent")
+          : t("seed.summary", { productsCount: missingProducts.length, countriesCount: missingCountries.length }),
       );
     } catch (seedError) {
-      setError(seedError instanceof Error ? seedError.message : "Beispieldaten konnten nicht geladen werden.");
+      setError(seedError instanceof Error ? seedError.message : t("seed.loadError"));
     } finally {
       setLoading(false);
     }
-  }, [addCountry, addProduct, countries, products]);
+  }, [addCountry, addProduct, countries, products, t]);
 
   return { seed, loading, result, error };
 }

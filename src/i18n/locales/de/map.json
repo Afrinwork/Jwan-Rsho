@@ -1,0 +1,91 @@
+{
+  "screen": {
+    "loading": "Karte wird vorbereitet..."
+  },
+  "toolbar": {
+    "title": "Karte",
+    "subtitle": "Kunden und Filter direkt auf der Karte.",
+    "retryLocation": "Erneut fragen",
+    "retryCustomers": "Kunden neu laden",
+    "loadingCustomers": "Kundenpins werden geladen..."
+  },
+  "filters": {
+    "country": "Land",
+    "city": "Stadt",
+    "region": "Region",
+    "all": "Alle"
+  },
+  "selectionToolbar": {
+    "drawingActive": "Malen aktiv",
+    "drawPolygon": "Polygon malen",
+    "clearSelection": "Auswahl loeschen"
+  },
+  "polygonDraw": {
+    "back": "Zurueck",
+    "closeSelection": "Auswahl schliessen"
+  },
+  "selectedBar": {
+    "count": "{{count}} Kunden ausgewaehlt",
+    "view": "Ansehen",
+    "whatsapp": "WhatsApp",
+    "email": "E-Mail",
+    "clear": "Loeschen"
+  },
+  "selectedList": {
+    "emptyTitle": "Keine Auswahl",
+    "emptyMessage": "Es sind aktuell keine Kunden ausgewaehlt."
+  },
+  "productTotals": {
+    "title": "Produktsummen der Auswahl",
+    "calculating": "Wird berechnet..."
+  },
+  "selectedRow": {
+    "openOrdersCount": "{{count}} offene Bestellungen",
+    "openOrderSingular": "Offene Bestellung vorhanden",
+    "noOpenOrder": "Keine offene Bestellung",
+    "remove": "Entfernen"
+  },
+  "customerCard": {
+    "region": "Region: {{region}}",
+    "note": "Notiz",
+    "openOrder": "Offene Bestellung",
+    "openOrderIndexed": "Offene Bestellung {{index}} von {{count}}",
+    "noOpenOrderFound": "Keine offene Bestellung gefunden."
+  },
+  "sheet": {
+    "loadingDetails": "Kundendetails werden geladen...",
+    "markCompleted": "Als erledigt markieren",
+    "markAllCompleted": "Alle {{count}} Bestellungen als erledigt markieren",
+    "callPhone": "Telefonnummer anrufen",
+    "phoneMissing": "Telefonnummer fehlt",
+    "navigation": "Navigation",
+    "shareViaWhatsapp": "Per WhatsApp teilen",
+    "shareLocation": "Standort teilen"
+  },
+  "navigationSheet": {
+    "title": "Navigation oeffnen",
+    "subtitle": "Apple Maps ist immer die sichere Standardoption.",
+    "unavailable": "{{label}} nicht verfuegbar"
+  },
+  "errors": {
+    "noPhone": "Keine Telefonnummer fuer diesen Kunden vorhanden.",
+    "noNavigationData": "Keine Navigationsdaten fuer diesen Kunden vorhanden.",
+    "locationNotReady": "Standortdaten sind noch nicht verfuegbar.",
+    "noCustomerDataToShare": "Keine Kundendaten zum Teilen vorhanden.",
+    "nothingToShare": "Es gibt keine Daten zum Teilen.",
+    "noOpenOrderFound": "Keine offene Bestellung fuer diesen Kunden gefunden.",
+    "noCustomersSelected": "Es sind keine Kunden ausgewaehlt.",
+    "locationPermissionDenied": "Standortzugriff wurde abgelehnt. Die Karte funktioniert trotzdem weiterhin."
+  },
+  "share": {
+    "total": "Gesamt",
+    "multipleCities": "Mehrere Staedte",
+    "customerCount": "Anzahl Kunden: {{count}}",
+    "totalOrders": "Bestellungen insgesamt: {{count}}",
+    "headerOrderCount": "Anzahl Bestellungen: {{count}}",
+    "ordersCountLine": "{{count}} Bestellungen",
+    "noOpenOrder": "Keine offene Bestellung",
+    "note": "Notiz: {{note}}",
+    "defaultSubject": "Kundenauswahl"
+  }
+}

@@ -1,5 +1,6 @@
 import { Control, Controller } from "react-hook-form";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AppInput } from "@/src/components/ui/AppInput";
 import { spacing } from "@/src/constants/spacing";
@@ -22,6 +23,7 @@ export function CustomerEditProductRow({
   onRemove,
 }: CustomerEditProductRowProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation("customers");
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -31,7 +33,7 @@ export function CustomerEditProductRow({
         render={({ field }) => (
           <Pressable onPress={onOpenPicker} style={styles.productButton}>
             <Text style={[styles.productLabel, { color: colors.text }]}>{field.value}</Text>
-            <Text style={[styles.change, { color: colors.primary }]}>Aendern</Text>
+            <Text style={[styles.change, { color: colors.primary }]}>{t("orderItems.change")}</Text>
           </Pressable>
         )}
       />
@@ -45,7 +47,7 @@ export function CustomerEditProductRow({
                 keyboardType="decimal-pad"
                 onBlur={field.onBlur}
                 onChangeText={(text) => field.onChange(text === "" ? 0 : Number(text.replace(",", ".")))}
-                placeholder="Menge"
+                placeholder={t("orderItems.quantityPlaceholder")}
                 value={String(field.value)}
               />
             )}
@@ -56,12 +58,12 @@ export function CustomerEditProductRow({
             control={control}
             name={`items.${index}.unit`}
             render={({ field }) => (
-              <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder="Einheit" value={field.value} />
+              <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder={t("orderItems.unitPlaceholder")} value={field.value} />
             )}
           />
         </View>
         <Pressable onPress={onRemove} style={styles.removeButton}>
-          <Text style={[styles.removeLabel, { color: colors.danger }]}>Entfernen</Text>
+          <Text style={[styles.removeLabel, { color: colors.danger }]}>{t("orderItems.remove")}</Text>
         </Pressable>
       </View>
       {error ? <Text style={[styles.error, { color: colors.danger }]}>{error}</Text> : null}

@@ -1,11 +1,15 @@
+import { useTranslation } from "react-i18next";
+
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
 import { DeleteUserForm } from "@/src/features/admin/components/DeleteUserForm";
 import { AdminSectionHeader } from "@/src/features/admin/components/AdminSectionHeader";
 
 export function DeleteUserScreenBody() {
+  const { t } = useTranslation("admin");
+
   return (
     <ScreenContainer>
-      <AdminSectionHeader subtitle="Loeschen per E-Mail mit Sicherheitsdialog. Eigenes Konto bleibt geschuetzt." title="Benutzer loeschen" />
+      <AdminSectionHeader subtitle={t("deleteUser.subtitle")} title={t("deleteUser.title")} />
       <DeleteUserForm />
     </ScreenContainer>
   );

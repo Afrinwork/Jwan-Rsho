@@ -4,6 +4,7 @@ import { buildSelectionShareMessage, SelectionShareCustomer, SelectionShareItem 
 import { useMapSelection } from "@/src/features/map/hooks/useMapSelection";
 import { useSelectionSummary } from "@/src/features/map/hooks/useSelectionSummary";
 import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
+import { emailService } from "@/src/services/emailService";
 import { sharingService } from "@/src/services/sharingService";
 import { useAppStore } from "@/src/store/appStore";
 import { buildProductTotals } from "@/src/utils/orderItemTotals";
@@ -24,6 +25,7 @@ export function useMapCustomerSelection(
   const summary = useSelectionSummary(selection.selectedIds);
   const [listVisible, setListVisible] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [emailing, setEmailing] = useState(false);
   const [shareError, setShareError] = useState<string | null>(null);
 
   const selectedMarkers = useMemo(() => {
@@ -48,17 +50,15 @@ export function useMapCustomerSelection(
     setSharing(true);
 
     try {
-      const orders = await summary.ensureLoaded();
-      const message = buildSelectionShareMessage(
-        buildShareCustomers(selectedMarkers, orders, productEmojiById),
-        enrichTotalsWithEmoji(buildProductTotals(orders), productEmojiById),
-        {
-          includeAddress: shareIncludeAddress,
-          includePhone: shareIncludePhone,
-          includeTotal: shareIncludeTotals,
-          shopName,
-        },
-      );
+      const message = await buildSelectionMessage({
+        productEmojiById,
+        selectedMarkers,
+        shareIncludeAddress,
+        shareIncludePhone,
+        shareIncludeTotals,
+        shopName,
+        summary,
+      });
 
       if (!message) {
         setShareError("Es sind keine Kunden ausgewaehlt.");
@@ -73,6 +73,34 @@ export function useMapCustomerSelection(
     }
   }, [productEmojiById, selectedMarkers, shareIncludeAddress, shareIncludePhone, shareIncludeTotals, shopName, summary]);
 
+  const shareByEmail = useCallback(async () => {
+    setShareError(null);
+    setEmailing(true);
+
+    try {
+      const message = await buildSelectionMessage({
+        productEmojiById,
+        selectedMarkers,
+        shareIncludeAddress,
+        shareIncludePhone,
+        shareIncludeTotals,
+        shopName,
+        summary,
+      });
+
+      if (!message) {
+        setShareError("Es sind keine Kunden ausgewaehlt.");
+        return;
+      }
+
+      await emailService.compose(shopName?.trim() || "Kundenauswahl", message);
+    } catch (error) {
+      setShareError(formatError(error).message);
+    } finally {
+      setEmailing(false);
+    }
+  }, [productEmojiById, selectedMarkers, shareIncludeAddress, shareIncludePhone, shareIncludeTotals, shopName, summary]);
+
   return {
     selection,
     selectedMarkers,
@@ -80,12 +108,45 @@ export function useMapCustomerSelection(
     totalsLoading: summary.isLoading,
     listVisible,
     sharing,
+    emailing,
     shareError,
     openList,
     closeList,
     resetSelection,
     share,
+    shareByEmail,
   };
+}
+
+async function buildSelectionMessage({
+  productEmojiById,
+  selectedMarkers,
+  shareIncludeAddress,
+  shareIncludePhone,
+  shareIncludeTotals,
+  shopName,
+  summary,
+}: {
+  productEmojiById: Map<string, string | undefined>;
+  selectedMarkers: MapCustomerMarker[];
+  shareIncludeAddress: boolean;
+  shareIncludePhone: boolean;
+  shareIncludeTotals: boolean;
+  shopName: string;
+  summary: { ensureLoaded: () => Promise<OrderWithItems[]> };
+}) {
+  const orders = await summary.ensureLoaded();
+
+  return buildSelectionShareMessage(
+    buildShareCustomers(selectedMarkers, orders, productEmojiById),
+    enrichTotalsWithEmoji(buildProductTotals(orders), productEmojiById),
+    {
+      includeAddress: shareIncludeAddress,
+      includePhone: shareIncludePhone,
+      includeTotal: shareIncludeTotals,
+      shopName,
+    },
+  );
 }
 
 function buildShareCustomers(

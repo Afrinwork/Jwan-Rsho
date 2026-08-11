@@ -1,0 +1,50 @@
+{
+  "loadingProducts": "جارٍ تحميل المنتجات...",
+  "form": {
+    "nameLabel": "اسم المنتج",
+    "namePlaceholder": "اسم المنتج",
+    "unitLabel": "الوحدة",
+    "unitPlaceholder": "مثال: قطعة، كجم",
+    "emojiLabel": "رمز تعبيري (اختياري، لنص التجميع)",
+    "emojiPlaceholder": "مثال: 🧀",
+    "sortOrderLabel": "الترتيب",
+    "submitting": "جارٍ الحفظ..."
+  },
+  "list": {
+    "sortOrder": "الترتيب {{order}}"
+  },
+  "management": {
+    "createLabel": "إضافة منتج",
+    "listLabel": "عرض المنتجات",
+    "subtitle": "إنشاء المنتجات وترتيبها وتعديلها وتعطيلها وحذفها بأمان.",
+    "title": "المنتجات",
+    "addSubmitLabel": "حفظ المنتج",
+    "editSubmitLabel": "حفظ التغييرات",
+    "emptyTitle": "لا توجد منتجات",
+    "emptyMessage": "أضف هنا منتجًا واحدًا على الأقل. لا يمكن حفظ أي طلب دون منتجات.",
+    "addSuccess": "تمت إضافة المنتج بنجاح.",
+    "updateSuccess": "تم تحديث المنتج بنجاح.",
+    "activateSuccess": "تم تفعيل المنتج مجددًا.",
+    "updateError": "تعذّر تحديث المنتج.",
+    "deactivateButton": "تعطيل",
+    "deactivateTitle": "تعطيل المنتج؟",
+    "deactivateMessage": "لن يظهر هذا المنتج بعد الآن في قائمة اختيار المنتجات.",
+    "deactivateError": "تعذّر تعطيل المنتج.",
+    "deactivateSuccess": "تم تعطيل المنتج.",
+    "deleteTitle": "هل تريد حذف المنتج فعلاً؟",
+    "deleteMessage": "لن يُحذف هذا المنتج إلا إذا لم يُستخدم بعد في أي طلب.",
+    "deleteError": "تعذّر حذف المنتج.",
+    "deleteSuccess": "تم حذف المنتج.",
+    "reorderError": "تعذّر تغيير الترتيب."
+  },
+  "picker": {
+    "title": "اختيار منتج",
+    "searchPlaceholder": "بحث عن منتج",
+    "emptyTitle": "لا توجد نتائج",
+    "emptyMessage": "لم يُعثر على منتج مطابق."
+  },
+  "validation": {
+    "nameRequired": "الاسم مطلوب",
+    "defaultUnitRequired": "الوحدة الافتراضية مطلوبة"
+  }
+}

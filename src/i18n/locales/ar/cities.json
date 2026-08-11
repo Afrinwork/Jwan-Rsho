@@ -1,0 +1,51 @@
+{
+  "listScreen": {
+    "loading": "جارٍ تحميل المدن...",
+    "emptyTitle": "لا توجد مدن",
+    "emptyMessage": "لا توجد مدن مرئية بعد. أضف أولاً عميلاً أو طلباً يحتوي على مدينة من خلال تبويب الإضافة."
+  },
+  "summary": {
+    "defaultTitle": "المدن",
+    "defaultSubtitle": "مجمّعة من بيانات عملائك."
+  },
+  "filters": {
+    "searchPlaceholder": "البحث حسب المدينة",
+    "countryKicker": "تصفية حسب الدولة",
+    "allCountries": "الكل"
+  },
+  "card": {
+    "customers": "{{count}} عميل",
+    "openOrders": "{{count}} مفتوح"
+  },
+  "customerList": {
+    "loading": "جارٍ تحميل عملاء هذه المدينة...",
+    "emptyTitle": "لا يوجد عملاء",
+    "emptyMessage": "لم يتم العثور على عملاء مطابقين لهذه المدينة.",
+    "openSince": "مفتوح منذ {{date}}",
+    "noOpenOrder": "لا يوجد طلب مفتوح"
+  },
+  "customerFilters": {
+    "searchPlaceholder": "البحث بالاسم أو الهاتف أو الشارع",
+    "all": "الكل",
+    "open": "مفتوح",
+    "completed": "مكتمل",
+    "noOpenOrder": "بدون طلب مفتوح"
+  },
+  "customerStatus": {
+    "open": "الحالة: مفتوح",
+    "completed": "الحالة: مكتمل",
+    "noOpenOrder": "الحالة: بدون طلب مفتوح"
+  },
+  "customerActions": {
+    "select": "تحديد",
+    "deselect": "إلغاء التحديد",
+    "details": "التفاصيل",
+    "complete": "إنهاء"
+  },
+  "selectionBar": {
+    "selectedCount": "{{count}} محدد"
+  },
+  "productTotals": {
+    "title": "إجمالي المنتجات المفتوحة"
+  }
+}

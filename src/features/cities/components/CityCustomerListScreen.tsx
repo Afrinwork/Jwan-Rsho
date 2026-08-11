@@ -1,5 +1,6 @@
 import { FlatList, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 import { EmptyState } from "@/src/components/ui/EmptyState";
 import { ErrorState } from "@/src/components/ui/ErrorState";
@@ -19,6 +20,7 @@ type CityCustomerListScreenProps = {
 
 export function CityCustomerListScreen(props: CityCustomerListScreenProps) {
   const router = useRouter();
+  const { t } = useTranslation("cities");
   const {
     loading,
     error,
@@ -34,7 +36,7 @@ export function CityCustomerListScreen(props: CityCustomerListScreenProps) {
   const selection = useCityCustomerSelection(customers);
 
   if (loading) {
-    return <LoadingView label="Kunden dieser Stadt werden geladen..." />;
+    return <LoadingView label={t("customerList.loading")} />;
   }
 
   return (
@@ -46,7 +48,7 @@ export function CityCustomerListScreen(props: CityCustomerListScreenProps) {
         keyboardShouldPersistTaps="handled"
         ListEmptyComponent={
           !error ? (
-            <EmptyState message="Keine passenden Kunden fuer diese Stadt gefunden." title="Keine Kunden" />
+            <EmptyState message={t("customerList.emptyMessage")} title={t("customerList.emptyTitle")} />
           ) : null
         }
         ListHeaderComponent={

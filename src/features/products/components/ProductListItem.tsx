@@ -1,5 +1,6 @@
 import { ArrowCircleDown20Regular, ArrowCircleUp20Regular, Box20Regular } from "@fluentui/react-native-icons";
 import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { spacing } from "@/src/constants/spacing";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
@@ -17,6 +18,7 @@ type ProductListItemProps = {
 
 export function ProductListItem(props: ProductListItemProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation("products");
 
   return (
     <Pressable
@@ -40,7 +42,7 @@ export function ProductListItem(props: ProductListItemProps) {
             {props.product.name}
           </Text>
           <Text style={[styles.unit, { color: colors.mutedText }]}>
-            {props.product.defaultUnit} · Sortierung {props.product.sortOrder}
+            {props.product.defaultUnit} · {t("list.sortOrder", { order: props.product.sortOrder })}
           </Text>
         </View>
         {props.onToggleActive ? (
@@ -61,12 +63,12 @@ export function ProductListItem(props: ProductListItemProps) {
         <View style={styles.spacer} />
         {props.onEdit ? (
           <Pressable onPress={props.onEdit}>
-            <Text style={[styles.action, { color: colors.primary }]}>Bearbeiten</Text>
+            <Text style={[styles.action, { color: colors.primary }]}>{t("common:edit")}</Text>
           </Pressable>
         ) : null}
         {props.onDelete ? (
           <Pressable onPress={props.onDelete}>
-            <Text style={[styles.action, { color: colors.danger }]}>Loeschen</Text>
+            <Text style={[styles.action, { color: colors.danger }]}>{t("common:delete")}</Text>
           </Pressable>
         ) : null}
       </View>

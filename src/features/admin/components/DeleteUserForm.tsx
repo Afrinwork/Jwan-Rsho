@@ -1,5 +1,6 @@
 import { Controller } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { AppInput } from "@/src/components/ui/AppInput";
@@ -19,23 +20,24 @@ export function DeleteUserForm() {
     confirmDelete,
     cancelDelete,
   } = useDeleteUser();
+  const { t } = useTranslation("admin");
 
   return (
     <View style={styles.container}>
-      <FormField error={form.formState.errors.email?.message} label="E-Mail des Benutzers">
-        <Controller control={form.control} name="email" render={({ field }) => <AppInput autoCapitalize="none" keyboardType="email-address" onBlur={field.onBlur} onChangeText={field.onChange} placeholder="benutzer@beispiel.de" value={field.value} />} />
+      <FormField error={form.formState.errors.email?.message} label={t("deleteUser.emailLabel")}>
+        <Controller control={form.control} name="email" render={({ field }) => <AppInput autoCapitalize="none" keyboardType="email-address" onBlur={field.onBlur} onChangeText={field.onChange} placeholder={t("deleteUser.emailPlaceholder")} value={field.value} />} />
       </FormField>
       {submitError ? <ErrorState message={submitError} /> : null}
       {successMessage ? <SuccessState message={successMessage} /> : null}
-      <AppButton disabled={form.formState.isSubmitting} label={form.formState.isSubmitting ? "Prueft..." : "Benutzer endgueltig loeschen"} onPress={requestDelete} variant="danger" />
+      <AppButton disabled={form.formState.isSubmitting} label={form.formState.isSubmitting ? t("deleteUser.checking") : t("deleteUser.submitLabel")} onPress={requestDelete} variant="danger" />
       <ConfirmDialog
-        cancelLabel="Abbrechen"
-        confirmLabel="Endgueltig loeschen"
+        cancelLabel={t("common:cancel")}
+        confirmLabel={t("deleteUser.confirmLabel")}
         destructive
-        message={`Dieses Konto und alle dazugehoerigen Daten werden endgueltig geloescht. Diese Aktion kann nicht rueckgaengig gemacht werden.\n\n${pendingEmail ?? ""}`}
+        message={`${t("deleteUser.confirmMessage")}\n\n${pendingEmail ?? ""}`}
         onCancel={cancelDelete}
         onConfirm={() => void confirmDelete()}
-        title="Benutzer wirklich loeschen?"
+        title={t("deleteUser.confirmTitle")}
         visible={Boolean(pendingEmail)}
       />
     </View>

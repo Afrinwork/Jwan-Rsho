@@ -1,0 +1,25 @@
+{
+  "tabs": {
+    "overview": "نظرة عامة",
+    "map": "الخريطة",
+    "add": "إضافة",
+    "cities": "المدن",
+    "management": "الإدارة",
+    "settings": "الإعدادات"
+  },
+  "stack": {
+    "adminDashboard": "لوحة تحكم المسؤول",
+    "createUser": "إنشاء مستخدم",
+    "deleteUsers": "حذف مستخدمين",
+    "products": "المنتجات",
+    "countries": "الدول",
+    "regions": "المناطق",
+    "catalog": "تحميل الكتالوج",
+    "cities": "المدن",
+    "city": "المدينة",
+    "customer": "العميل",
+    "customerEdit": "تعديل العميل",
+    "order": "الطلب",
+    "forgotPassword": "إعادة تعيين كلمة المرور"
+  }
+}

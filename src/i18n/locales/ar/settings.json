@@ -1,0 +1,59 @@
+{
+  "loadingLabel": "جارٍ تحميل الإعدادات...",
+  "header": { "title": "الإعدادات", "subtitle": "الملف الشخصي والمشاركة والملاحة." },
+  "sections": {
+    "profile": "الملف الشخصي",
+    "appearance": "المظهر",
+    "language": "اللغة",
+    "navigation": "الملاحة",
+    "share": "المشاركة",
+    "appInfo": "معلومات التطبيق",
+    "account": "الحساب"
+  },
+  "fields": {
+    "name": "الاسم",
+    "email": "البريد الإلكتروني",
+    "newPassword": "كلمة مرور جديدة"
+  },
+  "theme": {
+    "label": "المظهر",
+    "system": "النظام",
+    "light": "فاتح",
+    "dark": "داكن"
+  },
+  "language_picker": {
+    "label": "اللغة",
+    "de": "الألمانية",
+    "ar": "العربية"
+  },
+  "navigationApp": {
+    "label": "التطبيق المفضل",
+    "appleMaps": "Apple Maps",
+    "googleMaps": "Google Maps",
+    "waze": "Waze"
+  },
+  "share": {
+    "shopName": "اسم المتجر (في نص المشاركة)",
+    "shopNamePlaceholder": "مثال: 🧀 Rsho Kaeserei",
+    "includeAddress": "العنوان في نص المشاركة",
+    "includePhone": "رقم الهاتف في نص المشاركة",
+    "includeTotals": "الإجماليات في نص المشاركة"
+  },
+  "info": {
+    "appVersion": "إصدار التطبيق",
+    "ownCustomers": "عملائي",
+    "totalOrders": "إجمالي الطلبات",
+    "openOrders": "الطلبات المفتوحة"
+  },
+  "actions": {
+    "save": "حفظ الإعدادات",
+    "saving": "جارٍ الحفظ...",
+    "loggingOut": "جارٍ تسجيل الخروج..."
+  },
+  "saveSuccess": "تم حفظ الإعدادات.",
+  "restart": {
+    "title": "تم تغيير اللغة",
+    "message": "سيتم الآن إعادة تشغيل التطبيق لتطبيق اللغة الجديدة واتجاه النص.",
+    "confirm": "إعادة التشغيل"
+  }
+}

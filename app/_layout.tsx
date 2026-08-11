@@ -1,5 +1,8 @@
+import "@/src/i18n/i18n";
+
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useTranslation } from "react-i18next";
 
 import { AppProviders } from "@/src/components/layout/AppProviders";
 import { AuthGate } from "@/src/components/layout/AuthGate";
@@ -7,6 +10,7 @@ import { useThemeColors } from "@/src/hooks/useThemeColors";
 
 export default function RootLayout() {
   const colors = useThemeColors();
+  const { t } = useTranslation("navigation");
 
   return (
     <AppProviders>
@@ -31,18 +35,18 @@ export default function RootLayout() {
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="admin/index" options={{ title: "Admin Dashboard" }} />
-          <Stack.Screen name="admin/create-user" options={{ title: "Benutzer anlegen" }} />
-          <Stack.Screen name="admin/users" options={{ title: "Benutzer loeschen" }} />
-          <Stack.Screen name="management/products" options={{ title: "Produkte" }} />
-          <Stack.Screen name="management/countries" options={{ title: "Laender" }} />
-          <Stack.Screen name="management/regions" options={{ title: "Regionen" }} />
-          <Stack.Screen name="management/catalog" options={{ title: "Katalog laden" }} />
-          <Stack.Screen name="cities/index" options={{ title: "Staedte" }} />
-          <Stack.Screen name="city/[city]" options={{ title: "Stadt" }} />
-          <Stack.Screen name="customer/[id]" options={{ title: "Kunde" }} />
-          <Stack.Screen name="customer/edit/[id]" options={{ title: "Kunde bearbeiten" }} />
-          <Stack.Screen name="order/[id]" options={{ title: "Bestellung" }} />
+          <Stack.Screen name="admin/index" options={{ title: t("stack.adminDashboard") }} />
+          <Stack.Screen name="admin/create-user" options={{ title: t("stack.createUser") }} />
+          <Stack.Screen name="admin/users" options={{ title: t("stack.deleteUsers") }} />
+          <Stack.Screen name="management/products" options={{ title: t("stack.products") }} />
+          <Stack.Screen name="management/countries" options={{ title: t("stack.countries") }} />
+          <Stack.Screen name="management/regions" options={{ title: t("stack.regions") }} />
+          <Stack.Screen name="management/catalog" options={{ title: t("stack.catalog") }} />
+          <Stack.Screen name="cities/index" options={{ title: t("stack.cities") }} />
+          <Stack.Screen name="city/[city]" options={{ title: t("stack.city") }} />
+          <Stack.Screen name="customer/[id]" options={{ title: t("stack.customer") }} />
+          <Stack.Screen name="customer/edit/[id]" options={{ title: t("stack.customerEdit") }} />
+          <Stack.Screen name="order/[id]" options={{ title: t("stack.order") }} />
         </Stack>
       </AuthGate>
     </AppProviders>

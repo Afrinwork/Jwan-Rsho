@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { Flash20Regular, People20Regular } from "@fluentui/react-native-icons";
 
 import { spacing } from "@/src/constants/spacing";
@@ -13,6 +14,7 @@ type CityCardProps = {
 export function CityCard({ city }: CityCardProps) {
   const router = useRouter();
   const colors = useThemeColors();
+  const { t } = useTranslation("cities");
 
   return (
     <Pressable onPress={() => router.push(`/city/${city.normalizedName}`)} style={({ pressed }) => [{ transform: [{ scale: pressed ? 0.992 : 1 }] }]}>
@@ -29,11 +31,11 @@ export function CityCard({ city }: CityCardProps) {
         <View style={styles.bottomRow}>
           <View style={styles.metric}>
             <People20Regular color={colors.primary} />
-            <Text style={[styles.metricText, { color: colors.text }]}>{city.customerCount} Kunden</Text>
+            <Text style={[styles.metricText, { color: colors.text }]}>{t("card.customers", { count: city.customerCount })}</Text>
           </View>
           <View style={styles.metric}>
             <Flash20Regular color={colors.primary} />
-            <Text style={[styles.metricText, { color: colors.text }]}>{city.openOrderCount} offen</Text>
+            <Text style={[styles.metricText, { color: colors.text }]}>{t("card.openOrders", { count: city.openOrderCount })}</Text>
           </View>
         </View>
       </View>

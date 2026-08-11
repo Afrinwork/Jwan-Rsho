@@ -1,0 +1,66 @@
+{
+  "addScreen": {
+    "subtitle": "Bestellung direkt erfassen."
+  },
+  "customerMode": {
+    "existing": {
+      "label": "Bestehender Kunde",
+      "subtitle": "Schneller Auftrag"
+    },
+    "new": {
+      "label": "Neuer Kunde",
+      "subtitle": "Neuen Kontakt anlegen"
+    }
+  },
+  "existingCustomer": {
+    "searchTitle": "Kunde suchen",
+    "searchSubtitle": "Suche nach Name, Telefon, Stadt oder Adresse und uebernimm den Kunden direkt.",
+    "searching": "Suche laeuft...",
+    "noResultsTitle": "Keine Treffer",
+    "noResultsMessage": "Kein Kunde gefunden.",
+    "resultsCount": "{{count}} Treffer",
+    "selectedTitle": "Ausgewaehlter Kunde",
+    "selectedSubtitle": "Die ausgewaehlte Adresse wird spaeter exakt fuer Navigation und Karte verwendet."
+  },
+  "details": {
+    "noOrderSelected": "Keine Bestellung ausgewaehlt.",
+    "loading": "Bestellung wird geladen...",
+    "emptyTitle": "Keine Bestellung",
+    "emptyMessage": "Zu dieser Bestellung konnten keine Daten geladen werden.",
+    "statusLabel": "Status:",
+    "dateLabel": "Datum:",
+    "customerIdLabel": "Kunde-ID:",
+    "noProducts": "Keine Produkte gespeichert.",
+    "status": {
+      "open": "Offen",
+      "completed": "Erledigt",
+      "cancelled": "Storniert"
+    }
+  },
+  "items": {
+    "sectionTitle": "Produkte",
+    "sectionSubtitle": "Waehle Produkte, Mengen und Einheiten fuer die offene Bestellung.",
+    "addProduct": "Produkt hinzufuegen",
+    "selectProduct": "Produkt waehlen",
+    "change": "Aendern",
+    "quantityPlaceholder": "Menge",
+    "unitPlaceholder": "Einheit",
+    "remove": "Entfernen",
+    "removeConfirmTitle": "Produkt entfernen?",
+    "removeConfirmMessage": "Dieses Produkt wird aus der Bestellung entfernt."
+  },
+  "save": {
+    "button": "Bestellung speichern",
+    "saving": "Speichert...",
+    "success": "Bestellung wurde gespeichert."
+  },
+  "validation": {
+    "itemsMin": "Mindestens ein Produkt hinzufuegen",
+    "selectCustomer": "Bitte Kunden auswaehlen",
+    "productRequired": "Produkt erforderlich",
+    "productNameRequired": "Produktname erforderlich",
+    "quantityPositive": "Menge muss groesser als 0 sein",
+    "unitRequired": "Einheit erforderlich",
+    "orderItemsMin": "Bestellung muss mindestens ein Produkt enthalten"
+  }
+}

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { customerSchema } from "@/src/features/customers/validation/customerSchema";
 import { orderItemSchema } from "@/src/features/orders/validation/orderItemSchema";
 import { CustomerMode } from "@/src/features/orders/types/orderFormTypes";
+import { t } from "@/src/i18n/i18n";
 
 // Deliberately lenient: in "existing customer" mode this slice of the form stays at its
 // empty default (see buildEmptyOrderCustomer) and is never shown or filled in. It must not
@@ -25,7 +26,7 @@ const looseCustomerDraft = z.object({
 const addOrderBaseSchema = z.object({
   customerId: z.string(),
   customer: looseCustomerDraft,
-  items: z.array(orderItemSchema).min(1, "Mindestens ein Produkt hinzufuegen"),
+  items: z.array(orderItemSchema).min(1, t("orders:validation.itemsMin")),
 });
 
 export type AddOrderFormValues = z.input<typeof addOrderBaseSchema>;
@@ -33,7 +34,7 @@ export type AddOrderFormValues = z.input<typeof addOrderBaseSchema>;
 export function buildAddOrderFormSchema(mode: CustomerMode) {
   return addOrderBaseSchema.superRefine((value, ctx) => {
     if (mode === "existing" && value.customerId.trim().length === 0) {
-      ctx.addIssue({ code: "custom", path: ["customerId"], message: "Bitte Kunden auswaehlen" });
+      ctx.addIssue({ code: "custom", path: ["customerId"], message: t("orders:validation.selectCustomer") });
     }
 
     if (mode !== "new") {

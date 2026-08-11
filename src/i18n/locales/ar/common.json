@@ -1,0 +1,22 @@
+{
+  "appName": "Rsho",
+  "save": "حفظ",
+  "cancel": "إلغاء",
+  "confirm": "تأكيد",
+  "edit": "تعديل",
+  "delete": "حذف",
+  "search": "بحث",
+  "close": "إغلاق",
+  "back": "رجوع",
+  "retry": "إعادة التحميل",
+  "loading": "جارٍ التحميل...",
+  "yes": "نعم",
+  "no": "لا",
+  "optional": "اختياري",
+  "share": "مشاركة",
+  "add": "إضافة",
+  "create": "إنشاء",
+  "logout": "تسجيل الخروج",
+  "checkingSession": "جارٍ التحقق من الجلسة...",
+  "notAvailableYet": "غير متاح بعد"
+}

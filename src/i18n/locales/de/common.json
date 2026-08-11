@@ -1,0 +1,22 @@
+{
+  "appName": "Rsho",
+  "save": "Speichern",
+  "cancel": "Abbrechen",
+  "confirm": "Bestaetigen",
+  "edit": "Bearbeiten",
+  "delete": "Loeschen",
+  "search": "Suchen",
+  "close": "Schliessen",
+  "back": "Zurueck",
+  "retry": "Erneut laden",
+  "loading": "Wird geladen...",
+  "yes": "Ja",
+  "no": "Nein",
+  "optional": "optional",
+  "share": "Teilen",
+  "add": "Hinzufuegen",
+  "create": "Anlegen",
+  "logout": "Logout",
+  "checkingSession": "Sitzung wird geprueft...",
+  "notAvailableYet": "Noch nicht verfuegbar"
+}

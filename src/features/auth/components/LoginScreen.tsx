@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
 import { ErrorState } from "@/src/components/ui/ErrorState";
@@ -8,6 +9,7 @@ import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { useAuthStore } from "@/src/store/authStore";
 
 export function LoginScreen() {
+  const { t } = useTranslation("auth");
   const authError = useAuthStore((state) => state.authError);
   const colors = useThemeColors();
 
@@ -15,10 +17,10 @@ export function LoginScreen() {
     <ScreenContainer>
       <View style={styles.shell}>
         <View style={styles.header}>
-          <Text style={[styles.kicker, { color: colors.primary }]}>RSHO ORDERS</Text>
-          <Text style={[styles.title, { color: colors.text }]}>Willkommen zurueck</Text>
+          <Text style={[styles.kicker, { color: colors.primary }]}>{t("login.kicker")}</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{t("login.title")}</Text>
           <Text style={[styles.subtitle, { color: colors.mutedText }]}>
-          Melde dich an, um deine Kunden, Bestellungen und Kartenansicht zu verwalten.
+          {t("login.subtitle")}
           </Text>
         </View>
         <View style={[styles.panel, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, shadowColor: colors.shadow }]}>

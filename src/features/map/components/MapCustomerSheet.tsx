@@ -1,4 +1,5 @@
 import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { CustomerMapCard } from "@/src/features/map/components/CustomerMapCard";
@@ -42,6 +43,7 @@ export function MapCustomerSheet({
   onShareOrder,
 }: MapCustomerSheetProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation("map");
 
   return (
     <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
@@ -51,11 +53,11 @@ export function MapCustomerSheet({
           <View style={styles.handleWrap}>
             <View style={[styles.handle, { backgroundColor: colors.border }]} />
           </View>
-          {loading ? <LoadingView label="Kundendetails werden geladen..." /> : null}
+          {loading ? <LoadingView label={t("sheet.loadingDetails")} /> : null}
           {!loading && error ? (
             <View style={styles.content}>
               <ErrorState message={error} />
-              <AppButton label="Erneut laden" onPress={onRetry} variant="secondary" />
+              <AppButton label={t("common:retry")} onPress={onRetry} variant="secondary" />
             </View>
           ) : null}
           {!loading && !error && details ? (
@@ -63,22 +65,26 @@ export function MapCustomerSheet({
               <CustomerMapCard details={details} />
               {actionError ? <ErrorState message={actionError} /> : null}
               <View style={styles.actions}>
-                <AppButton label="Bearbeiten" onPress={onEdit} />
+                <AppButton label={t("common:edit")} onPress={onEdit} />
                 {details.openOrders.length ? (
                   <AppButton
-                    label={details.openOrders.length > 1 ? `Alle ${details.openOrders.length} Bestellungen als erledigt markieren` : "Als erledigt markieren"}
+                    label={
+                      details.openOrders.length > 1
+                        ? t("sheet.markAllCompleted", { count: details.openOrders.length })
+                        : t("sheet.markCompleted")
+                    }
                     loading={completing}
                     onPress={onComplete}
                   />
                 ) : null}
                 <AppButton
-                  label={details.customer.phone ? `Telefonnummer anrufen` : "Telefonnummer fehlt"}
+                  label={details.customer.phone ? t("sheet.callPhone") : t("sheet.phoneMissing")}
                   onPress={onCall}
                   variant="secondary"
                 />
-                <AppButton label="Navigation" onPress={onNavigate} variant="secondary" />
-                <AppButton label="Per WhatsApp teilen" onPress={onShareOrder} variant="secondary" />
-                <AppButton label="Standort teilen" onPress={onShare} variant="secondary" />
+                <AppButton label={t("sheet.navigation")} onPress={onNavigate} variant="secondary" />
+                <AppButton label={t("sheet.shareViaWhatsapp")} onPress={onShareOrder} variant="secondary" />
+                <AppButton label={t("sheet.shareLocation")} onPress={onShare} variant="secondary" />
               </View>
             </ScrollView>
           ) : null}
@@ -92,6 +98,7 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: "flex-end",
+    direction: "ltr",
   },
   backdrop: {
     flex: 1,

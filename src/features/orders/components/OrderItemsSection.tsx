@@ -8,6 +8,7 @@ import {
   UseFormSetValue,
 } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { FormSectionCard } from "@/src/components/ui/FormSectionCard";
 import { AppButton } from "@/src/components/ui/AppButton";
@@ -29,6 +30,7 @@ type OrderItemsSectionProps = {
 };
 
 export function OrderItemsSection({ control, fields, append, remove, setValue, errors }: OrderItemsSectionProps) {
+  const { t } = useTranslation("orders");
   const [pickerVisible, setPickerVisible] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [removeIndex, setRemoveIndex] = useState<number | null>(null);
@@ -58,7 +60,7 @@ export function OrderItemsSection({ control, fields, append, remove, setValue, e
   }
 
   return (
-    <FormSectionCard subtitle="Waehle Produkte, Mengen und Einheiten fuer die offene Bestellung." title="Produkte">
+    <FormSectionCard subtitle={t("items.sectionSubtitle")} title={t("items.sectionTitle")}>
       <View style={styles.container}>
         {fields.map((field, index) => (
           <ProductQuantityRow
@@ -74,7 +76,7 @@ export function OrderItemsSection({ control, fields, append, remove, setValue, e
             onRemove={() => setRemoveIndex(index)}
           />
         ))}
-        <AppButton label="Produkt hinzufuegen" onPress={handleAdd} variant="secondary" />
+        <AppButton label={t("items.addProduct")} onPress={handleAdd} variant="secondary" />
         {rootError ? <ErrorState message={rootError} /> : null}
       </View>
       <ProductPicker
@@ -84,9 +86,9 @@ export function OrderItemsSection({ control, fields, append, remove, setValue, e
         visible={pickerVisible}
       />
       <ConfirmDialog
-        confirmLabel="Entfernen"
+        confirmLabel={t("items.remove")}
         destructive
-        message="Dieses Produkt wird aus der Bestellung entfernt."
+        message={t("items.removeConfirmMessage")}
         onCancel={() => setRemoveIndex(null)}
         onConfirm={() => {
           if (removeIndex !== null) {
@@ -94,7 +96,7 @@ export function OrderItemsSection({ control, fields, append, remove, setValue, e
           }
           setRemoveIndex(null);
         }}
-        title="Produkt entfernen?"
+        title={t("items.removeConfirmTitle")}
         visible={removeIndex !== null}
       />
     </FormSectionCard>

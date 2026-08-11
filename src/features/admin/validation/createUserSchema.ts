@@ -1,15 +1,16 @@
 import { z } from "zod";
 
+import { t } from "@/src/i18n/i18n";
 import { emailSchema } from "@/src/validation/commonSchemas";
 
 export const createUserSchema = z
   .object({
-    fullName: z.string().trim().min(1, "Name erforderlich"),
+    fullName: z.string().trim().min(1, t("admin:validation.nameRequired")),
     email: emailSchema,
-    password: z.string().min(8, "Passwort muss mindestens 8 Zeichen haben"),
-    confirmPassword: z.string().min(1, "Bitte Passwort wiederholen"),
+    password: z.string().min(8, t("admin:validation.passwordTooShort")),
+    confirmPassword: z.string().min(1, t("admin:validation.confirmPasswordRequired")),
   })
   .refine((value) => value.password === value.confirmPassword, {
-    message: "Passwoerter muessen gleich sein",
+    message: t("admin:validation.passwordsMustMatch"),
     path: ["confirmPassword"],
   });

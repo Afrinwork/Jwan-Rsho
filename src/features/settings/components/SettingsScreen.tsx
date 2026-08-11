@@ -1,4 +1,5 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
 import { CompactScreenHeader } from "@/src/components/ui/CompactScreenHeader";
@@ -19,28 +20,29 @@ import { SettingsToggleRow } from "@/src/features/settings/components/SettingsTo
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 
 export function SettingsScreen() {
+  const { t } = useTranslation("settings");
   const colors = useThemeColors();
   const { logout, loading, error } = useLogout();
   const settings = useSettings();
 
   if (settings.loading) {
-    return <LoadingView label="Einstellungen werden geladen..." />;
+    return <LoadingView label={t("loadingLabel")} />;
   }
 
   return (
     <ScreenContainer>
       <ScrollView contentContainerStyle={styles.content}>
         <AnimatedEntrance>
-          <CompactScreenHeader subtitle="Profil, Teilen und Navigation." title="Einstellungen" />
+          <CompactScreenHeader subtitle={t("header.subtitle")} title={t("header.title")} />
         </AnimatedEntrance>
         {settings.error ? <AnimatedEntrance delay={60}><ErrorState message={settings.error} /></AnimatedEntrance> : null}
         {error ? <AnimatedEntrance delay={80}><ErrorState message={error} /></AnimatedEntrance> : null}
         {settings.successMessage ? <AnimatedEntrance delay={100}><SuccessState message={settings.successMessage} /></AnimatedEntrance> : null}
-        <AnimatedEntrance delay={120}><SettingsSection title="Profil">
-          <FormField label="Name">
+        <AnimatedEntrance delay={120}><SettingsSection title={t("sections.profile")}>
+          <FormField label={t("fields.name")}>
             <AppInput onChangeText={settings.setFullName} value={settings.fullName} />
           </FormField>
-          <FormField label="E-Mail">
+          <FormField label={t("fields.email")}>
             <AppInput
               autoCapitalize="none"
               keyboardType="email-address"
@@ -48,44 +50,53 @@ export function SettingsScreen() {
               value={settings.email}
             />
           </FormField>
-          <FormField label="Neues Passwort">
+          <FormField label={t("fields.newPassword")}>
             <AppInput onChangeText={settings.setNewPassword} secureTextEntry value={settings.newPassword} />
           </FormField>
         </SettingsSection></AnimatedEntrance>
-        <AnimatedEntrance delay={150}><SettingsSection title="Darstellung">
+        <AnimatedEntrance delay={150}><SettingsSection title={t("sections.appearance")}>
           <SettingsChoiceRow
-            label="Theme"
+            label={t("theme.label")}
             onChange={(value) => settings.setThemeMode(value as "system" | "light" | "dark")}
             options={[
-              { label: "System", value: "system" },
-              { label: "Hell", value: "light" },
-              { label: "Dunkel", value: "dark" },
+              { label: t("theme.system"), value: "system" },
+              { label: t("theme.light"), value: "light" },
+              { label: t("theme.dark"), value: "dark" },
             ]}
             value={settings.themeMode}
           />
-        </SettingsSection></AnimatedEntrance>
-        <AnimatedEntrance delay={180}><SettingsSection title="Navigation">
           <SettingsChoiceRow
-            label="Bevorzugte App"
+            label={t("language_picker.label")}
+            onChange={(value) => settings.setLanguage(value as "de" | "ar")}
+            options={[
+              { label: t("language_picker.de"), value: "de" },
+              { label: t("language_picker.ar"), value: "ar" },
+            ]}
+            value={settings.language}
+          />
+        </SettingsSection></AnimatedEntrance>
+        <AnimatedEntrance delay={180}><SettingsSection title={t("sections.navigation")}>
+          <SettingsChoiceRow
+            label={t("navigationApp.label")}
             onChange={(value) => settings.setPreferredNavigationApp(value as "apple-maps" | "google-maps" | "waze")}
             options={[
-              { label: "Apple Maps", value: "apple-maps" },
-              { label: "Google Maps", value: "google-maps" },
-              { label: "Waze", value: "waze" },
+              { label: t("navigationApp.appleMaps"), value: "apple-maps" },
+              { label: t("navigationApp.googleMaps"), value: "google-maps" },
+              { label: t("navigationApp.waze"), value: "waze" },
             ]}
             value={settings.preferredNavigationApp}
           />
         </SettingsSection></AnimatedEntrance>
-        <AnimatedEntrance delay={210}><SettingsSection title="Teilen">
-          <FormField label="Geschaeftsname (im Sammeltext)">
+        <AnimatedEntrance delay={210}><SettingsSection title={t("sections.share")}>
+          <FormField label={t("share.shopName")}>
             <AppInput
               onChangeText={settings.setShopName}
-              placeholder="z. B. 🧀 Rsho Kaeserei"
+              placeholder={t("share.shopNamePlaceholder")}
               value={settings.shopName}
             />
           </FormField>
           <SettingsToggleRow
-            label="Adresse im Share-Text"
+            label={t("share.includeAddress")}
             onChange={(value) => settings.setShareOptions({
               shareIncludeAddress: value,
               shareIncludePhone: settings.shareIncludePhone,
@@ -94,7 +105,7 @@ export function SettingsScreen() {
             value={settings.shareIncludeAddress}
           />
           <SettingsToggleRow
-            label="Telefonnummer im Share-Text"
+            label={t("share.includePhone")}
             onChange={(value) => settings.setShareOptions({
               shareIncludeAddress: settings.shareIncludeAddress,
               shareIncludePhone: value,
@@ -103,7 +114,7 @@ export function SettingsScreen() {
             value={settings.shareIncludePhone}
           />
           <SettingsToggleRow
-            label="Gesamtsummen im Share-Text"
+            label={t("share.includeTotals")}
             onChange={(value) => settings.setShareOptions({
               shareIncludeAddress: settings.shareIncludeAddress,
               shareIncludePhone: settings.shareIncludePhone,
@@ -112,15 +123,15 @@ export function SettingsScreen() {
             value={settings.shareIncludeTotals}
           />
         </SettingsSection></AnimatedEntrance>
-        <AnimatedEntrance delay={240}><SettingsSection title="App-Informationen">
-          <View style={styles.infoRow}><Text style={[styles.infoLabel, { color: colors.mutedText }]}>App-Version</Text><Text style={[styles.infoValue, { color: colors.text }]}>{appConfig.version}</Text></View>
-          <View style={styles.infoRow}><Text style={[styles.infoLabel, { color: colors.mutedText }]}>Eigene Kunden</Text><Text style={[styles.infoValue, { color: colors.text }]}>{settings.stats.customers}</Text></View>
-          <View style={styles.infoRow}><Text style={[styles.infoLabel, { color: colors.mutedText }]}>Gesamtbestellungen</Text><Text style={[styles.infoValue, { color: colors.text }]}>{settings.stats.totalOrders}</Text></View>
-          <View style={styles.infoRow}><Text style={[styles.infoLabel, { color: colors.mutedText }]}>Offene Bestellungen</Text><Text style={[styles.infoValue, { color: colors.text }]}>{settings.stats.openOrders}</Text></View>
+        <AnimatedEntrance delay={240}><SettingsSection title={t("sections.appInfo")}>
+          <View style={styles.infoRow}><Text style={[styles.infoLabel, { color: colors.mutedText }]}>{t("info.appVersion")}</Text><Text style={[styles.infoValue, { color: colors.text }]}>{appConfig.version}</Text></View>
+          <View style={styles.infoRow}><Text style={[styles.infoLabel, { color: colors.mutedText }]}>{t("info.ownCustomers")}</Text><Text style={[styles.infoValue, { color: colors.text }]}>{settings.stats.customers}</Text></View>
+          <View style={styles.infoRow}><Text style={[styles.infoLabel, { color: colors.mutedText }]}>{t("info.totalOrders")}</Text><Text style={[styles.infoValue, { color: colors.text }]}>{settings.stats.totalOrders}</Text></View>
+          <View style={styles.infoRow}><Text style={[styles.infoLabel, { color: colors.mutedText }]}>{t("info.openOrders")}</Text><Text style={[styles.infoValue, { color: colors.text }]}>{settings.stats.openOrders}</Text></View>
         </SettingsSection></AnimatedEntrance>
-        <AnimatedEntrance delay={270}><SettingsSection title="Konto">
-          <AppButton label={settings.saving ? "Speichert..." : "Einstellungen speichern"} loading={settings.saving} onPress={() => void settings.save()} />
-          <AppButton label={loading ? "Logout..." : "Logout"} loading={loading} onPress={logout} variant="secondary" />
+        <AnimatedEntrance delay={270}><SettingsSection title={t("sections.account")}>
+          <AppButton label={settings.saving ? t("actions.saving") : t("actions.save")} loading={settings.saving} onPress={() => void settings.save()} />
+          <AppButton label={loading ? t("actions.loggingOut") : t("common:logout")} loading={loading} onPress={logout} variant="secondary" />
         </SettingsSection></AnimatedEntrance>
       </ScrollView>
     </ScreenContainer>

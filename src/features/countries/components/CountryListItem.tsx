@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { spacing } from "@/src/constants/spacing";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
@@ -12,6 +13,7 @@ type CountryListItemProps = {
 };
 
 export function CountryListItem({ country, onEdit, onToggleActive, onDelete }: CountryListItemProps) {
+  const { t } = useTranslation("countries");
   const colors = useThemeColors();
 
   return (
@@ -22,14 +24,14 @@ export function CountryListItem({ country, onEdit, onToggleActive, onDelete }: C
             {country.name}
           </Text>
           <Text style={[styles.meta, { color: colors.mutedText }]}>
-            {(country.isoCode || "Kein ISO-Code")} · Sortierung {country.sortOrder}
+            {(country.isoCode || t("listItem.noIsoCode"))} · {t("listItem.sortOrder", { order: country.sortOrder })}
           </Text>
         </View>
         <Switch onValueChange={onToggleActive} trackColor={{ true: colors.primary }} value={country.isActive} />
       </View>
       <View style={styles.actions}>
-        <Pressable onPress={onEdit}><Text style={[styles.edit, { color: colors.primary }]}>Bearbeiten</Text></Pressable>
-        {onDelete ? <Pressable onPress={onDelete}><Text style={[styles.edit, { color: colors.danger }]}>Loeschen</Text></Pressable> : null}
+        <Pressable onPress={onEdit}><Text style={[styles.edit, { color: colors.primary }]}>{t("common:edit")}</Text></Pressable>
+        {onDelete ? <Pressable onPress={onDelete}><Text style={[styles.edit, { color: colors.danger }]}>{t("common:delete")}</Text></Pressable> : null}
       </View>
     </View>
   );

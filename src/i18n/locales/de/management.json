@@ -1,0 +1,50 @@
+{
+  "screen": {
+    "title": "Verwaltung",
+    "subtitle": "Waehle einen Bereich.",
+    "adminButton": "Admin"
+  },
+  "menu": {
+    "products": {
+      "title": "Produkte",
+      "subtitle": "Produkte hinzufuegen, ansehen, bearbeiten und loeschen."
+    },
+    "countries": {
+      "title": "Laender",
+      "subtitle": "Laender pflegen, aktivieren, deaktivieren und loeschen."
+    },
+    "regions": {
+      "title": "Regionen",
+      "subtitle": "Regionen passend zu Laendern verwalten."
+    },
+    "catalog": {
+      "title": "Katalog laden",
+      "subtitle": "Beispiel-Katalog fuer neue Nutzung laden."
+    }
+  },
+  "workspaceTabs": {
+    "products": "Produkte",
+    "countries": "Laender",
+    "regions": "Regionen",
+    "catalog": "Katalog"
+  },
+  "catalogScreen": {
+    "listModeLabel": "Katalog laden",
+    "createModeLabel": "Hinweis",
+    "subtitle": "Einmalig Demo-Daten fuer neue Nutzung anlegen.",
+    "title": "Katalog",
+    "infoTitle": "Fuer den ersten Start",
+    "infoBody": "Legt Beispiel-Produkte und Laender an. Bereits vorhandene Eintraege werden uebersprungen.",
+    "loadButton": "Beispiel-Katalog laden"
+  },
+  "seedSection": {
+    "title": "Beispiel-Katalog",
+    "body": "Legt deine 12 Produkte und 6 Laender einmalig an. Bereits vorhandene Eintraege werden uebersprungen.",
+    "loadButton": "Beispiel-Katalog laden"
+  },
+  "seed": {
+    "allPresent": "Alle Beispieldaten sind bereits vorhanden.",
+    "summary": "{{productsCount}} Produkt(e) und {{countriesCount}} Land/Laender hinzugefuegt.",
+    "loadError": "Beispieldaten konnten nicht geladen werden."
+  }
+}

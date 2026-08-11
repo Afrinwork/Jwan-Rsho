@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { colors } from "@/src/constants/colors";
 import { spacing } from "@/src/constants/spacing";
@@ -9,9 +10,11 @@ type CustomerOrderCardProps = {
 };
 
 export function CustomerOrderCard({ order }: CustomerOrderCardProps) {
+  const { t } = useTranslation("customers");
+
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>{labelForStatus(order.status)}</Text>
+      <Text style={styles.title}>{labelForStatus(order.status, t)}</Text>
       <Text style={styles.meta}>{new Date(order.orderedAt).toLocaleDateString()}</Text>
       {order.items.map((item) => (
         <Text key={item.id} style={styles.meta}>
@@ -22,16 +25,16 @@ export function CustomerOrderCard({ order }: CustomerOrderCardProps) {
   );
 }
 
-function labelForStatus(status: OrderWithItems["status"]) {
+function labelForStatus(status: OrderWithItems["status"], t: ReturnType<typeof useTranslation>["t"]) {
   if (status === "open") {
-    return "Offene Bestellung";
+    return t("orderStatus.open");
   }
 
   if (status === "completed") {
-    return "Erledigte Bestellung";
+    return t("orderStatus.completed");
   }
 
-  return "Stornierte Bestellung";
+  return t("orderStatus.cancelled");
 }
 
 const styles = StyleSheet.create({

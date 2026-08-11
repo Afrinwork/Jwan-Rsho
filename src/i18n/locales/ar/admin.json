@@ -1,0 +1,46 @@
+{
+  "dashboard": {
+    "title": "لوحة تحكم المسؤول",
+    "subtitle": "نظرة عامة مبسطة للمسؤول بدون قائمة المستخدمين ودون إحصاءات معقدة.",
+    "loading": "جارٍ تحميل لوحة تحكم المسؤول..."
+  },
+  "stats": {
+    "activeUsers": "المستخدمون النشطون",
+    "ownCustomers": "عملاؤك",
+    "ownOpenOrders": "الطلبات المفتوحة",
+    "ownTotalOrders": "إجمالي الطلبات"
+  },
+  "actions": {
+    "createUser": "إنشاء مستخدم",
+    "deleteUser": "حذف المستخدم نهائيًا"
+  },
+  "createUser": {
+    "title": "إنشاء مستخدم",
+    "subtitle": "يمكن للمسؤول فقط إنشاء حسابات مستخدمين جديدة.",
+    "fullNameLabel": "الاسم الكامل",
+    "emailLabel": "البريد الإلكتروني",
+    "passwordLabel": "كلمة المرور",
+    "confirmPasswordLabel": "تأكيد كلمة المرور",
+    "submitting": "جارٍ الحفظ...",
+    "submitLabel": "إنشاء مستخدم",
+    "successMessage": "تم إنشاء المستخدم بنجاح."
+  },
+  "deleteUser": {
+    "title": "حذف مستخدمين",
+    "subtitle": "الحذف عبر البريد الإلكتروني مع مربع حوار للتأكيد. يبقى حسابك الخاص محميًا.",
+    "emailLabel": "البريد الإلكتروني للمستخدم",
+    "emailPlaceholder": "user@example.com",
+    "checking": "جارٍ التحقق...",
+    "submitLabel": "حذف المستخدم نهائيًا",
+    "confirmTitle": "هل تريد بالتأكيد حذف المستخدم؟",
+    "confirmMessage": "سيتم حذف هذا الحساب وجميع البيانات المرتبطة به نهائيًا. لا يمكن التراجع عن هذا الإجراء.",
+    "confirmLabel": "حذف نهائي",
+    "successMessage": "تم حذف المستخدم نهائيًا."
+  },
+  "validation": {
+    "nameRequired": "الاسم مطلوب",
+    "passwordTooShort": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل",
+    "confirmPasswordRequired": "يرجى تكرار كلمة المرور",
+    "passwordsMustMatch": "يجب أن تتطابق كلمتا المرور"
+  }
+}

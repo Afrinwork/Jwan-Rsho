@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { StyleSheet, View } from "react-native";
 
@@ -23,6 +24,7 @@ type CountryFormProps = {
 };
 
 export function CountryForm({ initialValues, submitLabel, onCancel, onSubmit }: CountryFormProps) {
+  const { t } = useTranslation("countries");
   const [submitError, setSubmitError] = useState<string | null>(null);
   const form = useForm<CountryFormValues>({
     resolver: zodResolver(countryFormSchema),
@@ -41,18 +43,18 @@ export function CountryForm({ initialValues, submitLabel, onCancel, onSubmit }: 
 
   return (
     <View style={styles.container}>
-      <FormField error={form.formState.errors.name?.message} label="Land">
-        <Controller control={form.control} name="name" render={({ field }) => <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder="Land" value={field.value} />} />
+      <FormField error={form.formState.errors.name?.message} label={t("form.nameLabel")}>
+        <Controller control={form.control} name="name" render={({ field }) => <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder={t("form.namePlaceholder")} value={field.value} />} />
       </FormField>
-      <FormField error={form.formState.errors.isoCode?.message} label="ISO-Code (optional)">
-        <Controller control={form.control} name="isoCode" render={({ field }) => <AppInput autoCapitalize="characters" maxLength={3} onBlur={field.onBlur} onChangeText={field.onChange} placeholder="DE" value={field.value ?? ""} />} />
+      <FormField error={form.formState.errors.isoCode?.message} label={t("form.isoCodeLabel")}>
+        <Controller control={form.control} name="isoCode" render={({ field }) => <AppInput autoCapitalize="characters" maxLength={3} onBlur={field.onBlur} onChangeText={field.onChange} placeholder={t("form.isoCodePlaceholder")} value={field.value ?? ""} />} />
       </FormField>
-      <FormField error={form.formState.errors.sortOrder?.message} label="Sortierung">
-        <Controller control={form.control} name="sortOrder" render={({ field }) => <AppInput keyboardType="number-pad" onBlur={field.onBlur} onChangeText={(text) => field.onChange(text === "" ? 0 : Number(text))} placeholder="0" value={String(field.value)} />} />
+      <FormField error={form.formState.errors.sortOrder?.message} label={t("form.sortOrderLabel")}>
+        <Controller control={form.control} name="sortOrder" render={({ field }) => <AppInput keyboardType="number-pad" onBlur={field.onBlur} onChangeText={(text) => field.onChange(text === "" ? 0 : Number(text))} placeholder={t("form.sortOrderPlaceholder")} value={String(field.value)} />} />
       </FormField>
       {submitError ? <ErrorState message={submitError} /> : null}
       <View style={styles.actions}>
-        {onCancel ? <View style={styles.actionButton}><AppButton label="Abbrechen" onPress={onCancel} variant="secondary" /></View> : null}
+        {onCancel ? <View style={styles.actionButton}><AppButton label={t("common:cancel")} onPress={onCancel} variant="secondary" /></View> : null}
         <View style={styles.actionButton}><AppButton disabled={form.formState.isSubmitting} label={submitLabel} loading={form.formState.isSubmitting} onPress={submit} /></View>
       </View>
     </View>

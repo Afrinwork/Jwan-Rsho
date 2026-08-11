@@ -9,6 +9,7 @@ import {
 import { Tabs } from "expo-router";
 import { ComponentType } from "react";
 import { StyleSheet } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 
@@ -28,6 +29,7 @@ const tabIcons: Record<string, ComponentType<TabIconProps>> = {
 
 export default function TabsLayout() {
   const colors = useThemeColors();
+  const { t } = useTranslation("navigation");
 
   return (
     <Tabs
@@ -64,12 +66,12 @@ export default function TabsLayout() {
         };
       }}
     >
-      <Tabs.Screen name="overview" options={{ title: "Uebersicht" }} />
-      <Tabs.Screen name="map" options={{ title: "Karte" }} />
-      <Tabs.Screen name="add" options={{ title: "Hinzufuegen" }} />
-      <Tabs.Screen name="cities" options={{ title: "Staedte" }} />
-      <Tabs.Screen name="management" options={{ title: "Verwalten" }} />
-      <Tabs.Screen name="settings" options={{ title: "Einstellungen" }} />
+      <Tabs.Screen name="overview" options={{ title: t("tabs.overview") }} />
+      <Tabs.Screen name="map" options={{ title: t("tabs.map") }} />
+      <Tabs.Screen name="add" options={{ title: t("tabs.add") }} />
+      <Tabs.Screen name="cities" options={{ title: t("tabs.cities") }} />
+      <Tabs.Screen name="management" options={{ title: t("tabs.management") }} />
+      <Tabs.Screen name="settings" options={{ title: t("tabs.settings") }} />
     </Tabs>
   );
 }

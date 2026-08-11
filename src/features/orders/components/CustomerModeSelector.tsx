@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { ComponentType } from "react";
+import { useTranslation } from "react-i18next";
 import { People20Regular, PersonAdd20Regular } from "@fluentui/react-native-icons";
 
 import { spacing } from "@/src/constants/spacing";
@@ -13,6 +14,7 @@ type CustomerModeSelectorProps = {
 
 export function CustomerModeSelector({ mode, onChange }: CustomerModeSelectorProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation("orders");
 
   return (
     <View style={styles.row}>
@@ -20,16 +22,16 @@ export function CustomerModeSelector({ mode, onChange }: CustomerModeSelectorPro
         active={mode === "existing"}
         colors={colors}
         Icon={People20Regular}
-        label="Bestehender Kunde"
-        subtitle="Schneller Auftrag"
+        label={t("customerMode.existing.label")}
+        subtitle={t("customerMode.existing.subtitle")}
         onPress={() => onChange("existing")}
       />
       <ModeCard
         active={mode === "new"}
         colors={colors}
         Icon={PersonAdd20Regular}
-        label="Neuer Kunde"
-        subtitle="Neuen Kontakt anlegen"
+        label={t("customerMode.new.label")}
+        subtitle={t("customerMode.new.subtitle")}
         onPress={() => onChange("new")}
       />
     </View>

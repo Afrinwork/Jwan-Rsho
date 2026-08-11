@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import { ScrollView, StyleSheet } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
 import { AppButton } from "@/src/components/ui/AppButton";
@@ -23,25 +24,26 @@ type CustomerEditScreenProps = {
 export function CustomerEditScreen({ customerId }: CustomerEditScreenProps) {
   const router = useRouter();
   const { error, form, items, loading, saving, submit, successMessage } = useCustomerEdit(customerId);
+  const { t } = useTranslation("customers");
 
   if (loading) {
-    return <LoadingView label="Kunde wird zum Bearbeiten geladen..." />;
+    return <LoadingView label={t("edit.loading")} />;
   }
 
   if (!customerId) {
-    return <EmptyState message="Es wurde kein Kunde ausgewaehlt." title="Kein Kunde" />;
+    return <EmptyState message={t("edit.noCustomerMessage")} title={t("edit.noCustomerTitle")} />;
   }
 
   return (
     <ScreenContainer>
       <ScrollView contentContainerStyle={styles.content}>
         <AnimatedEntrance>
-          <CompactScreenHeader subtitle="Kunde und offene Bestellung anpassen." title="Kunde bearbeiten" />
+          <CompactScreenHeader subtitle={t("edit.screenSubtitle")} title={t("edit.screenTitle")} />
         </AnimatedEntrance>
         {error ? <AnimatedEntrance delay={60}><ErrorState message={error} /></AnimatedEntrance> : null}
         {successMessage ? <AnimatedEntrance delay={90}><SuccessState message={successMessage} /></AnimatedEntrance> : null}
         <AnimatedEntrance delay={120}>
-          <FormSectionCard subtitle="Persoenliche Daten und eine sauber strukturierte Zieladresse." title="Kunde & Adresse">
+          <FormSectionCard subtitle={t("edit.sectionSubtitle")} title={t("edit.sectionTitle")}>
             <CustomerEditForm control={form.control} errors={form.formState.errors.customer} />
             <CustomerEditAddressSection control={form.control} errors={form.formState.errors.customer} />
           </FormSectionCard>
@@ -58,7 +60,7 @@ export function CustomerEditScreen({ customerId }: CustomerEditScreenProps) {
         </AnimatedEntrance>
         <AnimatedEntrance delay={200} style={styles.actions}>
           <AppButton
-            label="Speichern"
+            label={t("common:save")}
             loading={saving}
             onPress={() => {
               void submit().then((saved) => {
@@ -68,7 +70,7 @@ export function CustomerEditScreen({ customerId }: CustomerEditScreenProps) {
               });
             }}
           />
-          <AppButton label="Zurueck zur Karte" onPress={() => router.back()} variant="secondary" />
+          <AppButton label={t("edit.backButton")} onPress={() => router.back()} variant="secondary" />
         </AnimatedEntrance>
       </ScrollView>
     </ScreenContainer>

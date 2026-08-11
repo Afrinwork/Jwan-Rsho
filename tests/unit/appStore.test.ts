@@ -7,6 +7,7 @@ test("app preferences reset to defaults after custom values", () => {
   useAppStore.setState({
     ...defaultAppPreferences,
     themeMode: "dark",
+    language: "ar",
     preferredNavigationApp: "waze",
     shopName: "🧀 Rsho Kaeserei",
     shareIncludeAddress: false,
@@ -19,6 +20,7 @@ test("app preferences reset to defaults after custom values", () => {
   assert.deepEqual(
     {
       themeMode: useAppStore.getState().themeMode,
+      language: useAppStore.getState().language,
       preferredNavigationApp: useAppStore.getState().preferredNavigationApp,
       shopName: useAppStore.getState().shopName,
       shareIncludeAddress: useAppStore.getState().shareIncludeAddress,

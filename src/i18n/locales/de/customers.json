@@ -1,0 +1,66 @@
+{
+  "form": {
+    "nameLabel": "Vollstaendiger Name",
+    "namePlaceholder": "Vollstaendiger Name",
+    "phoneLabel": "Telefonnummer",
+    "phonePlaceholder": "Telefonnummer",
+    "noteLabel": "Notiz (optional)",
+    "notePlaceholder": "Notiz",
+    "addressLabel": "Adresse",
+    "addressPlaceholder": "z. B. Musterstrasse 12, 10115 Berlin",
+    "cityLabel": "Stadt",
+    "cityPlaceholder": "z. B. Berlin"
+  },
+  "city": {
+    "loadingHint": "Bestehende Staedte laden...",
+    "addNew": "Neue Stadt hinzufuegen: {{city}}",
+    "apply": "Uebernehmen"
+  },
+  "validation": {
+    "nameRequired": "Name erforderlich",
+    "phoneRequired": "Telefonnummer erforderlich",
+    "addressRequired": "Adresse erforderlich",
+    "cityRequired": "Stadt erforderlich",
+    "countryRequired": "Land erforderlich",
+    "customerRequired": "Bitte Kunden auswaehlen",
+    "itemsRequired": "Mindestens ein Produkt hinzufuegen"
+  },
+  "details": {
+    "loading": "Kundendetails werden geladen...",
+    "notFoundTitle": "Kein Kunde",
+    "notFoundMessage": "Dieser Kunde wurde nicht gefunden.",
+    "orderHistory": "Bestellverlauf"
+  },
+  "edit": {
+    "loading": "Kunde wird zum Bearbeiten geladen...",
+    "noCustomerTitle": "Kein Kunde",
+    "noCustomerMessage": "Es wurde kein Kunde ausgewaehlt.",
+    "screenTitle": "Kunde bearbeiten",
+    "screenSubtitle": "Kunde und offene Bestellung anpassen.",
+    "sectionTitle": "Kunde & Adresse",
+    "sectionSubtitle": "Persoenliche Daten und eine sauber strukturierte Zieladresse.",
+    "backButton": "Zurueck zur Karte",
+    "noOpenOrder": "Keine offene Bestellung fuer diesen Kunden gefunden.",
+    "saveSuccess": "Kunde und offene Bestellung wurden gespeichert."
+  },
+  "orderItems": {
+    "sectionTitle": "Produkte",
+    "sectionSubtitle": "Passe die offene Bestellung direkt auf der Karte an.",
+    "addProduct": "Produkt hinzufuegen",
+    "change": "Aendern",
+    "remove": "Entfernen",
+    "quantityPlaceholder": "Menge",
+    "unitPlaceholder": "Einheit",
+    "removeConfirmTitle": "Produkt entfernen?",
+    "removeConfirmMessage": "Dieses Produkt wird aus der Bestellung entfernt."
+  },
+  "search": {
+    "placeholder": "Name, Telefon, Stadt oder Strasse",
+    "selected": "Ausgewaehlt"
+  },
+  "orderStatus": {
+    "open": "Offene Bestellung",
+    "completed": "Erledigte Bestellung",
+    "cancelled": "Stornierte Bestellung"
+  }
+}

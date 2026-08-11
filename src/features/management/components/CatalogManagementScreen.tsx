@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { ErrorState } from "@/src/components/ui/ErrorState";
@@ -14,27 +15,26 @@ export function CatalogManagementScreen() {
   const colors = useThemeColors();
   const { seed, loading, result, error } = useSeedCatalog();
   const [mode, setMode] = useState<"list" | "create">("list");
+  const { t } = useTranslation("management");
 
   return (
     <ScreenContainer>
       <ManagementSectionShell
-        createLabel="Hinweis"
-        listLabel="Katalog laden"
+        createLabel={t("catalogScreen.createModeLabel")}
+        listLabel={t("catalogScreen.listModeLabel")}
         mode={mode}
         onModeChange={setMode}
-        subtitle="Einmalig Demo-Daten fuer neue Nutzung anlegen."
-        title="Katalog"
+        subtitle={t("catalogScreen.subtitle")}
+        title={t("catalogScreen.title")}
       >
         {error ? <ErrorState message={error} /> : null}
         {result ? <SuccessState message={result} /> : null}
         {mode === "list" ? (
-          <AppButton label="Beispiel-Katalog laden" loading={loading} onPress={() => void seed()} />
+          <AppButton label={t("catalogScreen.loadButton")} loading={loading} onPress={() => void seed()} />
         ) : (
           <View style={[styles.infoCard, { backgroundColor: colors.surfaceMuted, borderColor: colors.border }]}>
-            <Text style={[styles.infoTitle, { color: colors.text }]}>Fuer den ersten Start</Text>
-            <Text style={[styles.infoBody, { color: colors.mutedText }]}>
-              Legt Beispiel-Produkte und Laender an. Bereits vorhandene Eintraege werden uebersprungen.
-            </Text>
+            <Text style={[styles.infoTitle, { color: colors.text }]}>{t("catalogScreen.infoTitle")}</Text>
+            <Text style={[styles.infoBody, { color: colors.mutedText }]}>{t("catalogScreen.infoBody")}</Text>
           </View>
         )}
       </ManagementSectionShell>

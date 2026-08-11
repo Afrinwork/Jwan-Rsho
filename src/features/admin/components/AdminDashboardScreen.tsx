@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { LoadingView } from "@/src/components/ui/LoadingView";
@@ -8,14 +10,15 @@ import { useAdminDashboard } from "@/src/features/admin/hooks/useAdminDashboard"
 
 export function AdminDashboardScreen() {
   const { stats, loading, error } = useAdminDashboard();
+  const { t } = useTranslation("admin");
 
   if (loading) {
-    return <LoadingView label="Admin-Dashboard laedt..." />;
+    return <LoadingView label={t("dashboard.loading")} />;
   }
 
   return (
     <ScreenContainer>
-      <AdminSectionHeader subtitle="Kleine Admin-Uebersicht ohne Benutzerliste und ohne komplexe Statistiken." title="Admin Dashboard" />
+      <AdminSectionHeader subtitle={t("dashboard.subtitle")} title={t("dashboard.title")} />
       {error ? <ErrorState message={error} /> : null}
       <AdminStatsGrid stats={stats} />
       <AdminActions />

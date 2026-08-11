@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { t } from "@/src/i18n/i18n";
 
 import { adminService } from "@/src/features/admin/services/adminService";
 import { DeleteUserFormValues } from "@/src/features/admin/types/adminFormTypes";
@@ -33,7 +34,7 @@ export function useDeleteUser() {
       setSubmitError(null);
       await adminService.deleteUser(email);
       form.reset();
-      setSuccessMessage("Benutzer wurde endgueltig geloescht.");
+      setSuccessMessage(t("admin:deleteUser.successMessage"));
       setPendingEmail(null);
     } catch (error) {
       setSubmitError(formatError(error).message);

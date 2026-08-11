@@ -1,11 +1,13 @@
 import { StyleSheet, TextInput, TextInputProps, View } from "react-native";
 import { Search20Regular } from "@fluentui/react-native-icons";
+import { useTranslation } from "react-i18next";
 
 import { spacing } from "@/src/constants/spacing";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 
 export function SearchInput(props: TextInputProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation("common");
 
   return (
     <View
@@ -16,7 +18,7 @@ export function SearchInput(props: TextInputProps) {
     >
       <Search20Regular color={colors.mutedText} />
       <TextInput
-        placeholder="Suchen"
+        placeholder={t("search")}
         placeholderTextColor={colors.mutedText}
         {...props}
         style={[styles.input, { color: colors.text }]}

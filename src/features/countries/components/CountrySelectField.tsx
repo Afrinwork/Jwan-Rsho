@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { FormField } from "@/src/components/forms/FormField";
 import { useCountries } from "@/src/features/countries/hooks/useCountries";
@@ -11,16 +12,17 @@ type CountrySelectFieldProps = {
 };
 
 export function CountrySelectField({ value, onChange, error }: CountrySelectFieldProps) {
+  const { t } = useTranslation("countries");
   const { countries, loading } = useCountries();
   const colors = useThemeColors();
   const activeCountries = countries.filter((country) => country.isActive);
 
   return (
-    <FormField error={error} label="Land">
+    <FormField error={error} label={t("selectField.label")}>
       {loading ? (
-        <Text style={[styles.hint, { color: colors.mutedText }]}>Laender laden...</Text>
+        <Text style={[styles.hint, { color: colors.mutedText }]}>{t("selectField.loading")}</Text>
       ) : activeCountries.length === 0 ? (
-        <Text style={[styles.hint, { color: colors.mutedText }]}>Keine Laender vorhanden.</Text>
+        <Text style={[styles.hint, { color: colors.mutedText }]}>{t("selectField.empty")}</Text>
       ) : (
         <View style={styles.row}>
           {activeCountries.map((country) => {

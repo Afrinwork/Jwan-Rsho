@@ -1,4 +1,5 @@
 import { StyleSheet, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { InfoCard } from "@/src/components/ui/InfoCard";
 import { AdminDashboardStats } from "@/src/types/admin";
@@ -8,12 +9,14 @@ type AdminStatsGridProps = {
 };
 
 export function AdminStatsGrid({ stats }: AdminStatsGridProps) {
+  const { t } = useTranslation("admin");
+
   return (
     <View style={styles.grid}>
-      <InfoCard label="Aktive Benutzer" value={stats.activeUsers} />
-      <InfoCard label="Eigene Kunden" value={stats.ownCustomers} />
-      <InfoCard label="Offene Bestellungen" value={stats.ownOpenOrders} />
-      <InfoCard label="Gesamtbestellungen" value={stats.ownTotalOrders} />
+      <InfoCard label={t("stats.activeUsers")} value={stats.activeUsers} />
+      <InfoCard label={t("stats.ownCustomers")} value={stats.ownCustomers} />
+      <InfoCard label={t("stats.ownOpenOrders")} value={stats.ownOpenOrders} />
+      <InfoCard label={t("stats.ownTotalOrders")} value={stats.ownTotalOrders} />
     </View>
   );
 }

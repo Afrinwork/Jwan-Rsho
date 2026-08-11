@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { StyleSheet, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { AppInput } from "@/src/components/ui/AppInput";
@@ -26,6 +27,7 @@ type ProductFormProps = {
 
 export function ProductForm({ initialValues, submitLabel, onCancel, onSubmit }: ProductFormProps) {
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const { t } = useTranslation("products");
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
     defaultValues: initialValues ?? emptyProductValues,
@@ -43,34 +45,34 @@ export function ProductForm({ initialValues, submitLabel, onCancel, onSubmit }: 
 
   return (
     <View style={styles.container}>
-      <FormField error={form.formState.errors.name?.message} label="Produktname">
+      <FormField error={form.formState.errors.name?.message} label={t("form.nameLabel")}>
         <Controller
           control={form.control}
           name="name"
           render={({ field }) => (
-            <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder="Produktname" value={field.value} />
+            <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder={t("form.namePlaceholder")} value={field.value} />
           )}
         />
       </FormField>
-      <FormField error={form.formState.errors.defaultUnit?.message} label="Einheit">
+      <FormField error={form.formState.errors.defaultUnit?.message} label={t("form.unitLabel")}>
         <Controller
           control={form.control}
           name="defaultUnit"
           render={({ field }) => (
-            <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder="z. B. Stueck, kg" value={field.value} />
+            <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder={t("form.unitPlaceholder")} value={field.value} />
           )}
         />
       </FormField>
-      <FormField error={form.formState.errors.emoji?.message} label="Emoji (optional, fuer den Sammeltext)">
+      <FormField error={form.formState.errors.emoji?.message} label={t("form.emojiLabel")}>
         <Controller
           control={form.control}
           name="emoji"
           render={({ field }) => (
-            <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder="z. B. 🧀" value={field.value ?? ""} />
+            <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder={t("form.emojiPlaceholder")} value={field.value ?? ""} />
           )}
         />
       </FormField>
-      <FormField error={form.formState.errors.sortOrder?.message} label="Sortierung">
+      <FormField error={form.formState.errors.sortOrder?.message} label={t("form.sortOrderLabel")}>
         <Controller
           control={form.control}
           name="sortOrder"
@@ -89,13 +91,13 @@ export function ProductForm({ initialValues, submitLabel, onCancel, onSubmit }: 
       <View style={styles.actions}>
         {onCancel ? (
           <View style={styles.actionButton}>
-            <AppButton label="Abbrechen" onPress={onCancel} variant="secondary" />
+            <AppButton label={t("common:cancel")} onPress={onCancel} variant="secondary" />
           </View>
         ) : null}
         <View style={styles.actionButton}>
           <AppButton
             disabled={form.formState.isSubmitting}
-            label={form.formState.isSubmitting ? "Speichert..." : submitLabel}
+            label={form.formState.isSubmitting ? t("form.submitting") : submitLabel}
             loading={form.formState.isSubmitting}
             onPress={submit}
           />

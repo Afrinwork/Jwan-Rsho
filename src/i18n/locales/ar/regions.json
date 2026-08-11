@@ -1,0 +1,42 @@
+{
+  "form": {
+    "nameLabel": "المنطقة",
+    "namePlaceholder": "المنطقة",
+    "countryLabel": "الدولة",
+    "countryPlaceholder": "الدولة",
+    "cityLabel": "المدينة (اختياري)",
+    "cityPlaceholder": "المدينة"
+  },
+  "selectField": {
+    "label": "المنطقة (اختياري)",
+    "placeholderWithCountry": "المنطقة لهذه الدولة",
+    "placeholderNoCountry": "اختر دولة أولًا",
+    "loading": "جارٍ تحميل المناطق...",
+    "emptyWithCountry": "لا توجد منطقة متاحة.",
+    "emptyNoCountry": "اختر الدولة أولًا."
+  },
+  "management": {
+    "title": "المناطق",
+    "subtitle": "نظّم المناطق بما يتناسب مع الدول وحافظ عليها نشطة لأغراض التصفية.",
+    "createLabel": "إضافة منطقة",
+    "listLabel": "عرض المناطق",
+    "loading": "جارٍ تحميل المناطق...",
+    "emptyTitle": "لا توجد مناطق",
+    "emptyMessage": "المناطق اختيارية. تكون مفيدة إذا أردت لاحقًا تنظيم العملاء حسب المناطق على الخريطة وفي الفلاتر.",
+    "saveNewLabel": "حفظ المنطقة",
+    "saveChangesLabel": "حفظ التغييرات",
+    "addSuccess": "تمت إضافة المنطقة بنجاح.",
+    "updateSuccess": "تم تحديث المنطقة بنجاح.",
+    "activatedSuccess": "تم تفعيل المنطقة مجددًا.",
+    "deactivatedSuccess": "تم إلغاء تفعيل المنطقة.",
+    "toggleError": "تعذر تحديث المنطقة.",
+    "deleteSuccess": "تم حذف المنطقة.",
+    "deleteError": "تعذر حذف المنطقة.",
+    "deleteConfirmTitle": "هل تريد بالفعل حذف هذه المنطقة؟",
+    "deleteConfirmMessage": "سيتم حذف هذه المنطقة فقط إذا لم تكن مستخدمة من قبل أي عميل بعد."
+  },
+  "validation": {
+    "nameRequired": "المنطقة مطلوبة",
+    "countryRequired": "الدولة مطلوبة"
+  }
+}

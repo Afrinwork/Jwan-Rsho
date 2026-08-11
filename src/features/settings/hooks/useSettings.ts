@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { authService } from "@/src/features/auth/services/authService";
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
+import { applyLanguage } from "@/src/i18n/languageController";
 import { useAuthStore } from "@/src/store/authStore";
 import { useAppStore } from "@/src/store/appStore";
 import { customerRepository } from "@/src/repositories/customerRepository";
@@ -23,17 +25,20 @@ const emptyStats: SettingsStats = {
 };
 
 export function useSettings() {
+  const { t } = useTranslation("settings");
   const user = useCurrentUser();
   const updateDisplayName = useAuthStore((state) => state.updateDisplayName);
   const updateEmail = useAuthStore((state) => state.updateEmail);
   const {
     themeMode,
+    language,
     preferredNavigationApp,
     shopName,
     shareIncludeAddress,
     shareIncludePhone,
     shareIncludeTotals,
     setThemeMode,
+    setLanguage,
     setPreferredNavigationApp,
     setShopName,
     setShareOptions,
@@ -108,6 +113,7 @@ export function useSettings() {
       await userPreferencesRepository.savePreferences({
         ownerId: user.uid,
         themeMode,
+        language,
         preferredNavigationApp,
         shopName,
         shareIncludeAddress,
@@ -119,7 +125,8 @@ export function useSettings() {
         updateEmail(normalizedEmail);
       }
       setNewPassword("");
-      setSuccessMessage("Einstellungen wurden gespeichert.");
+      setSuccessMessage(t("saveSuccess"));
+      await applyLanguage(language);
     } catch (value) {
       setError(formatError(value).message);
       setSuccessMessage(null);
@@ -135,6 +142,8 @@ export function useSettings() {
     shareIncludePhone,
     shareIncludeTotals,
     themeMode,
+    language,
+    t,
     updateDisplayName,
     updateEmail,
     newPassword,
@@ -155,12 +164,14 @@ export function useSettings() {
     successMessage,
     stats,
     themeMode,
+    language,
     preferredNavigationApp,
     shopName,
     shareIncludeAddress,
     shareIncludePhone,
     shareIncludeTotals,
     setThemeMode,
+    setLanguage,
     setPreferredNavigationApp,
     setShopName,
     setShareOptions,

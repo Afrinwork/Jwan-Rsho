@@ -1,0 +1,25 @@
+{
+  "tabs": {
+    "overview": "Uebersicht",
+    "map": "Karte",
+    "add": "Hinzufuegen",
+    "cities": "Staedte",
+    "management": "Verwalten",
+    "settings": "Einstellungen"
+  },
+  "stack": {
+    "adminDashboard": "Admin Dashboard",
+    "createUser": "Benutzer anlegen",
+    "deleteUsers": "Benutzer loeschen",
+    "products": "Produkte",
+    "countries": "Laender",
+    "regions": "Regionen",
+    "catalog": "Katalog laden",
+    "cities": "Staedte",
+    "city": "Stadt",
+    "customer": "Kunde",
+    "customerEdit": "Kunde bearbeiten",
+    "order": "Bestellung",
+    "forgotPassword": "Passwort zuruecksetzen"
+  }
+}

@@ -1,5 +1,6 @@
 import { Control, Controller, FieldErrors } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { FormField } from "@/src/components/forms/FormField";
 import { AppInput } from "@/src/components/ui/AppInput";
@@ -12,9 +13,11 @@ type CustomerEditFormProps = {
 };
 
 export function CustomerEditForm({ control, errors }: CustomerEditFormProps) {
+  const { t } = useTranslation("customers");
+
   return (
     <View style={styles.container}>
-      <FormField error={errors?.fullName?.message} label="Vollstaendiger Name">
+      <FormField error={errors?.fullName?.message} label={t("form.nameLabel")}>
         <Controller
           control={control}
           name="customer.fullName"
@@ -22,13 +25,13 @@ export function CustomerEditForm({ control, errors }: CustomerEditFormProps) {
             <AppInput
               onBlur={field.onBlur}
               onChangeText={field.onChange}
-              placeholder="Vollstaendiger Name"
+              placeholder={t("form.namePlaceholder")}
               value={field.value}
             />
           )}
         />
       </FormField>
-      <FormField error={errors?.phone?.message} label="Telefonnummer">
+      <FormField error={errors?.phone?.message} label={t("form.phoneLabel")}>
         <Controller
           control={control}
           name="customer.phone"
@@ -37,13 +40,13 @@ export function CustomerEditForm({ control, errors }: CustomerEditFormProps) {
               keyboardType="phone-pad"
               onBlur={field.onBlur}
               onChangeText={field.onChange}
-              placeholder="Telefonnummer"
+              placeholder={t("form.phonePlaceholder")}
               value={field.value}
             />
           )}
         />
       </FormField>
-      <FormField error={errors?.note?.message} label="Notiz (optional)">
+      <FormField error={errors?.note?.message} label={t("form.noteLabel")}>
         <Controller
           control={control}
           name="customer.note"
@@ -53,7 +56,7 @@ export function CustomerEditForm({ control, errors }: CustomerEditFormProps) {
               numberOfLines={3}
               onBlur={field.onBlur}
               onChangeText={field.onChange}
-              placeholder="Notiz"
+              placeholder={t("form.notePlaceholder")}
               style={styles.noteInput}
               value={field.value ?? ""}
             />

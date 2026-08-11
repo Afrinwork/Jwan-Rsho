@@ -1,4 +1,5 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AppInput } from "@/src/components/ui/AppInput";
 import { spacing } from "@/src/constants/spacing";
@@ -12,20 +13,23 @@ type CityFiltersProps = {
   countryOptions: string[];
 };
 
+const ALL_COUNTRIES_VALUE = "Alle";
+
 export function CityFilters(props: CityFiltersProps) {
-  const countries = ["Alle", ...props.countryOptions];
+  const { t } = useTranslation("cities");
+  const countries = [ALL_COUNTRIES_VALUE, ...props.countryOptions];
   const colors = useThemeColors();
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, shadowColor: colors.shadow }]}>
-      <AppInput onChangeText={props.onSearchTermChange} placeholder="Suche nach Stadt" value={props.searchTerm} />
-      <Text style={[styles.kicker, { color: colors.mutedText }]}>Landesfilter</Text>
+      <AppInput onChangeText={props.onSearchTermChange} placeholder={t("filters.searchPlaceholder")} value={props.searchTerm} />
+      <Text style={[styles.kicker, { color: colors.mutedText }]}>{t("filters.countryKicker")}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={styles.row}>
           {countries.map((value) => (
             <Pressable
               key={value}
-              onPress={() => props.onCountryChange(value === "Alle" ? "" : value)}
+              onPress={() => props.onCountryChange(value === ALL_COUNTRIES_VALUE ? "" : value)}
               style={[
                 styles.chip,
                 {
@@ -34,7 +38,7 @@ export function CityFilters(props: CityFiltersProps) {
                 },
               ]}
             >
-              <Text style={[styles.label, { color: currentCountry(props.selectedCountry, value) ? colors.primaryContrast : colors.text }]}>{value}</Text>
+              <Text style={[styles.label, { color: currentCountry(props.selectedCountry, value) ? colors.primaryContrast : colors.text }]}>{value === ALL_COUNTRIES_VALUE ? t("filters.allCountries") : value}</Text>
             </Pressable>
           ))}
         </View>

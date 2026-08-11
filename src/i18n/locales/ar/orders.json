@@ -1,0 +1,66 @@
+{
+  "addScreen": {
+    "subtitle": "تسجيل الطلب مباشرة."
+  },
+  "customerMode": {
+    "existing": {
+      "label": "عميل حالي",
+      "subtitle": "طلب سريع"
+    },
+    "new": {
+      "label": "عميل جديد",
+      "subtitle": "إنشاء جهة اتصال جديدة"
+    }
+  },
+  "existingCustomer": {
+    "searchTitle": "البحث عن عميل",
+    "searchSubtitle": "ابحث بالاسم أو الهاتف أو المدينة أو العنوان واختر العميل مباشرة.",
+    "searching": "جارٍ البحث...",
+    "noResultsTitle": "لا توجد نتائج",
+    "noResultsMessage": "لم يتم العثور على عميل.",
+    "resultsCount": "{{count}} نتيجة",
+    "selectedTitle": "العميل المختار",
+    "selectedSubtitle": "سيُستخدم العنوان المختار لاحقًا بدقة للملاحة والخريطة."
+  },
+  "details": {
+    "noOrderSelected": "لم يتم اختيار طلب.",
+    "loading": "جارٍ تحميل الطلب...",
+    "emptyTitle": "لا يوجد طلب",
+    "emptyMessage": "تعذّر تحميل بيانات هذا الطلب.",
+    "statusLabel": "الحالة:",
+    "dateLabel": "التاريخ:",
+    "customerIdLabel": "معرف العميل:",
+    "noProducts": "لا توجد منتجات محفوظة.",
+    "status": {
+      "open": "مفتوح",
+      "completed": "مكتمل",
+      "cancelled": "ملغى"
+    }
+  },
+  "items": {
+    "sectionTitle": "المنتجات",
+    "sectionSubtitle": "اختر المنتجات والكميات والوحدات للطلب المفتوح.",
+    "addProduct": "إضافة منتج",
+    "selectProduct": "اختر منتجًا",
+    "change": "تغيير",
+    "quantityPlaceholder": "الكمية",
+    "unitPlaceholder": "الوحدة",
+    "remove": "إزالة",
+    "removeConfirmTitle": "إزالة المنتج؟",
+    "removeConfirmMessage": "سيتم إزالة هذا المنتج من الطلب."
+  },
+  "save": {
+    "button": "حفظ الطلب",
+    "saving": "جارٍ الحفظ...",
+    "success": "تم حفظ الطلب."
+  },
+  "validation": {
+    "itemsMin": "أضف منتجًا واحدًا على الأقل",
+    "selectCustomer": "يرجى اختيار عميل",
+    "productRequired": "المنتج مطلوب",
+    "productNameRequired": "اسم المنتج مطلوب",
+    "quantityPositive": "يجب أن تكون الكمية أكبر من 0",
+    "unitRequired": "الوحدة مطلوبة",
+    "orderItemsMin": "يجب أن يحتوي الطلب على منتج واحد على الأقل"
+  }
+}

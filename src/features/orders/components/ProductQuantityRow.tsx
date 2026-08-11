@@ -1,5 +1,6 @@
 import { Control, Controller } from "react-hook-form";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AppInput } from "@/src/components/ui/AppInput";
 import { spacing } from "@/src/constants/spacing";
@@ -16,6 +17,7 @@ type ProductQuantityRowProps = {
 
 export function ProductQuantityRow({ index, control, error, onOpenPicker, onRemove }: ProductQuantityRowProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation("orders");
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -25,9 +27,9 @@ export function ProductQuantityRow({ index, control, error, onOpenPicker, onRemo
         render={({ field }) => (
           <Pressable onPress={onOpenPicker} style={styles.productButton}>
             <Text style={[styles.productLabel, { color: field.value ? colors.text : colors.mutedText }]}>
-              {field.value || "Produkt waehlen"}
+              {field.value || t("items.selectProduct")}
             </Text>
-            <Text style={[styles.change, { color: colors.primary }]}>Aendern</Text>
+            <Text style={[styles.change, { color: colors.primary }]}>{t("items.change")}</Text>
           </Pressable>
         )}
       />
@@ -41,7 +43,7 @@ export function ProductQuantityRow({ index, control, error, onOpenPicker, onRemo
                 keyboardType="decimal-pad"
                 onBlur={field.onBlur}
                 onChangeText={(text) => field.onChange(text === "" ? 0 : Number(text.replace(",", ".")))}
-                placeholder="Menge"
+                placeholder={t("items.quantityPlaceholder")}
                 value={field.value ? String(field.value) : ""}
               />
             )}
@@ -52,12 +54,12 @@ export function ProductQuantityRow({ index, control, error, onOpenPicker, onRemo
             control={control}
             name={`items.${index}.unit`}
             render={({ field }) => (
-              <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder="Einheit" value={field.value} />
+              <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder={t("items.unitPlaceholder")} value={field.value} />
             )}
           />
         </View>
         <Pressable onPress={onRemove} style={styles.removeButton}>
-          <Text style={[styles.removeLabel, { color: colors.danger }]}>Entfernen</Text>
+          <Text style={[styles.removeLabel, { color: colors.danger }]}>{t("items.remove")}</Text>
         </Pressable>
       </View>
       {error ? <Text style={[styles.error, { color: colors.danger }]}>{error}</Text> : null}

@@ -1,0 +1,50 @@
+{
+  "loadingProducts": "Produkte laden...",
+  "form": {
+    "nameLabel": "Produktname",
+    "namePlaceholder": "Produktname",
+    "unitLabel": "Einheit",
+    "unitPlaceholder": "z. B. Stueck, kg",
+    "emojiLabel": "Emoji (optional, fuer den Sammeltext)",
+    "emojiPlaceholder": "z. B. 🧀",
+    "sortOrderLabel": "Sortierung",
+    "submitting": "Speichert..."
+  },
+  "list": {
+    "sortOrder": "Sortierung {{order}}"
+  },
+  "management": {
+    "createLabel": "Produkt hinzufuegen",
+    "listLabel": "Produktansicht",
+    "subtitle": "Produkte anlegen, sortieren, bearbeiten, deaktivieren und sicher loeschen.",
+    "title": "Produkte",
+    "addSubmitLabel": "Produkt speichern",
+    "editSubmitLabel": "Aenderungen speichern",
+    "emptyTitle": "Keine Produkte",
+    "emptyMessage": "Lege hier mindestens ein Produkt an. Ohne Produkte kann keine Bestellung gespeichert werden.",
+    "addSuccess": "Produkt wurde erfolgreich hinzugefuegt.",
+    "updateSuccess": "Produkt wurde erfolgreich aktualisiert.",
+    "activateSuccess": "Produkt wurde wieder aktiviert.",
+    "updateError": "Produkt konnte nicht aktualisiert werden.",
+    "deactivateButton": "Deaktivieren",
+    "deactivateTitle": "Produkt deaktivieren?",
+    "deactivateMessage": "Dieses Produkt wird nicht mehr in der Produktauswahl angezeigt.",
+    "deactivateError": "Produkt konnte nicht deaktiviert werden.",
+    "deactivateSuccess": "Produkt wurde deaktiviert.",
+    "deleteTitle": "Produkt wirklich loeschen?",
+    "deleteMessage": "Dieses Produkt wird nur geloescht, wenn es noch in keiner Bestellung verwendet wurde.",
+    "deleteError": "Produkt konnte nicht geloescht werden.",
+    "deleteSuccess": "Produkt wurde geloescht.",
+    "reorderError": "Sortierung konnte nicht geaendert werden."
+  },
+  "picker": {
+    "title": "Produkt auswaehlen",
+    "searchPlaceholder": "Produkt suchen",
+    "emptyTitle": "Keine Ergebnisse",
+    "emptyMessage": "Kein passendes Produkt gefunden."
+  },
+  "validation": {
+    "nameRequired": "Name erforderlich",
+    "defaultUnitRequired": "Standard-Einheit erforderlich"
+  }
+}

@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { colors } from "@/src/constants/colors";
 import { spacing } from "@/src/constants/spacing";
@@ -10,13 +11,15 @@ type CityProductTotalsProps = {
 };
 
 export function CityProductTotals({ totals }: CityProductTotalsProps) {
+  const { t } = useTranslation("cities");
+
   if (!totals.length) {
     return null;
   }
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>Produktsummen offen</Text>
+      <Text style={styles.title}>{t("productTotals.title")}</Text>
       {totals.map((value) => (
         <Text key={value.productKey} style={styles.item}>
           {value.productName}: {value.quantity} {value.unit}

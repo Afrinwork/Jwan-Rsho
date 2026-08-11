@@ -1,5 +1,6 @@
 import { Control, FieldErrors } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { FormSectionCard } from "@/src/components/ui/FormSectionCard";
 import { spacing } from "@/src/constants/spacing";
@@ -13,9 +14,11 @@ type NewCustomerSectionProps = {
 };
 
 export function NewCustomerSection({ control, errors }: NewCustomerSectionProps) {
+  const { t } = useTranslation("orders");
+
   return (
     <View style={styles.container}>
-      <FormSectionCard title="Neuer Kunde">
+      <FormSectionCard title={t("customerMode.new.label")}>
         <CustomerForm control={control} errors={errors} />
         <CustomerAddressSection control={control} errors={errors} />
       </FormSectionCard>

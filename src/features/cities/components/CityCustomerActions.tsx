@@ -1,4 +1,5 @@
 import { StyleSheet, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 
@@ -12,12 +13,14 @@ type CityCustomerActionsProps = {
 };
 
 export function CityCustomerActions(props: CityCustomerActionsProps) {
+  const { t } = useTranslation("cities");
+
   return (
     <View style={styles.container}>
-      <AppButton label={props.selected ? "Abwaehlen" : "Auswaehlen"} onPress={props.onToggleSelection} variant="secondary" />
-      <AppButton label="Details" onPress={props.onPressDetails} variant="secondary" />
+      <AppButton label={props.selected ? t("customerActions.deselect") : t("customerActions.select")} onPress={props.onToggleSelection} variant="secondary" />
+      <AppButton label={t("customerActions.details")} onPress={props.onPressDetails} variant="secondary" />
       {props.canComplete ? (
-        <AppButton label="Erledigt" loading={props.completing} onPress={props.onComplete} />
+        <AppButton label={t("customerActions.complete")} loading={props.completing} onPress={props.onComplete} />
       ) : null}
     </View>
   );

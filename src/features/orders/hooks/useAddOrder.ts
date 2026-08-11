@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
 import { customerSchema } from "@/src/features/customers/validation/customerSchema";
 import { CustomerMode } from "@/src/features/orders/types/orderFormTypes";
@@ -23,6 +24,7 @@ const defaultValues: AddOrderFormValues = {
 };
 
 export function useAddOrder() {
+  const { t } = useTranslation("orders");
   const [customerMode, setCustomerMode] = useState<CustomerMode>("new");
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -66,7 +68,7 @@ export function useAddOrder() {
             };
 
       await guardedCreateOrder(payload);
-      setSuccessMessage("Bestellung wurde gespeichert.");
+      setSuccessMessage(t("save.success"));
       form.reset(defaultValues);
       setCustomerMode("new");
       setSelectedCustomer(null);

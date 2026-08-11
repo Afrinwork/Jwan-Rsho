@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { t } from "@/src/i18n/i18n";
 
 import { adminService } from "@/src/features/admin/services/adminService";
 import { CreateUserFormValues } from "@/src/features/admin/types/adminFormTypes";
@@ -24,7 +25,7 @@ export function useCreateUser() {
         password: values.password,
       });
       form.reset();
-      setSuccessMessage("Benutzer wurde erfolgreich angelegt.");
+      setSuccessMessage(t("admin:createUser.successMessage"));
     } catch (error) {
       setSubmitError(formatError(error).message);
       setSuccessMessage(null);

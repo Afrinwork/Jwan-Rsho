@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { colors } from "@/src/constants/colors";
 import { spacing } from "@/src/constants/spacing";
@@ -17,28 +18,30 @@ type CityCustomerCardProps = {
 };
 
 export function CityCustomerCard(props: CityCustomerCardProps) {
+  const { t } = useTranslation("cities");
+
   return (
     <View style={styles.card}>
       <Text style={styles.name}>{props.customer.fullName}</Text>
       <Text style={styles.meta}>{props.customer.phone}</Text>
       <Text style={styles.meta}>{formatAddress([props.customer.address, props.customer.city])}</Text>
-      <Text style={styles.meta}>{props.customer.currentOpenOrderLabel ?? "Keine offene Bestellung"}</Text>
-      <Text style={styles.status}>{labelForStatus(props.customer.status)}</Text>
+      <Text style={styles.meta}>{props.customer.currentOpenOrderLabel ?? t("customerList.noOpenOrder")}</Text>
+      <Text style={styles.status}>{labelForStatus(props.customer.status, t)}</Text>
       <CityCustomerActions canComplete={Boolean(props.customer.currentOpenOrderId)} completing={props.completing} onComplete={props.onComplete} onPressDetails={props.onPressDetails} onToggleSelection={props.onToggleSelection} selected={props.selected} />
     </View>
   );
 }
 
-function labelForStatus(status: CityCustomerItem["status"]) {
+function labelForStatus(status: CityCustomerItem["status"], t: (key: string) => string) {
   if (status === "open") {
-    return "Status: offen";
+    return t("customerStatus.open");
   }
 
   if (status === "completed") {
-    return "Status: erledigt";
+    return t("customerStatus.completed");
   }
 
-  return "Status: ohne offene Bestellung";
+  return t("customerStatus.noOpenOrder");
 }
 
 const styles = StyleSheet.create({

@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 
@@ -8,12 +9,13 @@ type CitySelectionBarProps = {
 
 export function CitySelectionBar(props: CitySelectionBarProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation("cities");
 
   return (
     <View style={styles.container}>
       <View style={styles.row}>
         <View style={[styles.countChip, { backgroundColor: colors.backgroundAccent, borderColor: colors.primary }]}>
-          <Text style={[styles.countText, { color: colors.primary }]}>{props.selectedCount} ausgewaehlt</Text>
+          <Text style={[styles.countText, { color: colors.primary }]}>{t("selectionBar.selectedCount", { count: props.selectedCount })}</Text>
         </View>
       </View>
     </View>

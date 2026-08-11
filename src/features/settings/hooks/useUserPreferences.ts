@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
+import { getCachedLanguage, syncLanguageOnHydrate } from "@/src/i18n/languageController";
 import { useAppStore } from "@/src/store/appStore";
 import { userPreferencesRepository } from "@/src/repositories/userPreferencesRepository";
 import { formatError } from "@/src/utils/formatError";
@@ -28,12 +29,14 @@ export function useUserPreferences() {
       if (preferences) {
         hydratePreferences({
           themeMode: preferences.themeMode,
+          language: preferences.language ?? "de",
           preferredNavigationApp: preferences.preferredNavigationApp,
           shopName: preferences.shopName ?? "",
           shareIncludeAddress: preferences.shareIncludeAddress,
           shareIncludePhone: preferences.shareIncludePhone,
           shareIncludeTotals: preferences.shareIncludeTotals,
         });
+        await syncLanguageOnHydrate(preferences.language ?? "de");
       } else {
         resetPreferences();
       }
@@ -53,6 +56,17 @@ export function useUserPreferences() {
       setLoading(false);
     }
   }, [hydratePreferences, resetPreferences, user]);
+
+  // Applies the last-known cached language immediately on cold start (before the
+  // slower Firestore-backed load() below resolves), so I18nManager's RTL state is
+  // correct as early as possible while the StartupSplash overlay is still visible.
+  useEffect(() => {
+    void getCachedLanguage().then((cached) => {
+      if (cached) {
+        void syncLanguageOnHydrate(cached);
+      }
+    });
+  }, []);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {

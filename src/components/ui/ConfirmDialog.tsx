@@ -1,4 +1,5 @@
 import { Modal, StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { spacing } from "@/src/constants/spacing";
@@ -19,13 +20,14 @@ export function ConfirmDialog({
   visible,
   title,
   message,
-  confirmLabel = "Bestaetigen",
-  cancelLabel = "Abbrechen",
+  confirmLabel,
+  cancelLabel,
   destructive,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation("common");
 
   return (
     <Modal animationType="fade" onRequestClose={onCancel} transparent visible={visible}>
@@ -35,11 +37,11 @@ export function ConfirmDialog({
           <Text style={[styles.message, { color: colors.mutedText }]}>{message}</Text>
           <View style={styles.actions}>
             <View style={styles.actionButton}>
-              <AppButton label={cancelLabel} onPress={onCancel} variant="secondary" />
+              <AppButton label={cancelLabel ?? t("cancel")} onPress={onCancel} variant="secondary" />
             </View>
             <View style={styles.actionButton}>
               <AppButton
-                label={confirmLabel}
+                label={confirmLabel ?? t("confirm")}
                 onPress={onConfirm}
                 variant={destructive ? "danger" : "primary"}
               />

@@ -1,0 +1,91 @@
+{
+  "screen": {
+    "loading": "جارٍ تجهيز الخريطة..."
+  },
+  "toolbar": {
+    "title": "الخريطة",
+    "subtitle": "الزبائن والفلاتر مباشرة على الخريطة.",
+    "retryLocation": "إعادة طلب الإذن",
+    "retryCustomers": "إعادة تحميل الزبائن",
+    "loadingCustomers": "جارٍ تحميل علامات الزبائن..."
+  },
+  "filters": {
+    "country": "الدولة",
+    "city": "المدينة",
+    "region": "المنطقة",
+    "all": "الكل"
+  },
+  "selectionToolbar": {
+    "drawingActive": "الرسم نشط",
+    "drawPolygon": "رسم مضلع",
+    "clearSelection": "مسح التحديد"
+  },
+  "polygonDraw": {
+    "back": "رجوع",
+    "closeSelection": "إغلاق التحديد"
+  },
+  "selectedBar": {
+    "count": "تم تحديد {{count}} من الزبائن",
+    "view": "عرض",
+    "whatsapp": "واتساب",
+    "email": "البريد الإلكتروني",
+    "clear": "حذف"
+  },
+  "selectedList": {
+    "emptyTitle": "لا يوجد تحديد",
+    "emptyMessage": "لا يوجد حالياً أي زبائن محددين."
+  },
+  "productTotals": {
+    "title": "إجمالي المنتجات للتحديد",
+    "calculating": "جارٍ الحساب..."
+  },
+  "selectedRow": {
+    "openOrdersCount": "عدد الطلبات المفتوحة: {{count}}",
+    "openOrderSingular": "يوجد طلب مفتوح",
+    "noOpenOrder": "لا يوجد طلب مفتوح",
+    "remove": "إزالة"
+  },
+  "customerCard": {
+    "region": "المنطقة: {{region}}",
+    "note": "ملاحظة",
+    "openOrder": "طلب مفتوح",
+    "openOrderIndexed": "الطلب المفتوح {{index}} من {{count}}",
+    "noOpenOrderFound": "لم يتم العثور على طلب مفتوح."
+  },
+  "sheet": {
+    "loadingDetails": "جارٍ تحميل بيانات الزبون...",
+    "markCompleted": "تحديد كمكتمل",
+    "markAllCompleted": "تحديد جميع الطلبات ({{count}}) كمكتملة",
+    "callPhone": "الاتصال بالرقم",
+    "phoneMissing": "رقم الهاتف غير متوفر",
+    "navigation": "الملاحة",
+    "shareViaWhatsapp": "مشاركة عبر واتساب",
+    "shareLocation": "مشاركة الموقع"
+  },
+  "navigationSheet": {
+    "title": "فتح تطبيق الملاحة",
+    "subtitle": "خرائط Apple هي دائماً الخيار الافتراضي الآمن.",
+    "unavailable": "{{label}} غير متوفر"
+  },
+  "errors": {
+    "noPhone": "لا يوجد رقم هاتف لهذا الزبون.",
+    "noNavigationData": "لا تتوفر بيانات ملاحة لهذا الزبون.",
+    "locationNotReady": "بيانات الموقع غير متوفرة بعد.",
+    "noCustomerDataToShare": "لا توجد بيانات زبون لمشاركتها.",
+    "nothingToShare": "لا توجد بيانات لمشاركتها.",
+    "noOpenOrderFound": "لم يتم العثور على طلب مفتوح لهذا الزبون.",
+    "noCustomersSelected": "لا يوجد زبائن محددون.",
+    "locationPermissionDenied": "تم رفض الوصول إلى الموقع. ستستمر الخريطة في العمل رغم ذلك."
+  },
+  "share": {
+    "total": "المجموع",
+    "multipleCities": "عدة مدن",
+    "customerCount": "عدد الزبائن: {{count}}",
+    "totalOrders": "إجمالي الطلبات: {{count}}",
+    "headerOrderCount": "عدد الطلبات: {{count}}",
+    "ordersCountLine": "{{count}} طلبات",
+    "noOpenOrder": "لا يوجد طلب مفتوح",
+    "note": "ملاحظة: {{note}}",
+    "defaultSubject": "قائمة الزبائن المختارة"
+  }
+}

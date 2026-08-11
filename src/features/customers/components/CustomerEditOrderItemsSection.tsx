@@ -8,6 +8,7 @@ import {
   UseFormSetValue,
 } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { FormSectionCard } from "@/src/components/ui/FormSectionCard";
 import { AppButton } from "@/src/components/ui/AppButton";
@@ -36,6 +37,7 @@ export function CustomerEditOrderItemsSection({
   setValue,
   errors,
 }: CustomerEditOrderItemsSectionProps) {
+  const { t } = useTranslation("customers");
   const [pickerVisible, setPickerVisible] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [removeIndex, setRemoveIndex] = useState<number | null>(null);
@@ -66,7 +68,7 @@ export function CustomerEditOrderItemsSection({
   }
 
   return (
-    <FormSectionCard subtitle="Passe die offene Bestellung direkt auf der Karte an." title="Produkte">
+    <FormSectionCard subtitle={t("orderItems.sectionSubtitle")} title={t("orderItems.sectionTitle")}>
       <View style={styles.container}>
         {fields.map((field, index) => (
           <CustomerEditProductRow
@@ -82,7 +84,7 @@ export function CustomerEditOrderItemsSection({
             onRemove={() => setRemoveIndex(index)}
           />
         ))}
-        <AppButton label="Produkt hinzufuegen" onPress={handleAdd} variant="secondary" />
+        <AppButton label={t("orderItems.addProduct")} onPress={handleAdd} variant="secondary" />
         {rootError ? <ErrorState message={rootError} /> : null}
       </View>
       <ProductPicker
@@ -92,9 +94,9 @@ export function CustomerEditOrderItemsSection({
         visible={pickerVisible}
       />
       <ConfirmDialog
-        confirmLabel="Entfernen"
+        confirmLabel={t("orderItems.remove")}
         destructive
-        message="Dieses Produkt wird aus der Bestellung entfernt."
+        message={t("orderItems.removeConfirmMessage")}
         onCancel={() => setRemoveIndex(null)}
         onConfirm={() => {
           if (removeIndex !== null) {
@@ -102,7 +104,7 @@ export function CustomerEditOrderItemsSection({
           }
           setRemoveIndex(null);
         }}
-        title="Produkt entfernen?"
+        title={t("orderItems.removeConfirmTitle")}
         visible={removeIndex !== null}
       />
     </FormSectionCard>

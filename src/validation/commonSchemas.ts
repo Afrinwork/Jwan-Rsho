@@ -1,4 +1,6 @@
 import { z } from "zod";
 
-export const emailSchema = z.email("Bitte eine gueltige E-Mail-Adresse eingeben");
-export const passwordSchema = z.string().min(6, "Passwort ist erforderlich");
+import { t } from "@/src/i18n/i18n";
+
+export const emailSchema = z.email(t("validation:invalidEmail"));
+export const passwordSchema = z.string().min(6, t("validation:passwordRequired"));

@@ -1,4 +1,5 @@
 import { FlatList, Keyboard, StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { FormSectionCard } from "@/src/components/ui/FormSectionCard";
 import { EmptyState } from "@/src/components/ui/EmptyState";
@@ -22,19 +23,20 @@ export function ExistingCustomerSection({ selectedCustomer, onSelect, error }: E
   const search = useCustomerSearch();
   const hasQuery = search.query.trim().length > 0;
   const hasResults = search.results.length > 0;
+  const { t } = useTranslation("orders");
 
   return (
     <View style={styles.container}>
-      <FormSectionCard subtitle="Suche nach Name, Telefon, Stadt oder Adresse und uebernimm den Kunden direkt." title="Kunde suchen">
+      <FormSectionCard subtitle={t("existingCustomer.searchSubtitle")} title={t("existingCustomer.searchTitle")}>
         <CustomerSearch onQueryChange={search.setQuery} query={search.query} />
-        {search.loading ? <LoadingView label="Suche laeuft..." /> : null}
+        {search.loading ? <LoadingView label={t("existingCustomer.searching")} /> : null}
         {search.error ? <ErrorState message={search.error} /> : null}
         {!search.loading && hasQuery && !hasResults ? (
-          <EmptyState message="Kein Kunde gefunden." title="Keine Treffer" />
+          <EmptyState message={t("existingCustomer.noResultsMessage")} title={t("existingCustomer.noResultsTitle")} />
         ) : null}
         {!search.loading && hasResults ? (
           <View style={styles.resultsWrap}>
-            <Text style={styles.resultsLabel}>{search.results.length} Treffer</Text>
+            <Text style={styles.resultsLabel}>{t("existingCustomer.resultsCount", { count: search.results.length })}</Text>
             <FlatList
               data={search.results}
               keyExtractor={(customer) => customer.id}
@@ -56,7 +58,7 @@ export function ExistingCustomerSection({ selectedCustomer, onSelect, error }: E
         ) : null}
       </FormSectionCard>
       {selectedCustomer ? (
-        <FormSectionCard subtitle="Die ausgewaehlte Adresse wird spaeter exakt fuer Navigation und Karte verwendet." title="Ausgewaehlter Kunde">
+        <FormSectionCard subtitle={t("existingCustomer.selectedSubtitle")} title={t("existingCustomer.selectedTitle")}>
           <CustomerCard customer={selectedCustomer} />
           <CustomerAddressView address={selectedCustomer} />
         </FormSectionCard>

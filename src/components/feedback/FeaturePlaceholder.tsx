@@ -1,4 +1,5 @@
 import { StyleSheet, Text } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { EmptyState } from "@/src/components/ui/EmptyState";
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
@@ -14,10 +15,12 @@ export function FeaturePlaceholder({
   title,
   description,
 }: FeaturePlaceholderProps) {
+  const { t } = useTranslation("common");
+
   return (
     <ScreenContainer>
       <Text accessibilityRole="header" style={styles.title}>{title}</Text>
-      <EmptyState message={description} title="Noch nicht verfuegbar" />
+      <EmptyState message={description} title={t("notAvailableYet")} />
     </ScreenContainer>
   );
 }
