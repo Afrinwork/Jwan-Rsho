@@ -11,8 +11,18 @@ import { Product } from "@/src/types/product";
 
 type NamedEntity = { id: string; name: string; isActive: boolean };
 
+// Lowercases and folds real umlauts to their ASCII-transliterated form (as
+// used throughout this app's own data, e.g. "Käse" and "Kaese" both become
+// "kaese"), so near-identical spelling variants are recognized as the same
+// product/country instead of silently creating duplicates.
 function normalize(value: string) {
-  return value.trim().toLowerCase();
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/ä/g, "ae")
+    .replace(/ö/g, "oe")
+    .replace(/ü/g, "ue")
+    .replace(/ß/g, "ss");
 }
 
 // Deletes an entry, falling back to deactivating it if it's still referenced

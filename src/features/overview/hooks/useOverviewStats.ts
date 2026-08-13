@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 
 import { requireCurrentUserId, requireDb } from "@/src/repositories/repositoryContext";
+import { dailyCompletionTracker } from "@/src/services/dailyCompletionTracker";
 import { Country } from "@/src/types/country";
 import { Customer } from "@/src/types/customer";
 import { Order } from "@/src/types/order";
@@ -31,6 +33,17 @@ export function useOverviewStats() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Completed orders are deleted immediately (see orderRepository.completeOrder),
+  // so "completed" is tracked separately as a rolling 24h count that resets on
+  // its own — refreshed whenever this screen regains focus.
+  useFocusEffect(
+    useCallback(() => {
+      void dailyCompletionTracker.getCount().then((completedOrders) => {
+        setStats((current) => ({ ...current, completedOrders }));
+      });
+    }, []),
+  );
+
   useEffect(() => {
     let active = true;
 
@@ -38,11 +51,11 @@ export function useOverviewStats() {
       const db = requireDb();
       const ownerId = requireCurrentUserId();
       const customersQuery = query(collection(db, "customers"), where("ownerId", "==", ownerId));
-      const ordersQuery = query(collection(db, "orders"), where("ownerId", "==", ownerId));
+      const ordersQuery = query(collection(db, "orders"), where("ownerId", "==", ownerId), where("status", "==", "open"));
       const countriesQuery = query(collection(db, "countries"), where("ownerId", "==", ownerId));
       const productsQuery = query(collection(db, "products"), where("ownerId", "==", ownerId));
       let customers: Customer[] = [];
-      let orders: Order[] = [];
+      let openOrders: Order[] = [];
       let countries: Country[] = [];
       let products: Product[] = [];
 
@@ -51,7 +64,7 @@ export function useOverviewStats() {
           return;
         }
 
-        setStats(buildOverviewStats(customers, orders, countries, products));
+        setStats((current) => ({ ...buildOverviewStats(customers, openOrders, countries, products), completedOrders: current.completedOrders }));
         setError(null);
         setLoading(false);
       };
@@ -77,7 +90,7 @@ export function useOverviewStats() {
         onSnapshot(
           ordersQuery,
           (snapshot) => {
-            orders = snapshot.docs.map((value) => ({ id: value.id, ...value.data() }) as Order);
+            openOrders = snapshot.docs.map((value) => ({ id: value.id, ...value.data() }) as Order);
             updateStats();
           },
           handleError,
@@ -116,13 +129,12 @@ export function useOverviewStats() {
   return { stats, loading, error };
 }
 
-function buildOverviewStats(customers: Customer[], orders: Order[], countries: Country[], products: Product[]): OverviewStats {
+function buildOverviewStats(customers: Customer[], openOrders: Order[], countries: Country[], products: Product[]): Omit<OverviewStats, "completedOrders"> {
   const cityCount = new Set(customers.map((value) => value.normalizedCity).filter(Boolean)).size;
 
   return {
     customers: customers.length,
-    openOrders: orders.filter((value) => value.status === "open").length,
-    completedOrders: orders.filter((value) => value.status === "completed").length,
+    openOrders: openOrders.length,
     countries: countries.filter((value) => value.isActive).length,
     cities: cityCount,
     products: products.filter((value) => value.isActive).length,

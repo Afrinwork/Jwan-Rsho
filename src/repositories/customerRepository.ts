@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore";
 
 import { buildCustomerCreateData, buildCustomerUpdateData, CustomerWrite } from "@/src/repositories/customerRepositoryData";
+import { cityRepository } from "@/src/repositories/cityRepository";
 import { mapSnapshot, requireCurrentUserId, requireDb } from "@/src/repositories/repositoryContext";
 import { Customer } from "@/src/types/customer";
 
@@ -20,16 +21,36 @@ export const customerRepository = {
     const ownerId = requireCurrentUserId();
     const customerRef = doc(collection(requireDb(), "customers"));
     await setDoc(customerRef, withCreateTimestamps(buildCustomerCreateData(input, ownerId)));
+    await cityRepository.ensureCityExists(input.city).catch(() => undefined);
     return customerRef.id;
   },
 
   async updateCustomer(id: string, input: Partial<CustomerWrite>) {
     const snapshot = await getOwnedCustomer(id);
     await updateDoc(snapshot.ref, { ...clean(buildCustomerUpdateData(input)), updatedAt: new Date().toISOString() });
+
+    if (input.city) {
+      await cityRepository.ensureCityExists(input.city).catch(() => undefined);
+    }
   },
 
+  // Deleting a customer also deletes all of their orders (+ items), so no
+  // orphaned orders are left pointing at a customer that no longer exists.
   async deleteCustomer(id: string) {
     const snapshot = await getOwnedCustomer(id);
+    const db = requireDb();
+    const ownerId = requireCurrentUserId();
+    const ordersQuery = query(collection(db, "orders"), where("ownerId", "==", ownerId), where("customerId", "==", id));
+    const ordersSnapshot = await getDocs(ordersQuery);
+
+    await Promise.all(
+      ordersSnapshot.docs.map(async (orderDoc) => {
+        const itemsSnapshot = await getDocs(collection(orderDoc.ref, "items"));
+        await Promise.all(itemsSnapshot.docs.map((item) => deleteDoc(item.ref)));
+        await deleteDoc(orderDoc.ref);
+      }),
+    );
+
     await deleteDoc(snapshot.ref);
   },
 

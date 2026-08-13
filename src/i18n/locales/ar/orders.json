@@ -62,5 +62,19 @@
     "quantityPositive": "يجب أن تكون الكمية أكبر من 0",
     "unitRequired": "الوحدة مطلوبة",
     "orderItemsMin": "يجب أن يحتوي الطلب على منتج واحد على الأقل"
+  },
+  "openOrders": {
+    "screenTitle": "الطلبات المفتوحة",
+    "screenSubtitle": "جميع الطلبات المفتوحة في مكان واحد.",
+    "loading": "جارٍ تحميل الطلبات المفتوحة...",
+    "emptyTitle": "لا توجد طلبات مفتوحة",
+    "emptyMessage": "لا توجد حاليًا أي طلبات مفتوحة.",
+    "filterAll": "الكل",
+    "multipleOrdersBadge": "{{count}} طلبات مفتوحة",
+    "orderDateLabel": "طلب بتاريخ {{date}}",
+    "completeButton": "إنهاء",
+    "deleteButton": "حذف",
+    "deleteConfirmTitle": "هل تريد حذف هذا الطلب نهائيًا؟",
+    "deleteConfirmMessage": "سيتم حذف هذا الطلب نهائيًا من قاعدة البيانات. لا يمكن التراجع عن هذا الإجراء."
   }
 }

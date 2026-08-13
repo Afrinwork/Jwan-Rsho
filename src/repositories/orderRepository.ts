@@ -14,11 +14,11 @@ import {
 
 import { buildCustomerUpdateData, CustomerWrite } from "@/src/repositories/customerRepositoryData";
 import { buildNewCustomerForOrder, buildOrderCreateData, buildOrderItemData, CreateOrderInput } from "@/src/repositories/orderRepositoryData";
+import { cityRepository } from "@/src/repositories/cityRepository";
 import { mapSnapshot, requireCurrentUserId, requireDb } from "@/src/repositories/repositoryContext";
+import { dailyCompletionTracker } from "@/src/services/dailyCompletionTracker";
 import { Order } from "@/src/types/order";
 import { OrderItem } from "@/src/types/orderItem";
-
-export const COMPLETED_ORDER_RETENTION_DAYS = 90;
 
 export const orderRepository = {
   async createOrder(input: CreateOrderInput & { customer?: CustomerWrite; id?: string }) {
@@ -52,6 +52,11 @@ export const orderRepository = {
       });
 
       return { customerId, orderId };
+    }).then(async (result) => {
+      if (input.customer?.city) {
+        await cityRepository.ensureCityExists(input.customer.city).catch(() => undefined);
+      }
+      return result;
     });
   },
 
@@ -80,9 +85,12 @@ export const orderRepository = {
     return sortOrdersByDateDesc((await getDocs(orderQuery)).docs.map((value) => mapSnapshot<Order>(value)));
   },
 
+  // Completing an order deletes it outright (order + items) rather than just
+  // marking it "completed" — the app keeps no history of finished orders, by
+  // design, so it always stays clean without needing any retention window.
   async completeOrder(id: string) {
-    const snapshot = await getOwnedOrder(id);
-    await updateDoc(snapshot.ref, { status: "completed", completedAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    await deleteOrderById(id);
+    await dailyCompletionTracker.recordCompletion();
   },
 
   async updateOpenOrderCustomerAndItems(input: {
@@ -120,11 +128,20 @@ export const orderRepository = {
     });
 
     await batch.commit();
+
+    if (input.customer.city) {
+      await cityRepository.ensureCityExists(input.customer.city).catch(() => undefined);
+    }
   },
 
   async cancelOrder(id: string) {
     const snapshot = await getOwnedOrder(id);
     await updateDoc(snapshot.ref, { status: "cancelled", updatedAt: new Date().toISOString() });
+  },
+
+  // Permanently deletes a single order and its items, regardless of status.
+  async deleteOrder(id: string) {
+    await deleteOrderById(id);
   },
 
   async countOpenOrdersByOwner(ownerId: string) {
@@ -136,36 +153,14 @@ export const orderRepository = {
     const orderQuery = query(collection(requireDb(), "orders"), where("ownerId", "==", ownerId));
     return (await getCountFromServer(orderQuery)).data().count;
   },
-
-  // Client-side housekeeping: permanently removes the current user's own
-  // completed orders older than COMPLETED_ORDER_RETENTION_DAYS. Runs from
-  // useOrderCleanup() at most once a day, so it stays free (no Cloud Functions
-  // / Blaze plan needed) while still keeping history for a while after completion.
-  async deleteExpiredCompletedOrders() {
-    const ownerId = requireCurrentUserId();
-    const db = requireDb();
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - COMPLETED_ORDER_RETENTION_DAYS);
-
-    const orderQuery = query(
-      collection(db, "orders"),
-      where("ownerId", "==", ownerId),
-      where("status", "==", "completed"),
-      where("completedAt", "<=", cutoff.toISOString()),
-    );
-    const snapshot = await getDocs(orderQuery);
-
-    await Promise.all(
-      snapshot.docs.map(async (orderDoc) => {
-        const itemsSnapshot = await getDocs(collection(orderDoc.ref, "items"));
-        await Promise.all(itemsSnapshot.docs.map((item) => deleteDoc(item.ref)));
-        await deleteDoc(orderDoc.ref);
-      }),
-    );
-
-    return snapshot.size;
-  },
 };
+
+async function deleteOrderById(id: string) {
+  const snapshot = await getOwnedOrder(id);
+  const itemsSnapshot = await getDocs(collection(requireDb(), "orders", id, "items"));
+  await Promise.all(itemsSnapshot.docs.map((item) => deleteDoc(item.ref)));
+  await deleteDoc(snapshot.ref);
+}
 
 export async function getOwnedOrder(id: string) {
   const ownerId = requireCurrentUserId();

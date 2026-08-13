@@ -87,5 +87,12 @@ service cloud.firestore {
       allow update: if isOwner(resource.data.ownerId) && ownerUnchanged();
       allow delete: if isOwner(resource.data.ownerId);
     }
+
+    match /cities/{docId} {
+      allow read: if isSignedIn() && (resource == null || isOwner(resource.data.ownerId));
+      allow create: if validOwnerWrite();
+      allow update: if isOwner(resource.data.ownerId) && ownerUnchanged();
+      allow delete: if isOwner(resource.data.ownerId);
+    }
   }
 }

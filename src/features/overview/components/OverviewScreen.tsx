@@ -6,6 +6,7 @@ import {
   City20Regular,
   ClipboardTask20Regular,
 } from "@fluentui/react-native-icons";
+import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ScrollView, StyleSheet } from "react-native";
 
@@ -23,6 +24,7 @@ import { useOverviewStats } from "@/src/features/overview/hooks/useOverviewStats
 
 export function OverviewScreen() {
   const { t } = useTranslation("overview");
+  const router = useRouter();
   const { stats, loading, error } = useOverviewStats();
   const motivation = getMotivation(t, stats.openOrders, stats.completedOrders);
 
@@ -38,6 +40,7 @@ export function OverviewScreen() {
         </AnimatedEntrance>
         <AnimatedEntrance delay={50}>
           <OverviewHeroCard
+            onPress={() => router.push("/orders/open")}
             subtitle={motivation}
             title={t("screen.heroTitle")}
             value={String(stats.openOrders)}

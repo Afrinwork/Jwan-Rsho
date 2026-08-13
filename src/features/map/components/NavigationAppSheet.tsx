@@ -1,5 +1,5 @@
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
-import { mapT } from "@/src/features/map/i18n/mapT";
+import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { spacing } from "@/src/constants/spacing";
@@ -11,11 +11,16 @@ type NavigationAppSheetProps = {
   apps: MapNavigationApp[];
   onClose: () => void;
   onSelect: (appId: NavigationAppId) => void;
+  // Map screens pass mapT here to keep this sheet pinned to German like the
+  // rest of the map; every other screen omits it and gets the app's normal
+  // (Arabic) language instead — both read the same "map" namespace strings.
+  t?: (key: string, options?: Record<string, unknown>) => string;
 };
 
-export function NavigationAppSheet({ visible, apps, onClose, onSelect }: NavigationAppSheetProps) {
+export function NavigationAppSheet({ visible, apps, onClose, onSelect, t: fixedT }: NavigationAppSheetProps) {
   const colors = useThemeColors();
-  const t = mapT;
+  const { t: reactiveT } = useTranslation("map");
+  const t = fixedT ?? reactiveT;
 
   return (
     <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>

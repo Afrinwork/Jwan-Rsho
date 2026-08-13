@@ -20,6 +20,7 @@
     "customer": "العميل",
     "customerEdit": "تعديل العميل",
     "order": "الطلب",
+    "openOrders": "الطلبات المفتوحة",
     "forgotPassword": "إعادة تعيين كلمة المرور"
   }
 }

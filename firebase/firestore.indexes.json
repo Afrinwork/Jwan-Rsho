@@ -31,15 +31,6 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "ownerId", "order": "ASCENDING" },
-        { "fieldPath": "status", "order": "ASCENDING" },
-        { "fieldPath": "completedAt", "order": "ASCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "orders",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "ownerId", "order": "ASCENDING" },
         { "fieldPath": "orderedAt", "order": "DESCENDING" }
       ]
     },

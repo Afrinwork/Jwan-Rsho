@@ -34,7 +34,7 @@ test("large data: 500 customers build map markers and city summaries without cra
   }));
 
   const markers = buildMapCustomerMarkers(customers, openOrders);
-  const summaries = buildCitySummaries(customers, openOrders);
+  const summaries = buildCitySummaries([], customers, openOrders);
   const filtered = filterMapMarkers(markers, { country: "DE", city: "Berlin", region: "Nord" });
 
   assert.equal(markers.length, 500);

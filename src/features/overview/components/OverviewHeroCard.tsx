@@ -1,4 +1,4 @@
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { AppText } from "@/src/components/ui/AppText";
@@ -11,13 +11,16 @@ type OverviewHeroCardProps = {
   title: string;
   subtitle: string;
   value: string;
+  onPress?: () => void;
 };
 
 export function OverviewHeroCard(props: OverviewHeroCardProps) {
   const colors = useThemeColors();
+  const Wrapper = props.onPress ? Pressable : View;
 
   return (
-    <View
+    <Wrapper
+      onPress={props.onPress}
       style={[
         styles.card,
         {
@@ -42,7 +45,7 @@ export function OverviewHeroCard(props: OverviewHeroCardProps) {
       <AppText color={colors.primaryContrast} style={styles.subtitle} variant="body">
         {props.subtitle}
       </AppText>
-    </View>
+    </Wrapper>
   );
 }
 

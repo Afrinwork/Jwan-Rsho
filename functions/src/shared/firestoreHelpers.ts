@@ -5,6 +5,7 @@ const collections = [
   "products",
   "countries",
   "regions",
+  "cities",
   "userPreferences",
 ];
 

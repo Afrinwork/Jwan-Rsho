@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { customerRepository } from "@/src/repositories/customerRepository";
 import { orderDetailsRepository } from "@/src/repositories/orderDetailsRepository";
@@ -14,6 +14,7 @@ export function useCustomerDetails(customerId: string) {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [openOrders, setOpenOrders] = useState<OrderWithItems[]>([]);
   const [historyOrders, setHistoryOrders] = useState<OrderWithItems[]>([]);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -30,5 +31,19 @@ export function useCustomerDetails(customerId: string) {
       .finally(() => setLoading(false));
   }, [customerId]);
 
-  return { loading, error, customer, openOrders, historyOrders };
+  const deleteCustomer = useCallback(async () => {
+    try {
+      setDeleting(true);
+      setError(null);
+      await customerRepository.deleteCustomer(customerId);
+      return true;
+    } catch (value) {
+      setError(formatError(value).message);
+      return false;
+    } finally {
+      setDeleting(false);
+    }
+  }, [customerId]);
+
+  return { loading, error, customer, openOrders, historyOrders, deleting, deleteCustomer };
 }

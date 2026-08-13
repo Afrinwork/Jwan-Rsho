@@ -50,6 +50,7 @@ export default function RootLayout() {
           <Stack.Screen name="customer/[id]" options={{ title: t("stack.customer") }} />
           <Stack.Screen name="customer/edit/[id]" options={{ title: t("stack.customerEdit") }} />
           <Stack.Screen name="order/[id]" options={{ title: t("stack.order") }} />
+          <Stack.Screen name="orders/open" options={{ title: t("stack.openOrders") }} />
         </Stack>
       </AuthGate>
     </AppProviders>
