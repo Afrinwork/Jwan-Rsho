@@ -4,6 +4,7 @@ export type Region = {
   id: string;
   ownerId: string;
   name: string;
+  nameAr?: string;
   normalizedName: string;
   country: string;
   normalizedCountry: string;

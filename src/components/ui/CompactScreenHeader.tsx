@@ -1,8 +1,8 @@
 import { ReactNode } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
-import { spacing } from "@/src/constants/spacing";
-import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { AppText } from "@/src/components/ui/AppText";
+import { spacing } from "@/src/theme/spacing";
 
 type CompactScreenHeaderProps = {
   title: string;
@@ -12,17 +12,17 @@ type CompactScreenHeaderProps = {
 };
 
 export function CompactScreenHeader(props: CompactScreenHeaderProps) {
-  const colors = useThemeColors();
-
   return (
     <View style={styles.container}>
       <View style={styles.topRow}>
         <View style={styles.copy}>
-          <Text style={[styles.title, { color: colors.text }]}>{props.title}</Text>
+          <AppText style={styles.title} variant="heading">
+            {props.title}
+          </AppText>
           {props.subtitle ? (
-            <Text numberOfLines={2} style={[styles.subtitle, { color: colors.mutedText }]}>
+            <AppText color="muted" numberOfLines={2} style={styles.subtitle} variant="caption">
               {props.subtitle}
-            </Text>
+            </AppText>
           ) : null}
         </View>
         {props.rightSlot}
@@ -47,14 +47,8 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: "800",
-  },
-  subtitle: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
+  title: {},
+  subtitle: {},
   chips: {
     flexDirection: "row",
     gap: spacing.xs,

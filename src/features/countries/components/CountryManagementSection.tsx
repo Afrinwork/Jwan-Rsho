@@ -70,7 +70,7 @@ export function CountryManagementSection() {
           {countries.map((country) =>
             editingCountry?.id === country.id ? (
               <CountryForm
-                initialValues={{ name: country.name, isoCode: country.isoCode ?? "", sortOrder: country.sortOrder }}
+                initialValues={{ name: country.name, nameAr: country.nameAr ?? "", isoCode: country.isoCode ?? "", sortOrder: country.sortOrder }}
                 key={country.id}
                 onCancel={() => setEditingCountry(null)}
                 onSubmit={handleEdit}

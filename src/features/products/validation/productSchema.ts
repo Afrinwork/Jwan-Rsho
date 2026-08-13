@@ -6,6 +6,7 @@ export const productSchema = z.object({
   id: z.string().optional(),
   ownerId: z.string().optional(),
   name: z.string().trim().min(1, t("products:validation.nameRequired")),
+  nameAr: z.string().trim().optional(),
   normalizedName: z.string().optional(),
   defaultUnit: z.string().trim().min(1, t("products:validation.defaultUnitRequired")),
   emoji: z.string().trim().optional(),

@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
-import { spacing } from "@/src/constants/spacing";
+import { AppBadge } from "@/src/components/ui/AppBadge";
+import { AppText } from "@/src/components/ui/AppText";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { radius } from "@/src/theme/radius";
+import { spacing } from "@/src/theme/spacing";
 
 type ErrorStateProps = {
   message: string;
@@ -27,8 +30,10 @@ export function ErrorState({ message, durationMs = DEFAULT_DURATION_MS }: ErrorS
 
   return (
     <View style={[styles.container, { backgroundColor: colors.dangerBackground, borderColor: colors.dangerBorder }]}>
-      <Text style={[styles.eyebrow, { color: colors.danger }]}>Kurz stoppen</Text>
-      <Text style={[styles.label, { color: colors.danger }]}>{buildErrorMessage(message)}</Text>
+      <AppBadge label="Kurz stoppen" tone="danger" />
+      <AppText color="danger" variant="body">
+        {buildErrorMessage(message)}
+      </AppText>
     </View>
   );
 }
@@ -39,19 +44,9 @@ function buildErrorMessage(message: string) {
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 18,
+    borderRadius: radius.md,
     borderWidth: 1,
     padding: spacing.md,
     gap: 6,
-  },
-  eyebrow: {
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 0.4,
-    textTransform: "uppercase",
-  },
-  label: {
-    fontSize: 14,
-    lineHeight: 21,
   },
 });

@@ -19,6 +19,7 @@ import { CustomerEditProductRow } from "@/src/features/customers/components/Cust
 import { CustomerEditFormValues } from "@/src/features/customers/validation/customerEditSchema";
 import { ProductPicker } from "@/src/features/products/components/ProductPicker";
 import { Product } from "@/src/types/product";
+import { getLocalizedName } from "@/src/utils/localizedName";
 
 type CustomerEditOrderItemsSectionProps = {
   control: Control<CustomerEditFormValues>;
@@ -37,7 +38,7 @@ export function CustomerEditOrderItemsSection({
   setValue,
   errors,
 }: CustomerEditOrderItemsSectionProps) {
-  const { t } = useTranslation("customers");
+  const { t, i18n } = useTranslation("customers");
   const [pickerVisible, setPickerVisible] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [removeIndex, setRemoveIndex] = useState<number | null>(null);
@@ -62,7 +63,7 @@ export function CustomerEditOrderItemsSection({
     }
 
     setValue(`items.${activeIndex}.productId`, product.id, { shouldValidate: true });
-    setValue(`items.${activeIndex}.productNameSnapshot`, product.name, { shouldValidate: true });
+    setValue(`items.${activeIndex}.productNameSnapshot`, getLocalizedName(product, i18n.language), { shouldValidate: true });
     setValue(`items.${activeIndex}.unit`, product.defaultUnit, { shouldValidate: true });
     setPickerVisible(false);
   }

@@ -1,8 +1,9 @@
 import { ReactNode } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
-import { spacing } from "@/src/constants/spacing";
-import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { AppCard } from "@/src/components/ui/AppCard";
+import { AppText } from "@/src/components/ui/AppText";
+import { spacing } from "@/src/theme/spacing";
 
 type FormSectionCardProps = {
   title: string;
@@ -11,47 +12,27 @@ type FormSectionCardProps = {
 };
 
 export function FormSectionCard({ title, subtitle, children }: FormSectionCardProps) {
-  const colors = useThemeColors();
-
   return (
-    <View
-      style={[
-        styles.card,
-        {
-          backgroundColor: colors.surfaceElevated,
-          borderColor: colors.border,
-          shadowColor: colors.shadow,
-        },
-      ]}
-    >
+    <AppCard contentStyle={styles.card}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
-        {subtitle ? <Text style={[styles.subtitle, { color: colors.mutedText }]}>{subtitle}</Text> : null}
+        <AppText variant="subheading">{title}</AppText>
+        {subtitle ? (
+          <AppText color="muted" variant="caption">
+            {subtitle}
+          </AppText>
+        ) : null}
       </View>
       {children}
-    </View>
+    </AppCard>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 24,
-    borderWidth: 1,
     padding: spacing.md,
     gap: spacing.md,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.08,
-    shadowRadius: 18,
   },
   header: {
     gap: 4,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "800",
-  },
-  subtitle: {
-    fontSize: 14,
-    lineHeight: 20,
   },
 });

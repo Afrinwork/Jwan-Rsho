@@ -1,5 +1,5 @@
 import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { useTranslation } from "react-i18next";
+import { mapT } from "@/src/features/map/i18n/mapT";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { EmptyState } from "@/src/components/ui/EmptyState";
@@ -21,7 +21,7 @@ type SelectedCustomersListProps = {
 
 export function SelectedCustomersList(props: SelectedCustomersListProps) {
   const colors = useThemeColors();
-  const { t } = useTranslation("map");
+  const t = mapT;
 
   return (
     <Modal animationType="slide" onRequestClose={props.onClose} transparent visible={props.visible}>
@@ -44,7 +44,7 @@ export function SelectedCustomersList(props: SelectedCustomersListProps) {
             )}
           </ScrollView>
           <View style={styles.footer}>
-            <AppButton label={t("common:close")} onPress={props.onClose} variant="secondary" />
+            <AppButton label={t("common.close")} onPress={props.onClose} variant="secondary" />
           </View>
         </View>
       </View>

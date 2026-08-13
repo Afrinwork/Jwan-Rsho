@@ -6,16 +6,19 @@ import { useTranslation } from "react-i18next";
 
 import { AppProviders } from "@/src/components/layout/AppProviders";
 import { AuthGate } from "@/src/components/layout/AuthGate";
+import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { typography } from "@/src/theme/typography";
 
 export default function RootLayout() {
+  const theme = useAppTheme();
   const colors = useThemeColors();
   const { t } = useTranslation("navigation");
 
   return (
     <AppProviders>
       <AuthGate>
-        <StatusBar style="auto" />
+        <StatusBar style={theme === "dark" ? "light" : "dark"} />
         <Stack
           screenOptions={{
             headerBackButtonDisplayMode: "minimal",
@@ -25,9 +28,9 @@ export default function RootLayout() {
             },
             headerTitleStyle: {
               color: colors.text,
-              fontSize: 17,
-              fontWeight: "700",
+              ...typography.bodyMedium,
             },
+            headerLargeTitleShadowVisible: false,
             headerTintColor: colors.primary,
             headerShown: true,
           }}

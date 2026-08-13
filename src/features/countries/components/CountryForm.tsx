@@ -6,6 +6,7 @@ import { z } from "zod";
 import { StyleSheet, View } from "react-native";
 
 import { FormField } from "@/src/components/forms/FormField";
+import { LocalizedNameField } from "@/src/components/forms/LocalizedNameField";
 import { AppButton } from "@/src/components/ui/AppButton";
 import { AppInput } from "@/src/components/ui/AppInput";
 import { ErrorState } from "@/src/components/ui/ErrorState";
@@ -13,7 +14,7 @@ import { spacing } from "@/src/constants/spacing";
 import { countrySchema } from "@/src/features/countries/validation/countrySchema";
 import { formatError } from "@/src/utils/formatError";
 
-const countryFormSchema = countrySchema.pick({ name: true, isoCode: true, sortOrder: true });
+const countryFormSchema = countrySchema.pick({ name: true, nameAr: true, isoCode: true, sortOrder: true });
 export type CountryFormValues = z.input<typeof countryFormSchema>;
 
 type CountryFormProps = {
@@ -28,14 +29,14 @@ export function CountryForm({ initialValues, submitLabel, onCancel, onSubmit }: 
   const [submitError, setSubmitError] = useState<string | null>(null);
   const form = useForm<CountryFormValues>({
     resolver: zodResolver(countryFormSchema),
-    defaultValues: initialValues ?? { name: "", isoCode: "", sortOrder: 0 },
+    defaultValues: initialValues ?? { name: "", nameAr: "", isoCode: "", sortOrder: 0 },
   });
 
   const submit = form.handleSubmit(async (values) => {
     try {
       setSubmitError(null);
       await onSubmit(values);
-      form.reset({ name: "", isoCode: "", sortOrder: 0 });
+      form.reset({ name: "", nameAr: "", isoCode: "", sortOrder: 0 });
     } catch (error) {
       setSubmitError(formatError(error).message);
     }
@@ -43,9 +44,16 @@ export function CountryForm({ initialValues, submitLabel, onCancel, onSubmit }: 
 
   return (
     <View style={styles.container}>
-      <FormField error={form.formState.errors.name?.message} label={t("form.nameLabel")}>
-        <Controller control={form.control} name="name" render={({ field }) => <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder={t("form.namePlaceholder")} value={field.value} />} />
-      </FormField>
+      <LocalizedNameField
+        arError={form.formState.errors.nameAr?.message}
+        arField="nameAr"
+        arPlaceholder={t("form.nameArPlaceholder")}
+        control={form.control}
+        label={t("form.nameLabel")}
+        nameError={form.formState.errors.name?.message}
+        nameField="name"
+        namePlaceholder={t("form.namePlaceholder")}
+      />
       <FormField error={form.formState.errors.isoCode?.message} label={t("form.isoCodeLabel")}>
         <Controller control={form.control} name="isoCode" render={({ field }) => <AppInput autoCapitalize="characters" maxLength={3} onBlur={field.onBlur} onChangeText={field.onChange} placeholder={t("form.isoCodePlaceholder")} value={field.value ?? ""} />} />
       </FormField>

@@ -1,4 +1,9 @@
 {
+  "common": {
+    "retry": "Erneut laden",
+    "edit": "Bearbeiten",
+    "close": "Schliessen"
+  },
   "screen": {
     "loading": "Karte wird vorbereitet..."
   },

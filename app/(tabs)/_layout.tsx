@@ -12,6 +12,7 @@ import { StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { typography } from "@/src/theme/typography";
 
 type TabIconProps = {
   color: string;
@@ -39,8 +40,7 @@ export default function TabsLayout() {
           tabBarActiveTintColor: colors.primary,
           tabBarInactiveTintColor: colors.mutedText,
           tabBarLabelStyle: {
-            fontSize: 10,
-            fontWeight: "700",
+            ...typography.caption,
             marginTop: 2,
             marginBottom: 0,
           },
@@ -83,15 +83,15 @@ const styles = StyleSheet.create({
     right: 8,
     bottom: 14,
     borderTopWidth: 1,
-    height: 64,
-    paddingTop: 4,
-    paddingBottom: 4,
-    paddingHorizontal: 6,
-    borderRadius: 22,
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 6,
+    height: 68,
+    paddingTop: 6,
+    paddingBottom: 6,
+    paddingHorizontal: 8,
+    borderRadius: 24,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    elevation: 8,
     overflow: "hidden",
   },
 });

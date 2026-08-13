@@ -1,9 +1,11 @@
-import { StyleSheet, Text, View } from "react-native";
-import { useTranslation } from "react-i18next";
+import { StyleSheet, View } from "react-native";
+import { mapT } from "@/src/features/map/i18n/mapT";
 
+import { AppCard } from "@/src/components/ui/AppCard";
 import { AppButton } from "@/src/components/ui/AppButton";
+import { AppText } from "@/src/components/ui/AppText";
 import { ErrorState } from "@/src/components/ui/ErrorState";
-import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { spacing } from "@/src/theme/spacing";
 
 type SelectedCustomersBarProps = {
   selectedCount: number;
@@ -17,16 +19,15 @@ type SelectedCustomersBarProps = {
 };
 
 export function SelectedCustomersBar(props: SelectedCustomersBarProps) {
-  const colors = useThemeColors();
-  const { t } = useTranslation("map");
+  const t = mapT;
 
   if (props.selectedCount === 0) {
     return null;
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
-      <Text style={[styles.label, { color: colors.text }]}>{t("selectedBar.count", { count: props.selectedCount })}</Text>
+    <AppCard contentStyle={styles.container} frosted>
+      <AppText variant="label">{t("selectedBar.count", { count: props.selectedCount })}</AppText>
       {props.shareError ? <ErrorState message={props.shareError} /> : null}
       <View style={styles.actions}>
         <View style={styles.actionButton}>
@@ -42,13 +43,12 @@ export function SelectedCustomersBar(props: SelectedCustomersBarProps) {
           <AppButton label={t("selectedBar.clear")} onPress={props.onResetSelection} size="compact" variant="secondary" />
         </View>
       </View>
-    </View>
+    </AppCard>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { borderWidth: 1, borderRadius: 14, padding: 10, gap: 6 },
-  label: { fontSize: 13, fontWeight: "700" },
-  actions: { flexDirection: "row", gap: 6 },
-  actionButton: { flex: 1 },
+  container: { padding: spacing.sm, gap: spacing.xs },
+  actions: { flexDirection: "row", gap: spacing.xs, flexWrap: "wrap" },
+  actionButton: { flex: 1, minWidth: "47%" },
 });

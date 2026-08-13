@@ -10,6 +10,7 @@ export function buildProductCreateData(input: ProductWrite, ownerId: string) {
     ownerId,
     name: parsed.name.trim(),
     normalizedName: parsed.name.trim().toLowerCase(),
+    ...(parsed.nameAr ? { nameAr: parsed.nameAr.trim() } : {}),
     defaultUnit: parsed.defaultUnit.trim(),
     ...(parsed.emoji ? { emoji: parsed.emoji.trim() } : {}),
     isActive: parsed.isActive ?? true,
@@ -23,6 +24,7 @@ export function buildProductUpdateData(input: Partial<ProductWrite>) {
     ...parsed,
     name: parsed.name?.trim(),
     normalizedName: parsed.name?.trim().toLowerCase(),
+    nameAr: parsed.nameAr?.trim(),
     defaultUnit: parsed.defaultUnit?.trim(),
   };
 }

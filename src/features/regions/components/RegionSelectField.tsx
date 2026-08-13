@@ -6,6 +6,7 @@ import { AppInput } from "@/src/components/ui/AppInput";
 import { spacing } from "@/src/constants/spacing";
 import { useRegions } from "@/src/features/regions/hooks/useRegions";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { getLocalizedName } from "@/src/utils/localizedName";
 
 type RegionSelectFieldProps = {
   value: string;
@@ -15,7 +16,7 @@ type RegionSelectFieldProps = {
 };
 
 export function RegionSelectField({ value, onChange, country, error }: RegionSelectFieldProps) {
-  const { t } = useTranslation("regions");
+  const { t, i18n } = useTranslation("regions");
   const { regions, loading } = useRegions();
   const colors = useThemeColors();
   const options = regions.filter((region) => region.isActive && (!country || region.country === country));
@@ -48,7 +49,7 @@ export function RegionSelectField({ value, onChange, country, error }: RegionSel
                   ]}
                 >
                   <Text style={[styles.chipLabel, { color: active ? colors.primaryContrast : colors.text }]}>
-                    {option.name}
+                    {getLocalizedName(option, i18n.language)}
                   </Text>
                 </Pressable>
               );

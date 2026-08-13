@@ -9,14 +9,15 @@ import { AppButton } from "@/src/components/ui/AppButton";
 import { AppInput } from "@/src/components/ui/AppInput";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { FormField } from "@/src/components/forms/FormField";
+import { LocalizedNameField } from "@/src/components/forms/LocalizedNameField";
 import { spacing } from "@/src/constants/spacing";
 import { productSchema } from "@/src/features/products/validation/productSchema";
 import { formatError } from "@/src/utils/formatError";
 
-const productFormSchema = productSchema.pick({ name: true, defaultUnit: true, emoji: true, sortOrder: true });
+const productFormSchema = productSchema.pick({ name: true, nameAr: true, defaultUnit: true, emoji: true, sortOrder: true });
 export type ProductFormValues = z.input<typeof productFormSchema>;
 
-const emptyProductValues: ProductFormValues = { name: "", defaultUnit: "", emoji: "", sortOrder: 0 };
+const emptyProductValues: ProductFormValues = { name: "", nameAr: "", defaultUnit: "", emoji: "", sortOrder: 0 };
 
 type ProductFormProps = {
   initialValues?: ProductFormValues;
@@ -45,15 +46,16 @@ export function ProductForm({ initialValues, submitLabel, onCancel, onSubmit }: 
 
   return (
     <View style={styles.container}>
-      <FormField error={form.formState.errors.name?.message} label={t("form.nameLabel")}>
-        <Controller
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder={t("form.namePlaceholder")} value={field.value} />
-          )}
-        />
-      </FormField>
+      <LocalizedNameField
+        arError={form.formState.errors.nameAr?.message}
+        arField="nameAr"
+        arPlaceholder={t("form.nameArPlaceholder")}
+        control={form.control}
+        label={t("form.nameLabel")}
+        nameError={form.formState.errors.name?.message}
+        nameField="name"
+        namePlaceholder={t("form.namePlaceholder")}
+      />
       <FormField error={form.formState.errors.defaultUnit?.message} label={t("form.unitLabel")}>
         <Controller
           control={form.control}

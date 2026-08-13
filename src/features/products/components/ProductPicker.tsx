@@ -30,7 +30,8 @@ export function ProductPicker({ visible, excludeIds = [], onSelect, onClose }: P
     (product) =>
       product.isActive &&
       !excludeIds.includes(product.id) &&
-      product.name.toLowerCase().includes(normalized),
+      (product.name.toLowerCase().includes(normalized) ||
+        (product.nameAr ?? "").toLowerCase().includes(normalized)),
   );
 
   return (

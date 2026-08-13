@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { useTranslation } from "react-i18next";
+import { mapT } from "@/src/features/map/i18n/mapT";
 
 import { spacing } from "@/src/constants/spacing";
 import { MapFilterState } from "@/src/features/map/types/mapTypes";
@@ -29,7 +29,7 @@ type FilterCategory = {
 
 export function MapFilters(props: MapFiltersProps) {
   const colors = useThemeColors();
-  const { t } = useTranslation("map");
+  const t = mapT;
   const [openFilter, setOpenFilter] = useState<FilterKey | null>(null);
 
   const categories: FilterCategory[] = [

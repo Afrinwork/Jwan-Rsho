@@ -1,11 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { Animated, Easing, StyleSheet } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+
+import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { radius } from "@/src/theme/radius";
 
 const splashLogo = require("../../../assets/ChatGPT Image 9. Aug. 2026, 08_10_30.png");
 const SPLASH_DURATION_MS = 4000;
 const FADE_OUT_MS = 450;
 
 export function StartupSplash() {
+  const colors = useThemeColors();
   const [visible, setVisible] = useState(true);
   const opacity = useRef(new Animated.Value(1)).current;
   const scale = useRef(new Animated.Value(0.82)).current;
@@ -41,6 +46,13 @@ export function StartupSplash() {
 
   return (
     <Animated.View pointerEvents="none" style={[styles.overlay, { opacity }]}>
+      <LinearGradient
+        colors={[colors.primaryStrong, colors.primary, colors.secondary]}
+        end={{ x: 1, y: 1 }}
+        start={{ x: 0, y: 0 }}
+        style={StyleSheet.absoluteFillObject}
+      />
+      <Animated.View style={[styles.glow, { backgroundColor: colors.primaryMuted, transform: [{ scale }] }]} />
       <Animated.Image
         resizeMode="contain"
         source={splashLogo}
@@ -57,7 +69,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     zIndex: 999,
     elevation: 20,
-    backgroundColor: "#0F2747",
+  },
+  glow: {
+    position: "absolute",
+    width: 280,
+    height: 280,
+    borderRadius: radius.pill,
+    opacity: 0.24,
   },
   logo: {
     width: 240,

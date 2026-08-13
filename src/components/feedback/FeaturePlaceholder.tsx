@@ -1,10 +1,10 @@
-import { StyleSheet, Text } from "react-native";
+import { StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 
+import { AppText } from "@/src/components/ui/AppText";
 import { EmptyState } from "@/src/components/ui/EmptyState";
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
-import { colors } from "@/src/constants/colors";
-import { spacing } from "@/src/constants/spacing";
+import { spacing } from "@/src/theme/spacing";
 
 type FeaturePlaceholderProps = {
   title: string;
@@ -19,7 +19,9 @@ export function FeaturePlaceholder({
 
   return (
     <ScreenContainer>
-      <Text accessibilityRole="header" style={styles.title}>{title}</Text>
+      <AppText accessibilityRole="header" style={styles.title} variant="title">
+        {title}
+      </AppText>
       <EmptyState message={description} title={t("notAvailableYet")} />
     </ScreenContainer>
   );
@@ -27,9 +29,6 @@ export function FeaturePlaceholder({
 
 const styles = StyleSheet.create({
   title: {
-    color: colors.text,
-    fontSize: 24,
-    fontWeight: "700",
     marginBottom: spacing.sm,
   },
 });

@@ -1,5 +1,5 @@
 import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { useTranslation } from "react-i18next";
+import { mapT } from "@/src/features/map/i18n/mapT";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { CustomerMapCard } from "@/src/features/map/components/CustomerMapCard";
@@ -43,7 +43,7 @@ export function MapCustomerSheet({
   onShareOrder,
 }: MapCustomerSheetProps) {
   const colors = useThemeColors();
-  const { t } = useTranslation("map");
+  const t = mapT;
 
   return (
     <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
@@ -57,7 +57,7 @@ export function MapCustomerSheet({
           {!loading && error ? (
             <View style={styles.content}>
               <ErrorState message={error} />
-              <AppButton label={t("common:retry")} onPress={onRetry} variant="secondary" />
+              <AppButton label={t("common.retry")} onPress={onRetry} variant="secondary" />
             </View>
           ) : null}
           {!loading && !error && details ? (
@@ -65,7 +65,7 @@ export function MapCustomerSheet({
               <CustomerMapCard details={details} />
               {actionError ? <ErrorState message={actionError} /> : null}
               <View style={styles.actions}>
-                <AppButton label={t("common:edit")} onPress={onEdit} />
+                <AppButton label={t("common.edit")} onPress={onEdit} />
                 {details.openOrders.length ? (
                   <AppButton
                     label={

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { mapT } from "@/src/features/map/i18n/mapT";
 
 import { buildSelectionShareMessage, SelectionShareCustomer, SelectionShareItem } from "@/src/features/map/services/mapShareFormatterService";
 import { useMapSelection } from "@/src/features/map/hooks/useMapSelection";
@@ -18,7 +18,7 @@ export function useMapCustomerSelection(
   visibleMarkers: MapCustomerMarker[],
   productEmojiById: Map<string, string | undefined>,
 ) {
-  const { t } = useTranslation("map");
+  const t = mapT;
   const shopName = useAppStore((state) => state.shopName);
   const shareIncludeAddress = useAppStore((state) => state.shareIncludeAddress);
   const shareIncludePhone = useAppStore((state) => state.shareIncludePhone);

@@ -19,6 +19,7 @@ import { ProductQuantityRow } from "@/src/features/orders/components/ProductQuan
 import { AddOrderFormValues } from "@/src/features/orders/validation/addOrderFormSchema";
 import { ProductPicker } from "@/src/features/products/components/ProductPicker";
 import { Product } from "@/src/types/product";
+import { getLocalizedName } from "@/src/utils/localizedName";
 
 type OrderItemsSectionProps = {
   control: Control<AddOrderFormValues>;
@@ -30,7 +31,7 @@ type OrderItemsSectionProps = {
 };
 
 export function OrderItemsSection({ control, fields, append, remove, setValue, errors }: OrderItemsSectionProps) {
-  const { t } = useTranslation("orders");
+  const { t, i18n } = useTranslation("orders");
   const [pickerVisible, setPickerVisible] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [removeIndex, setRemoveIndex] = useState<number | null>(null);
@@ -54,7 +55,7 @@ export function OrderItemsSection({ control, fields, append, remove, setValue, e
       return;
     }
     setValue(`items.${activeIndex}.productId`, product.id, { shouldValidate: true });
-    setValue(`items.${activeIndex}.productNameSnapshot`, product.name, { shouldValidate: true });
+    setValue(`items.${activeIndex}.productNameSnapshot`, getLocalizedName(product, i18n.language), { shouldValidate: true });
     setValue(`items.${activeIndex}.unit`, product.defaultUnit, { shouldValidate: true });
     setPickerVisible(false);
   }

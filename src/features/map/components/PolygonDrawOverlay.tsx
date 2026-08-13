@@ -1,5 +1,5 @@
 import { StyleSheet, View } from "react-native";
-import { useTranslation } from "react-i18next";
+import { mapT } from "@/src/features/map/i18n/mapT";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { spacing } from "@/src/constants/spacing";
@@ -14,7 +14,7 @@ type PolygonDrawOverlayProps = {
 
 export function PolygonDrawOverlay(props: PolygonDrawOverlayProps) {
   const colors = useThemeColors();
-  const { t } = useTranslation("map");
+  const t = mapT;
 
   if (!props.visible) {
     return null;

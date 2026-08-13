@@ -1,68 +1,25 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { I18nManager } from "react-native";
 import * as Updates from "expo-updates";
 
-import { i18next, isRTLLanguage, SupportedLanguage } from "@/src/i18n/i18n";
-
-const LANGUAGE_STORAGE_KEY = "app_language";
-
-export async function getCachedLanguage(): Promise<SupportedLanguage | null> {
-  const value = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
-  return value === "de" || value === "ar" ? value : null;
-}
-
-async function cacheLanguage(language: SupportedLanguage) {
-  await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, language);
-}
-
-export function needsRestartForLanguage(language: SupportedLanguage) {
-  return isRTLLanguage(language) !== I18nManager.isRTL;
-}
-
-async function reload() {
-  if (Updates.isEnabled) {
-    await Updates.reloadAsync();
+/**
+ * The app is Arabic-only (RTL) now, so there's no per-user language
+ * preference anymore. This just makes sure the native RTL flag is set —
+ * needed once for installs that were on an older, LTR/German build.
+ */
+export async function ensureArabicRTL() {
+  if (I18nManager.isRTL) {
     return;
   }
 
-  // Dev-client without an active Updates runtime (e.g. Expo Go-style local dev):
-  // Metro's Fast Refresh will not fully re-evaluate native I18nManager state,
-  // so a manual reload from the developer menu is required in that case.
-}
+  I18nManager.allowRTL(true);
+  I18nManager.forceRTL(true);
 
-/**
- * Applies a language selection: caches it, switches i18next immediately, and — since
- * "de" and "ar" always differ in text direction — flips native RTL and reloads the app
- * so I18nManager's mirrored layout takes effect.
- */
-export async function applyLanguage(language: SupportedLanguage) {
-  await cacheLanguage(language);
-  await i18next.changeLanguage(language);
-
-  if (needsRestartForLanguage(language)) {
-    const isRTL = isRTLLanguage(language);
-    I18nManager.allowRTL(isRTL);
-    I18nManager.forceRTL(isRTL);
-    await reload();
-  }
-}
-
-/**
- * Called on cold start once the persisted preference (Firestore or local cache) is known,
- * to self-heal a mismatch between native RTL state and the stored language — e.g. a fresh
- * login on a new device that has never applied this user's language before.
- */
-export async function syncLanguageOnHydrate(language: SupportedLanguage) {
-  await cacheLanguage(language);
-
-  if (i18next.language !== language) {
-    await i18next.changeLanguage(language);
-  }
-
-  if (needsRestartForLanguage(language)) {
-    const isRTL = isRTLLanguage(language);
-    I18nManager.allowRTL(isRTL);
-    I18nManager.forceRTL(isRTL);
-    await reload();
+  try {
+    if (Updates.isEnabled) {
+      await Updates.reloadAsync();
+    }
+  } catch {
+    // expo-updates has limited/no support in Expo Go — I18nManager's native
+    // flag is already flipped and will take effect on the next natural reload.
   }
 }

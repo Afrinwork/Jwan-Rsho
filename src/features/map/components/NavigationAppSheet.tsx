@@ -1,5 +1,5 @@
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
-import { useTranslation } from "react-i18next";
+import { mapT } from "@/src/features/map/i18n/mapT";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { spacing } from "@/src/constants/spacing";
@@ -15,7 +15,7 @@ type NavigationAppSheetProps = {
 
 export function NavigationAppSheet({ visible, apps, onClose, onSelect }: NavigationAppSheetProps) {
   const colors = useThemeColors();
-  const { t } = useTranslation("map");
+  const t = mapT;
 
   return (
     <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
@@ -34,7 +34,7 @@ export function NavigationAppSheet({ visible, apps, onClose, onSelect }: Navigat
               />
             </View>
           ))}
-          <AppButton label={t("common:close")} onPress={onClose} variant="secondary" />
+          <AppButton label={t("common.close")} onPress={onClose} variant="secondary" />
         </View>
       </View>
     </Modal>

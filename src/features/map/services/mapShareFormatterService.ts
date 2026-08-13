@@ -1,4 +1,4 @@
-import { t } from "@/src/i18n/i18n";
+import { mapT as t } from "@/src/features/map/i18n/mapT";
 
 const SEPARATOR = "━━━━━━━━━━━━━━";
 const DEFAULT_ITEM_EMOJI = "📦";

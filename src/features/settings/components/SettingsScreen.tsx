@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
@@ -6,6 +6,7 @@ import { CompactScreenHeader } from "@/src/components/ui/CompactScreenHeader";
 import { FormField } from "@/src/components/forms/FormField";
 import { AppButton } from "@/src/components/ui/AppButton";
 import { AppInput } from "@/src/components/ui/AppInput";
+import { AppText } from "@/src/components/ui/AppText";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { LoadingView } from "@/src/components/ui/LoadingView";
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
@@ -17,11 +18,9 @@ import { useSettings } from "@/src/features/settings/hooks/useSettings";
 import { SettingsChoiceRow } from "@/src/features/settings/components/SettingsChoiceRow";
 import { SettingsSection } from "@/src/features/settings/components/SettingsSection";
 import { SettingsToggleRow } from "@/src/features/settings/components/SettingsToggleRow";
-import { useThemeColors } from "@/src/hooks/useThemeColors";
 
 export function SettingsScreen() {
   const { t } = useTranslation("settings");
-  const colors = useThemeColors();
   const { logout, loading, error } = useLogout();
   const settings = useSettings();
 
@@ -64,15 +63,6 @@ export function SettingsScreen() {
               { label: t("theme.dark"), value: "dark" },
             ]}
             value={settings.themeMode}
-          />
-          <SettingsChoiceRow
-            label={t("language_picker.label")}
-            onChange={(value) => settings.setLanguage(value as "de" | "ar")}
-            options={[
-              { label: t("language_picker.de"), value: "de" },
-              { label: t("language_picker.ar"), value: "ar" },
-            ]}
-            value={settings.language}
           />
         </SettingsSection></AnimatedEntrance>
         <AnimatedEntrance delay={180}><SettingsSection title={t("sections.navigation")}>
@@ -124,10 +114,10 @@ export function SettingsScreen() {
           />
         </SettingsSection></AnimatedEntrance>
         <AnimatedEntrance delay={240}><SettingsSection title={t("sections.appInfo")}>
-          <View style={styles.infoRow}><Text style={[styles.infoLabel, { color: colors.mutedText }]}>{t("info.appVersion")}</Text><Text style={[styles.infoValue, { color: colors.text }]}>{appConfig.version}</Text></View>
-          <View style={styles.infoRow}><Text style={[styles.infoLabel, { color: colors.mutedText }]}>{t("info.ownCustomers")}</Text><Text style={[styles.infoValue, { color: colors.text }]}>{settings.stats.customers}</Text></View>
-          <View style={styles.infoRow}><Text style={[styles.infoLabel, { color: colors.mutedText }]}>{t("info.totalOrders")}</Text><Text style={[styles.infoValue, { color: colors.text }]}>{settings.stats.totalOrders}</Text></View>
-          <View style={styles.infoRow}><Text style={[styles.infoLabel, { color: colors.mutedText }]}>{t("info.openOrders")}</Text><Text style={[styles.infoValue, { color: colors.text }]}>{settings.stats.openOrders}</Text></View>
+          <View style={styles.infoRow}><AppText color="muted" style={styles.infoLabel} variant="body">{t("info.appVersion")}</AppText><AppText style={styles.infoValue} variant="bodyMedium">{appConfig.version}</AppText></View>
+          <View style={styles.infoRow}><AppText color="muted" style={styles.infoLabel} variant="body">{t("info.ownCustomers")}</AppText><AppText style={styles.infoValue} variant="bodyMedium">{settings.stats.customers}</AppText></View>
+          <View style={styles.infoRow}><AppText color="muted" style={styles.infoLabel} variant="body">{t("info.totalOrders")}</AppText><AppText style={styles.infoValue} variant="bodyMedium">{settings.stats.totalOrders}</AppText></View>
+          <View style={styles.infoRow}><AppText color="muted" style={styles.infoLabel} variant="body">{t("info.openOrders")}</AppText><AppText style={styles.infoValue} variant="bodyMedium">{settings.stats.openOrders}</AppText></View>
         </SettingsSection></AnimatedEntrance>
         <AnimatedEntrance delay={270}><SettingsSection title={t("sections.account")}>
           <AppButton label={settings.saving ? t("actions.saving") : t("actions.save")} loading={settings.saving} onPress={() => void settings.save()} />
@@ -148,12 +138,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: spacing.sm,
   },
-  infoLabel: {
-    fontSize: 14,
-  },
+  infoLabel: {},
   infoValue: {
-    fontSize: 14,
-    fontWeight: "600",
     textAlign: "right",
     flexShrink: 1,
   },

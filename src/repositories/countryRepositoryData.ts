@@ -10,6 +10,7 @@ export function buildCountryCreateData(input: CountryWrite, ownerId: string) {
     ownerId,
     name: parsed.name.trim(),
     normalizedName: parsed.name.trim().toLowerCase(),
+    ...(parsed.nameAr ? { nameAr: parsed.nameAr.trim() } : {}),
     ...(parsed.isoCode ? { isoCode: parsed.isoCode.trim().toUpperCase() } : {}),
     sortOrder: parsed.sortOrder ?? 0,
     isActive: parsed.isActive ?? true,
@@ -22,6 +23,7 @@ export function buildCountryUpdateData(input: Partial<CountryWrite>) {
     ...parsed,
     name: parsed.name?.trim(),
     normalizedName: parsed.name?.trim().toLowerCase(),
+    nameAr: parsed.nameAr?.trim(),
     isoCode: parsed.isoCode?.trim().toUpperCase(),
   };
 }

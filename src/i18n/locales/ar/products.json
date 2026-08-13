@@ -3,6 +3,7 @@
   "form": {
     "nameLabel": "اسم المنتج",
     "namePlaceholder": "اسم المنتج",
+    "nameArPlaceholder": "الاسم بالعربية (اختياري)",
     "unitLabel": "الوحدة",
     "unitPlaceholder": "مثال: قطعة، كجم",
     "emojiLabel": "رمز تعبيري (اختياري، لنص التجميع)",

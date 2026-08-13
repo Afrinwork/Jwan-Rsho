@@ -1,7 +1,12 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 
-import { spacing } from "@/src/constants/spacing";
+import { AppText } from "@/src/components/ui/AppText";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { radius } from "@/src/theme/radius";
+import { shadows } from "@/src/theme/shadows";
+import { spacing } from "@/src/theme/spacing";
+import { typography } from "@/src/theme/typography";
 
 type AppButtonProps = {
   label: string;
@@ -28,27 +33,43 @@ export function AppButton({
     <Pressable
       disabled={isDisabled}
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.button,
-        compact && styles.buttonCompact,
-        {
-          backgroundColor: variant === "secondary" ? colors.surface : variant === "danger" ? colors.danger : colors.primary,
-          borderColor: variant === "secondary" ? colors.borderStrong : variant === "danger" ? colors.danger : colors.primaryStrong,
-          opacity: isDisabled ? 0.55 : pressed ? 0.92 : 1,
-          transform: [{ scale: pressed && !isDisabled ? 0.99 : 1 }],
-          shadowColor: colors.shadow,
-        },
-      ]}
+      style={({ pressed }) => {
+        const backgroundColor = variant === "secondary" ? colors.surfaceMuted : variant === "danger" ? colors.danger : colors.primary;
+        const borderColor = variant === "secondary" ? colors.border : variant === "danger" ? colors.danger : colors.primaryStrong;
+
+        return [
+          styles.button,
+          compact && styles.buttonCompact,
+          {
+            backgroundColor,
+            borderColor,
+            opacity: isDisabled ? 0.55 : 1,
+            transform: [{ scale: pressed && !isDisabled ? 0.985 : 1 }],
+            shadowColor: variant === "primary" ? colors.primary : colors.shadow,
+          },
+          pressed && !isDisabled ? styles.buttonPressed : null,
+        ];
+      }}
     >
+      {variant === "secondary" ? <View style={[styles.secondaryFill, { backgroundColor: colors.surfaceMuted }]} /> : null}
+      {variant !== "secondary" ? (
+        <LinearGradient
+          colors={variant === "danger" ? [colors.danger, "#D92D20"] : [colors.primary, colors.primaryStrong]}
+          end={{ x: 1, y: 1 }}
+          start={{ x: 0, y: 0 }}
+          style={StyleSheet.absoluteFillObject}
+        />
+      ) : null}
       {loading ? (
         <ActivityIndicator color={variant === "secondary" ? colors.primary : colors.primaryContrast} />
       ) : (
-        <Text
+        <AppText
           numberOfLines={compact ? 1 : undefined}
           style={[styles.label, compact && styles.labelCompact, { color: variant === "secondary" ? colors.text : colors.primaryContrast }]}
+          variant="bodyMedium"
         >
           {label}
-        </Text>
+        </AppText>
       )}
     </Pressable>
   );
@@ -56,28 +77,30 @@ export function AppButton({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 16,
+    overflow: "hidden",
+    borderRadius: radius.button,
     borderWidth: 1,
     paddingHorizontal: spacing.md,
     paddingVertical: 14,
     alignItems: "center",
     justifyContent: "center",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.18,
-    shadowRadius: 18,
-    elevation: 4,
+    ...shadows.md,
+  },
+  buttonPressed: {
+    shadowOpacity: 0.08,
+  },
+  secondaryFill: {
+    ...StyleSheet.absoluteFillObject,
   },
   buttonCompact: {
-    borderRadius: 12,
+    borderRadius: radius.md,
     paddingHorizontal: spacing.sm,
     paddingVertical: 9,
   },
   label: {
-    fontSize: 16,
-    fontWeight: "700",
     letterSpacing: 0.2,
   },
   labelCompact: {
-    fontSize: 13,
+    ...typography.label,
   },
 });

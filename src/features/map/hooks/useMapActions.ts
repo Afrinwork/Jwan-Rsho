@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { mapT } from "@/src/features/map/i18n/mapT";
 
 import { MapCustomerDetails, MapCustomerMarker, NavigationAppId } from "@/src/features/map/types/mapTypes";
 import { buildSelectionShareMessage, SelectionShareCustomer } from "@/src/features/map/services/mapShareFormatterService";
@@ -13,7 +13,7 @@ import { useAppStore } from "@/src/store/appStore";
 import { formatError } from "@/src/utils/formatError";
 
 export function useMapActions(details: MapCustomerDetails | null, marker: MapCustomerMarker | null) {
-  const { t } = useTranslation("map");
+  const t = mapT;
   const shareIncludeAddress = useAppStore((state) => state.shareIncludeAddress);
   const shareIncludePhone = useAppStore((state) => state.shareIncludePhone);
   const shopName = useAppStore((state) => state.shopName);

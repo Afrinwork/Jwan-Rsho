@@ -4,6 +4,7 @@ export type Product = {
   id: string;
   ownerId: string;
   name: string;
+  nameAr?: string;
   normalizedName: string;
   defaultUnit: string;
   emoji?: string;

@@ -2,6 +2,7 @@ import { Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { typography } from "@/src/theme/typography";
 
 export default function AuthLayout() {
   const colors = useThemeColors();
@@ -17,8 +18,7 @@ export default function AuthLayout() {
         },
         headerTitleStyle: {
           color: colors.text,
-          fontSize: 17,
-          fontWeight: "700",
+          ...typography.bodyMedium,
         },
         headerTintColor: colors.primary,
       }}

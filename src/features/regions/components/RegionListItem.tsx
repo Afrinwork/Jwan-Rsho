@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { spacing } from "@/src/constants/spacing";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { Region } from "@/src/types/region";
+import { getLocalizedName } from "@/src/utils/localizedName";
 
 type RegionListItemProps = {
   region: Region;
@@ -13,7 +14,7 @@ type RegionListItemProps = {
 };
 
 export function RegionListItem({ region, onEdit, onToggleActive, onDelete }: RegionListItemProps) {
-  const { t } = useTranslation("regions");
+  const { t, i18n } = useTranslation("regions");
   const colors = useThemeColors();
 
   return (
@@ -21,7 +22,7 @@ export function RegionListItem({ region, onEdit, onToggleActive, onDelete }: Reg
       <View style={styles.topRow}>
         <View style={styles.text}>
           <Text numberOfLines={2} style={[styles.name, { color: colors.text }, !region.isActive && { color: colors.mutedText }]}>
-            {region.name}
+            {getLocalizedName(region, i18n.language)}
           </Text>
           <Text style={[styles.meta, { color: colors.mutedText }]}>
             {region.country}{region.city ? ` · ${region.city}` : ""}

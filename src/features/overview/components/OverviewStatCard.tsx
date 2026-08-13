@@ -1,8 +1,11 @@
 import { ComponentType } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
-import { spacing } from "@/src/constants/spacing";
+import { AppCard } from "@/src/components/ui/AppCard";
+import { AppText } from "@/src/components/ui/AppText";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { radius } from "@/src/theme/radius";
+import { spacing } from "@/src/theme/spacing";
 
 type IconProps = {
   color: string;
@@ -14,54 +17,56 @@ type OverviewStatCardProps = {
   value: string;
   caption: string;
   icon: ComponentType<IconProps>;
-  accent?: "primary" | "success";
+  accent?: "primary" | "success" | "danger";
   onPress?: () => void;
 };
 
 export function OverviewStatCard(props: OverviewStatCardProps) {
   const colors = useThemeColors();
-  const accentColor = props.accent === "success" ? colors.success : colors.primary;
-  const cardStyle = {
-    backgroundColor: colors.surfaceElevated,
-    borderColor: colors.border,
-    shadowColor: colors.shadow,
-  };
-
+  const accentColor = props.accent === "success" ? colors.success : props.accent === "danger" ? colors.danger : colors.primary;
+  const accentBackground = props.accent === "success"
+    ? colors.successBackground
+    : props.accent === "danger"
+      ? colors.dangerBackground
+      : colors.primaryMuted;
   const content = (
-    <>
+    <AppCard contentStyle={styles.cardContent}>
       <View style={styles.topRow}>
-        <View style={[styles.iconWrap, { backgroundColor: colors.primaryMuted }]}>
+        <View style={[styles.iconWrap, { backgroundColor: accentBackground }]}>
           <props.icon color={accentColor} size={20} />
         </View>
-        <Text style={[styles.title, { color: colors.mutedText }]}>{props.title}</Text>
+        <AppText color="muted" style={styles.title} variant="label">
+          {props.title}
+        </AppText>
       </View>
-      <Text style={[styles.value, { color: colors.text }]}>{props.value}</Text>
-      <Text style={[styles.caption, { color: colors.mutedText }]}>{props.caption}</Text>
-    </>
+      <AppText style={styles.value} variant="title">
+        {props.value}
+      </AppText>
+      <AppText color="muted" style={styles.caption} variant="caption">
+        {props.caption}
+      </AppText>
+    </AppCard>
   );
 
   if (props.onPress) {
     return (
-      <Pressable onPress={props.onPress} style={({ pressed }) => [styles.card, cardStyle, { opacity: pressed ? 0.96 : 1 }]}>
+      <Pressable onPress={props.onPress} style={({ pressed }) => [styles.card, { opacity: pressed ? 0.96 : 1 }]}>
         {content}
       </Pressable>
     );
   }
 
-  return <View style={[styles.card, cardStyle]}>{content}</View>;
+  return <View style={styles.card}>{content}</View>;
 }
 
 const styles = StyleSheet.create({
   card: {
     flex: 1,
     minWidth: "47%",
-    borderWidth: 1,
-    borderRadius: 22,
+  },
+  cardContent: {
     padding: spacing.md,
     gap: spacing.xs,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 18,
   },
   topRow: {
     flexDirection: "row",
@@ -71,21 +76,13 @@ const styles = StyleSheet.create({
   iconWrap: {
     width: 36,
     height: 36,
-    borderRadius: 12,
+    borderRadius: radius.sm,
     alignItems: "center",
     justifyContent: "center",
   },
   title: {
-    fontSize: 13,
-    fontWeight: "700",
     flex: 1,
   },
-  value: {
-    fontSize: 28,
-    fontWeight: "800",
-  },
-  caption: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
+  value: {},
+  caption: {},
 });

@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
-import { useTranslation } from "react-i18next";
+import { mapT } from "@/src/features/map/i18n/mapT";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { spacing } from "@/src/constants/spacing";
@@ -13,7 +13,7 @@ type SelectedCustomerRowProps = {
 
 export function SelectedCustomerRow({ marker, onRemove }: SelectedCustomerRowProps) {
   const colors = useThemeColors();
-  const { t } = useTranslation("map");
+  const t = mapT;
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>

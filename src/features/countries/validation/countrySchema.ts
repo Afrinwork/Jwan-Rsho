@@ -6,6 +6,7 @@ export const countrySchema = z.object({
   id: z.string().optional(),
   ownerId: z.string().optional(),
   name: z.string().trim().min(1, t("countries:validation.nameRequired")),
+  nameAr: z.string().trim().optional(),
   normalizedName: z.string().optional(),
   isoCode: z.string().trim().max(3, t("countries:validation.isoCodeTooLong")).optional(),
   sortOrder: z.number().int().nonnegative().default(0),

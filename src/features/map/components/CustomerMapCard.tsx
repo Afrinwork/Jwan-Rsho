@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
-import { useTranslation } from "react-i18next";
+import { mapT } from "@/src/features/map/i18n/mapT";
 
 import { spacing } from "@/src/constants/spacing";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
@@ -11,7 +11,7 @@ type CustomerMapCardProps = {
 
 export function CustomerMapCard({ details }: CustomerMapCardProps) {
   const colors = useThemeColors();
-  const { t } = useTranslation("map");
+  const t = mapT;
   const openOrders = details.openOrders;
 
   return (

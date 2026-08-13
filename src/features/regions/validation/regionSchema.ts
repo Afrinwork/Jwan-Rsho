@@ -6,6 +6,7 @@ export const regionSchema = z.object({
   id: z.string().optional(),
   ownerId: z.string().optional(),
   name: z.string().trim().min(1, t("regions:validation.nameRequired")),
+  nameAr: z.string().trim().optional(),
   normalizedName: z.string().optional(),
   country: z.string().trim().min(1, t("regions:validation.countryRequired")),
   normalizedCountry: z.string().optional(),

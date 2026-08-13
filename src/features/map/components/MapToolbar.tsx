@@ -1,11 +1,12 @@
-import { StyleSheet, Text, View } from "react-native";
-import { useTranslation } from "react-i18next";
+import { StyleSheet, View } from "react-native";
+import { mapT } from "@/src/features/map/i18n/mapT";
 
 import { AppButton } from "@/src/components/ui/AppButton";
+import { AppCard } from "@/src/components/ui/AppCard";
+import { AppText } from "@/src/components/ui/AppText";
 import { CompactScreenHeader } from "@/src/components/ui/CompactScreenHeader";
 import { ErrorState } from "@/src/components/ui/ErrorState";
-import { spacing } from "@/src/constants/spacing";
-import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { spacing } from "@/src/theme/spacing";
 
 type MapToolbarProps = {
   locationError: string | null;
@@ -18,8 +19,7 @@ type MapToolbarProps = {
 };
 
 export function MapToolbar(props: MapToolbarProps) {
-  const colors = useThemeColors();
-  const { t } = useTranslation("map");
+  const t = mapT;
 
   return (
     <View style={styles.container}>
@@ -39,9 +39,11 @@ export function MapToolbar(props: MapToolbarProps) {
         </View>
       ) : null}
       {props.customersLoading ? (
-        <View style={[styles.statusCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
-          <Text style={[styles.statusText, { color: colors.mutedText }]}>{t("toolbar.loadingCustomers")}</Text>
-        </View>
+        <AppCard contentStyle={styles.statusCard} frosted>
+          <AppText color="muted" variant="body">
+            {t("toolbar.loadingCustomers")}
+          </AppText>
+        </AppCard>
       ) : null}
     </View>
   );
@@ -50,6 +52,5 @@ export function MapToolbar(props: MapToolbarProps) {
 const styles = StyleSheet.create({
   container: { gap: spacing.md },
   banner: { gap: spacing.sm },
-  statusCard: { borderWidth: 1, borderRadius: 16, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
-  statusText: { fontSize: 14 },
+  statusCard: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
 });

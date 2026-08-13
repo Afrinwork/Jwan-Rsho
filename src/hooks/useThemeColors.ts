@@ -1,4 +1,4 @@
-import { darkColors, lightColors } from "@/src/constants/colors";
+import { darkColors, lightColors } from "@/src/theme/colors";
 import { useAppTheme } from "@/src/hooks/useAppTheme";
 
 export function useThemeColors() {

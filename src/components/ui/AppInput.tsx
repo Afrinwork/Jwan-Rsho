@@ -1,8 +1,11 @@
 import { ForwardedRef, forwardRef, useState } from "react";
 import { StyleSheet, TextInput, TextInputProps } from "react-native";
 
-import { spacing } from "@/src/constants/spacing";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { radius } from "@/src/theme/radius";
+import { shadows } from "@/src/theme/shadows";
+import { spacing } from "@/src/theme/spacing";
+import { typography } from "@/src/theme/typography";
 
 export const AppInput = forwardRef(function AppInput(
   props: TextInputProps,
@@ -27,11 +30,13 @@ export const AppInput = forwardRef(function AppInput(
       style={[
         styles.input,
         {
-          backgroundColor: colors.surfaceElevated,
+          backgroundColor: colors.surfaceMuted,
           borderColor: focused ? colors.primary : colors.border,
           color: colors.text,
-          shadowColor: focused ? colors.shadow : "transparent",
+          shadowColor: focused ? colors.primary : "transparent",
         },
+        focused ? styles.focused : null,
+        props.style,
       ]}
     />
   );
@@ -40,12 +45,13 @@ export const AppInput = forwardRef(function AppInput(
 const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: radius.input,
     paddingHorizontal: spacing.md,
     paddingVertical: 14,
-    fontSize: 16,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
+    ...typography.body,
+    ...shadows.sm,
+  },
+  focused: {
+    shadowOpacity: 0.16,
   },
 });

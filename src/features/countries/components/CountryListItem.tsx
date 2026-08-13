@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { spacing } from "@/src/constants/spacing";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { Country } from "@/src/types/country";
+import { getLocalizedName } from "@/src/utils/localizedName";
 
 type CountryListItemProps = {
   country: Country;
@@ -13,7 +14,7 @@ type CountryListItemProps = {
 };
 
 export function CountryListItem({ country, onEdit, onToggleActive, onDelete }: CountryListItemProps) {
-  const { t } = useTranslation("countries");
+  const { t, i18n } = useTranslation("countries");
   const colors = useThemeColors();
 
   return (
@@ -21,7 +22,7 @@ export function CountryListItem({ country, onEdit, onToggleActive, onDelete }: C
       <View style={styles.topRow}>
         <View style={styles.text}>
           <Text numberOfLines={2} style={[styles.name, { color: colors.text }, !country.isActive && { color: colors.mutedText }]}>
-            {country.name}
+            {getLocalizedName(country, i18n.language)}
           </Text>
           <Text style={[styles.meta, { color: colors.mutedText }]}>
             {(country.isoCode || t("listItem.noIsoCode"))} · {t("listItem.sortOrder", { order: country.sortOrder })}

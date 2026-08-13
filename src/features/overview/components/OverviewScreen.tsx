@@ -7,22 +7,22 @@ import {
   ClipboardTask20Regular,
 } from "@fluentui/react-native-icons";
 import { useTranslation } from "react-i18next";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 
 import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
+import { AppCard } from "@/src/components/ui/AppCard";
+import { AppText } from "@/src/components/ui/AppText";
 import { CompactScreenHeader } from "@/src/components/ui/CompactScreenHeader";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { LoadingView } from "@/src/components/ui/LoadingView";
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
-import { spacing } from "@/src/constants/spacing";
+import { spacing } from "@/src/theme/spacing";
 import { OverviewHeroCard } from "@/src/features/overview/components/OverviewHeroCard";
 import { OverviewStatCard } from "@/src/features/overview/components/OverviewStatCard";
 import { useOverviewStats } from "@/src/features/overview/hooks/useOverviewStats";
-import { useThemeColors } from "@/src/hooks/useThemeColors";
 
 export function OverviewScreen() {
   const { t } = useTranslation("overview");
-  const colors = useThemeColors();
   const { stats, loading, error } = useOverviewStats();
   const motivation = getMotivation(t, stats.openOrders, stats.completedOrders);
 
@@ -44,14 +44,16 @@ export function OverviewScreen() {
           />
         </AnimatedEntrance>
         <AnimatedEntrance delay={70}>
-          <View style={[styles.messageCard, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, shadowColor: colors.shadow }]}>
-            <Text style={[styles.messageTitle, { color: colors.text }]}>{t("screen.messageTitle")}</Text>
-            <Text style={[styles.messageText, { color: colors.mutedText }]}>{buildProgressText(t, stats.openOrders, stats.completedOrders)}</Text>
-          </View>
+          <AppCard contentStyle={styles.messageCard} frosted>
+            <AppText variant="subheading">{t("screen.messageTitle")}</AppText>
+            <AppText color="muted" variant="body">
+              {buildProgressText(t, stats.openOrders, stats.completedOrders)}
+            </AppText>
+          </AppCard>
         </AnimatedEntrance>
         {error ? <AnimatedEntrance delay={80}><ErrorState message={error} /></AnimatedEntrance> : null}
         <AnimatedEntrance delay={100} style={styles.grid}>
-          <OverviewStatCard accent="primary" caption={t("stats.openOrders.caption")} icon={ClipboardTask20Regular} title={t("stats.openOrders.title")} value={String(stats.openOrders)} />
+          <OverviewStatCard accent="danger" caption={t("stats.openOrders.caption")} icon={ClipboardTask20Regular} title={t("stats.openOrders.title")} value={String(stats.openOrders)} />
           <OverviewStatCard accent="success" caption={t("stats.completedOrders.caption")} icon={CheckmarkCircle20Regular} title={t("stats.completedOrders.title")} value={String(stats.completedOrders)} />
           <OverviewStatCard caption={t("stats.countries.caption")} icon={Building20Regular} title={t("stats.countries.title")} value={String(stats.countries)} />
           <OverviewStatCard caption={t("stats.cities.caption")} icon={City20Regular} title={t("stats.cities.title")} value={String(stats.cities)} />
@@ -102,20 +104,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   messageCard: {
-    borderWidth: 1,
-    borderRadius: 22,
     padding: spacing.md,
     gap: spacing.xs,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 18,
-  },
-  messageTitle: {
-    fontSize: 14,
-    fontWeight: "800",
-  },
-  messageText: {
-    fontSize: 14,
-    lineHeight: 20,
   },
 });

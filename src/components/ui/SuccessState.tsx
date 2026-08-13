@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
-import { spacing } from "@/src/constants/spacing";
+import { AppBadge } from "@/src/components/ui/AppBadge";
+import { AppText } from "@/src/components/ui/AppText";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { radius } from "@/src/theme/radius";
+import { spacing } from "@/src/theme/spacing";
 
 type SuccessStateProps = {
   message: string;
@@ -27,8 +30,10 @@ export function SuccessState({ message, durationMs = DEFAULT_DURATION_MS }: Succ
 
   return (
     <View style={[styles.container, { backgroundColor: colors.successBackground, borderColor: colors.successBorder }]}>
-      <Text style={[styles.eyebrow, { color: colors.success }]}>Stark</Text>
-      <Text style={[styles.label, { color: colors.success }]}>{buildSuccessMessage(message)}</Text>
+      <AppBadge label="Stark" tone="success" />
+      <AppText color="success" variant="body">
+        {buildSuccessMessage(message)}
+      </AppText>
     </View>
   );
 }
@@ -39,19 +44,9 @@ function buildSuccessMessage(message: string) {
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 18,
+    borderRadius: radius.md,
     borderWidth: 1,
     padding: spacing.md,
     gap: 6,
-  },
-  eyebrow: {
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 0.4,
-    textTransform: "uppercase",
-  },
-  label: {
-    fontSize: 14,
-    lineHeight: 21,
   },
 });

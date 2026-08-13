@@ -2,6 +2,7 @@
   "form": {
     "nameLabel": "المنطقة",
     "namePlaceholder": "المنطقة",
+    "nameArPlaceholder": "الاسم بالعربية (اختياري)",
     "countryLabel": "الدولة",
     "countryPlaceholder": "الدولة",
     "cityLabel": "المدينة (اختياري)",

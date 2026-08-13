@@ -1,7 +1,8 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet } from "react-native";
 
-import { spacing } from "@/src/constants/spacing";
-import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { AppCard } from "@/src/components/ui/AppCard";
+import { AppText } from "@/src/components/ui/AppText";
+import { spacing } from "@/src/theme/spacing";
 
 type EmptyStateProps = {
   title: string;
@@ -9,29 +10,19 @@ type EmptyStateProps = {
 };
 
 export function EmptyState({ title, message }: EmptyStateProps) {
-  const colors = useThemeColors();
-
   return (
-    <View style={[styles.container, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
-      <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
-      <Text style={[styles.message, { color: colors.mutedText }]}>{message}</Text>
-    </View>
+    <AppCard contentStyle={styles.container} frosted>
+      <AppText variant="heading">{title}</AppText>
+      <AppText color="muted" variant="body">
+        {message}
+      </AppText>
+    </AppCard>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     gap: 8,
-    borderRadius: 22,
-    borderWidth: 1,
     padding: spacing.lg,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "700",
-  },
-  message: {
-    fontSize: 15,
-    lineHeight: 22,
   },
 });

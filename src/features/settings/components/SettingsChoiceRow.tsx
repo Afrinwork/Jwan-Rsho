@@ -1,6 +1,9 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
+import { AppText } from "@/src/components/ui/AppText";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { radius } from "@/src/theme/radius";
+import { spacing } from "@/src/theme/spacing";
 
 type Option = {
   label: string;
@@ -19,7 +22,9 @@ export function SettingsChoiceRow(props: SettingsChoiceRowProps) {
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: colors.mutedText }]}>{props.label}</Text>
+      <AppText color="muted" variant="label">
+        {props.label}
+      </AppText>
       <View style={styles.row}>
         {props.options.map((option) => {
           const active = props.value === option.value;
@@ -35,7 +40,9 @@ export function SettingsChoiceRow(props: SettingsChoiceRowProps) {
                 },
               ]}
             >
-              <Text style={[styles.chipLabel, { color: active ? colors.primaryContrast : colors.text }]}>{option.label}</Text>
+              <AppText color={active ? colors.primaryContrast : colors.text} variant="bodyMedium">
+                {option.label}
+              </AppText>
             </Pressable>
           );
         })}
@@ -45,9 +52,7 @@ export function SettingsChoiceRow(props: SettingsChoiceRowProps) {
 }
 
 const styles = StyleSheet.create({
-  container: { gap: 8 },
-  label: { fontSize: 13, fontWeight: "700", letterSpacing: 0.6, textTransform: "uppercase" },
-  row: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
-  chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
-  chipLabel: { fontSize: 14, fontWeight: "600" },
+  container: { gap: spacing.xs },
+  row: { flexDirection: "row", gap: spacing.xs, flexWrap: "wrap" },
+  chip: { borderWidth: 1, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 8 },
 });

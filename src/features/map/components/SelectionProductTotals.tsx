@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
-import { useTranslation } from "react-i18next";
+import { mapT } from "@/src/features/map/i18n/mapT";
 
 import { spacing } from "@/src/constants/spacing";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
@@ -12,7 +12,7 @@ type SelectionProductTotalsProps = {
 
 export function SelectionProductTotals({ totals, loading }: SelectionProductTotalsProps) {
   const colors = useThemeColors();
-  const { t } = useTranslation("map");
+  const t = mapT;
 
   if (!loading && !totals.length) {
     return null;

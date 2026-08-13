@@ -84,7 +84,7 @@ export function ProductManagementSection() {
           {products.map((product) =>
             editingProduct?.id === product.id ? (
               <ProductForm
-                initialValues={{ name: product.name, defaultUnit: product.defaultUnit, emoji: product.emoji ?? "", sortOrder: product.sortOrder }}
+                initialValues={{ name: product.name, nameAr: product.nameAr ?? "", defaultUnit: product.defaultUnit, emoji: product.emoji ?? "", sortOrder: product.sortOrder }}
                 key={product.id}
                 onCancel={() => setEditingProduct(null)}
                 onSubmit={handleEdit}

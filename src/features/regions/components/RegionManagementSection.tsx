@@ -70,7 +70,7 @@ export function RegionManagementSection() {
           {regions.map((region) =>
             editingRegion?.id === region.id ? (
               <RegionForm
-                initialValues={{ name: region.name, country: region.country, city: region.city ?? "" }}
+                initialValues={{ name: region.name, nameAr: region.nameAr ?? "", country: region.country, city: region.city ?? "" }}
                 key={region.id}
                 onCancel={() => setEditingRegion(null)}
                 onSubmit={handleEdit}

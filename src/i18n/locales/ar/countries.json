@@ -2,6 +2,7 @@
   "form": {
     "nameLabel": "الدولة",
     "namePlaceholder": "الدولة",
+    "nameArPlaceholder": "الاسم بالعربية (اختياري)",
     "isoCodeLabel": "رمز ISO (اختياري)",
     "isoCodePlaceholder": "DE",
     "sortOrderLabel": "الترتيب",

@@ -1,8 +1,9 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { colors } from "@/src/constants/colors";
-import { spacing } from "@/src/constants/spacing";
+import { AppCard } from "@/src/components/ui/AppCard";
+import { AppText } from "@/src/components/ui/AppText";
+import { spacing } from "@/src/theme/spacing";
 import { formatAddress } from "@/src/utils/formatAddress";
 
 import { CityCustomerActions } from "@/src/features/cities/components/CityCustomerActions";
@@ -21,14 +22,24 @@ export function CityCustomerCard(props: CityCustomerCardProps) {
   const { t } = useTranslation("cities");
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.name}>{props.customer.fullName}</Text>
-      <Text style={styles.meta}>{props.customer.phone}</Text>
-      <Text style={styles.meta}>{formatAddress([props.customer.address, props.customer.city])}</Text>
-      <Text style={styles.meta}>{props.customer.currentOpenOrderLabel ?? t("customerList.noOpenOrder")}</Text>
-      <Text style={styles.status}>{labelForStatus(props.customer.status, t)}</Text>
+    <AppCard contentStyle={styles.card} frosted>
+      <AppText style={styles.name} variant="subheading">
+        {props.customer.fullName}
+      </AppText>
+      <AppText color="muted" style={styles.meta} variant="body">
+        {props.customer.phone}
+      </AppText>
+      <AppText color="muted" style={styles.meta} variant="body">
+        {formatAddress([props.customer.address, props.customer.city])}
+      </AppText>
+      <AppText color="muted" style={styles.meta} variant="body">
+        {props.customer.currentOpenOrderLabel ?? t("customerList.noOpenOrder")}
+      </AppText>
+      <AppText color="primary" style={styles.status} variant="bodyMedium">
+        {labelForStatus(props.customer.status, t)}
+      </AppText>
       <CityCustomerActions canComplete={Boolean(props.customer.currentOpenOrderId)} completing={props.completing} onComplete={props.onComplete} onPressDetails={props.onPressDetails} onToggleSelection={props.onToggleSelection} selected={props.selected} />
-    </View>
+    </AppCard>
   );
 }
 
@@ -45,8 +56,11 @@ function labelForStatus(status: CityCustomerItem["status"], t: (key: string) => 
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: colors.surface, borderRadius: 14, padding: spacing.md, gap: 6 },
-  name: { color: colors.text, fontSize: 18, fontWeight: "700" },
-  meta: { color: colors.mutedText, fontSize: 14 },
-  status: { color: colors.primary, fontSize: 14, fontWeight: "600" },
+  card: {
+    padding: spacing.md,
+    gap: 6,
+  },
+  name: {},
+  meta: {},
+  status: {},
 });

@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { spacing } from "@/src/constants/spacing";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { Product } from "@/src/types/product";
+import { getLocalizedName } from "@/src/utils/localizedName";
 
 type ProductListItemProps = {
   product: Product;
@@ -18,7 +19,7 @@ type ProductListItemProps = {
 
 export function ProductListItem(props: ProductListItemProps) {
   const colors = useThemeColors();
-  const { t } = useTranslation("products");
+  const { t, i18n } = useTranslation("products");
 
   return (
     <Pressable
@@ -39,7 +40,7 @@ export function ProductListItem(props: ProductListItemProps) {
             numberOfLines={2}
             style={[styles.name, { color: colors.text }, !props.product.isActive && { color: colors.mutedText }]}
           >
-            {props.product.name}
+            {getLocalizedName(props.product, i18n.language)}
           </Text>
           <Text style={[styles.unit, { color: colors.mutedText }]}>
             {props.product.defaultUnit} · {t("list.sortOrder", { order: props.product.sortOrder })}

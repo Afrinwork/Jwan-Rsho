@@ -1,5 +1,6 @@
 import {
   collection,
+  deleteDoc,
   doc,
   getCountFromServer,
   getDoc,
@@ -16,6 +17,8 @@ import { buildNewCustomerForOrder, buildOrderCreateData, buildOrderItemData, Cre
 import { mapSnapshot, requireCurrentUserId, requireDb } from "@/src/repositories/repositoryContext";
 import { Order } from "@/src/types/order";
 import { OrderItem } from "@/src/types/orderItem";
+
+export const COMPLETED_ORDER_RETENTION_DAYS = 90;
 
 export const orderRepository = {
   async createOrder(input: CreateOrderInput & { customer?: CustomerWrite; id?: string }) {
@@ -132,6 +135,35 @@ export const orderRepository = {
   async countOrdersByOwner(ownerId: string) {
     const orderQuery = query(collection(requireDb(), "orders"), where("ownerId", "==", ownerId));
     return (await getCountFromServer(orderQuery)).data().count;
+  },
+
+  // Client-side housekeeping: permanently removes the current user's own
+  // completed orders older than COMPLETED_ORDER_RETENTION_DAYS. Runs from
+  // useOrderCleanup() at most once a day, so it stays free (no Cloud Functions
+  // / Blaze plan needed) while still keeping history for a while after completion.
+  async deleteExpiredCompletedOrders() {
+    const ownerId = requireCurrentUserId();
+    const db = requireDb();
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - COMPLETED_ORDER_RETENTION_DAYS);
+
+    const orderQuery = query(
+      collection(db, "orders"),
+      where("ownerId", "==", ownerId),
+      where("status", "==", "completed"),
+      where("completedAt", "<=", cutoff.toISOString()),
+    );
+    const snapshot = await getDocs(orderQuery);
+
+    await Promise.all(
+      snapshot.docs.map(async (orderDoc) => {
+        const itemsSnapshot = await getDocs(collection(orderDoc.ref, "items"));
+        await Promise.all(itemsSnapshot.docs.map((item) => deleteDoc(item.ref)));
+        await deleteDoc(orderDoc.ref);
+      }),
+    );
+
+    return snapshot.size;
   },
 };
 

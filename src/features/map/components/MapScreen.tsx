@@ -3,7 +3,7 @@ import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 import { ScrollView, StyleSheet, View } from "react-native";
 import MapView from "react-native-maps";
-import { useTranslation } from "react-i18next";
+import { mapT } from "@/src/features/map/i18n/mapT";
 
 import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
 import { LoadingView } from "@/src/components/ui/LoadingView";
@@ -29,7 +29,7 @@ export function MapScreen() {
   const mapRef = useRef<MapView | null>(null);
   const router = useRouter();
   const colors = useThemeColors();
-  const { t } = useTranslation("map");
+  const t = mapT;
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const { error, hasPermission, isLoading, region, reload } = useUserLocation();
   const { error: customersError, isLoading: customersLoading, markers, reload: reloadCustomers } = useMapCustomers();

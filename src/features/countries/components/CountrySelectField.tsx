@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { FormField } from "@/src/components/forms/FormField";
 import { useCountries } from "@/src/features/countries/hooks/useCountries";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { getLocalizedName } from "@/src/utils/localizedName";
 
 type CountrySelectFieldProps = {
   value: string;
@@ -12,7 +13,7 @@ type CountrySelectFieldProps = {
 };
 
 export function CountrySelectField({ value, onChange, error }: CountrySelectFieldProps) {
-  const { t } = useTranslation("countries");
+  const { t, i18n } = useTranslation("countries");
   const { countries, loading } = useCountries();
   const colors = useThemeColors();
   const activeCountries = countries.filter((country) => country.isActive);
@@ -37,7 +38,7 @@ export function CountrySelectField({ value, onChange, error }: CountrySelectFiel
                 ]}
               >
                 <Text style={[styles.chipLabel, { color: active ? colors.primaryContrast : colors.text }]}>
-                  {country.name}
+                  {getLocalizedName(country, i18n.language)}
                 </Text>
               </Pressable>
             );

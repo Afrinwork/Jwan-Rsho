@@ -23,7 +23,7 @@ test("create user schema requires matching passwords", () => {
   });
 
   assert.equal(parsed.success, false);
-  assert.equal(parsed.error?.issues[0]?.message, "Passwoerter muessen gleich sein");
+  assert.equal(parsed.error?.issues[0]?.message, "يجب أن تتطابق كلمتا المرور");
 });
 
 test("create user schema requires minimum password length", () => {
@@ -35,5 +35,5 @@ test("create user schema requires minimum password length", () => {
   });
 
   assert.equal(parsed.success, false);
-  assert.equal(parsed.error?.issues[0]?.message, "Passwort muss mindestens 8 Zeichen haben");
+  assert.equal(parsed.error?.issues[0]?.message, "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل");
 });

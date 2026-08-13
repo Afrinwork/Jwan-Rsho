@@ -1,8 +1,9 @@
 import { ReactNode } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
-import { spacing } from "@/src/constants/spacing";
-import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { AppCard } from "@/src/components/ui/AppCard";
+import { AppText } from "@/src/components/ui/AppText";
+import { spacing } from "@/src/theme/spacing";
 
 type HeroPanelProps = {
   eyebrow: string;
@@ -13,32 +14,31 @@ type HeroPanelProps = {
 };
 
 export function HeroPanel(props: HeroPanelProps) {
-  const colors = useThemeColors();
-
   return (
-    <View style={[styles.card, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, shadowColor: colors.shadow }]}>
+    <AppCard contentStyle={styles.card} frosted tone="primary">
       <View style={styles.row}>
         <View style={styles.copy}>
-          <Text style={[styles.eyebrow, { color: colors.primary }]}>{props.eyebrow}</Text>
-          <Text style={[styles.title, { color: colors.text }]}>{props.title}</Text>
-          <Text style={[styles.subtitle, { color: colors.mutedText }]}>{props.subtitle}</Text>
+          <AppText color="primary" style={styles.eyebrow} variant="label">
+            {props.eyebrow}
+          </AppText>
+          <AppText style={styles.title} variant="title">
+            {props.title}
+          </AppText>
+          <AppText color="muted" style={styles.subtitle} variant="body">
+            {props.subtitle}
+          </AppText>
         </View>
         {props.rightSlot}
       </View>
       {props.children}
-    </View>
+    </AppCard>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 28,
-    borderWidth: 1,
     padding: spacing.lg,
     gap: spacing.md,
-    shadowOffset: { width: 0, height: 14 },
-    shadowOpacity: 0.1,
-    shadowRadius: 24,
   },
   row: {
     flexDirection: "row",
@@ -50,17 +50,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   eyebrow: {
-    fontSize: 12,
-    fontWeight: "800",
     letterSpacing: 1.4,
   },
-  title: {
-    fontSize: 30,
-    fontWeight: "800",
-    lineHeight: 34,
-  },
-  subtitle: {
-    fontSize: 14,
-    lineHeight: 21,
-  },
+  title: {},
+  subtitle: {},
 });

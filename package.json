@@ -17,6 +17,7 @@
     "test:functions": "npm --prefix functions run build && firebase emulators:exec --only firestore,auth,functions \"tsx --test tests/integration/**/*.test.ts\""
   },
   "dependencies": {
+    "@expo-google-fonts/inter": "^0.4.2",
     "@expo/vector-icons": "^15.0.3",
     "@fluentui/react-native-icons": "^2.0.335",
     "@hookform/resolvers": "^5.7.1",
@@ -24,8 +25,10 @@
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/native": "^7.1.8",
     "expo": "~54.0.35",
+    "expo-blur": "~15.0.8",
     "expo-constants": "~18.0.13",
     "expo-font": "~14.0.12",
+    "expo-linear-gradient": "~15.0.8",
     "expo-linking": "~8.0.12",
     "expo-location": "~19.0.7",
     "expo-router": "~6.0.24",

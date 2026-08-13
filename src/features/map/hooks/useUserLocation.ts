@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { mapT } from "@/src/features/map/i18n/mapT";
 
 import * as Location from "expo-location";
 
@@ -35,7 +35,7 @@ type UserLocationState = {
 };
 
 export function useUserLocation(): UserLocationState {
-  const { t } = useTranslation("map");
+  const t = mapT;
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasPermission, setHasPermission] = useState(false);
