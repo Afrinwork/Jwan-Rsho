@@ -38,7 +38,6 @@ export default function RootLayout() {
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="admin/index" options={{ title: t("stack.adminDashboard") }} />
           <Stack.Screen name="admin/create-user" options={{ title: t("stack.createUser") }} />
           <Stack.Screen name="admin/users" options={{ title: t("stack.deleteUsers") }} />
           <Stack.Screen name="management/products" options={{ title: t("stack.products") }} />

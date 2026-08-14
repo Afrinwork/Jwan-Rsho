@@ -14,8 +14,11 @@ const firebaseMessageMap: Record<string, string> = {
   "auth/unauthenticated": errorMessages.authRequired,
   "permission-denied": errorMessages.forbidden,
   "failed-precondition": errorMessages.dataLoadFailed,
-  "unavailable": errorMessages.dataLoadFailed,
-  "deadline-exceeded": errorMessages.dataLoadFailed,
+  // Firestore surfaces these two almost exclusively when the device can't
+  // reach the backend at all (no connectivity) rather than a real server
+  // issue, so "no internet" is the more accurate, actionable message here.
+  "unavailable": errorMessages.noInternet,
+  "deadline-exceeded": errorMessages.noInternet,
   "cancelled": errorMessages.dataLoadFailed,
   "not-found": errorMessages.dataNotFound,
   "functions/already-exists": errorMessages.emailAlreadyExists,

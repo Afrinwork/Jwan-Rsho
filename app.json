@@ -17,7 +17,8 @@
         }
       ],
       "expo-font",
-      "expo-updates"
+      "expo-updates",
+      "./plugins/withAndroidMapsQueries.js"
     ],
     "ios": {
       "supportsTablet": false,
@@ -26,14 +27,26 @@
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Rsho Orders verwendet deinen Standort, um deine Position auf der Karte anzuzeigen und Navigation zu Kunden zu starten.",
         "CFBundleLocalizations": ["de", "ar"],
-        "CFBundleDevelopmentRegion": "de"
+        "CFBundleDevelopmentRegion": "de",
+        "LSApplicationQueriesSchemes": ["comgooglemaps", "waze"]
       }
     },
     "experiments": {
       "typedRoutes": true
     },
     "android": {
-      "package": "com.rsho.cheeseorders"
+      "package": "com.rsho.cheeseorders",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyABMHWXBTvXTGgW3yoqtlrvgfA_o0ENdVw"
+        }
+      }
     }
   }
 }

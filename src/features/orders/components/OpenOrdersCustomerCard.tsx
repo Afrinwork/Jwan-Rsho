@@ -14,12 +14,21 @@ import { formatDate } from "@/src/utils/date";
 
 type OpenOrdersCustomerCardProps = {
   group: CustomerOpenOrders;
+  completingOrderId: string | null;
+  deletingOrderId: string | null;
   onComplete: (orderId: string) => void;
   onDelete: (orderId: string) => void;
   onNavigate: () => void;
 };
 
-export function OpenOrdersCustomerCard({ group, onComplete, onDelete, onNavigate }: OpenOrdersCustomerCardProps) {
+export function OpenOrdersCustomerCard({
+  group,
+  completingOrderId,
+  deletingOrderId,
+  onComplete,
+  onDelete,
+  onNavigate,
+}: OpenOrdersCustomerCardProps) {
   const { t } = useTranslation("orders");
   const colors = useThemeColors();
   const { customer, orders } = group;
@@ -43,36 +52,50 @@ export function OpenOrdersCustomerCard({ group, onComplete, onDelete, onNavigate
       {orders.length > 1 ? (
         <AppBadge label={t("openOrders.multipleOrdersBadge", { count: orders.length })} tone="primary" />
       ) : null}
-      {orders.map((order, index) => (
-        <View
-          key={order.id}
-          style={[styles.orderBlock, index > 0 ? [styles.orderBlockDivider, { borderTopColor: colors.border }] : null]}
-        >
-          <AppText color="secondary" variant="label">
-            {t("openOrders.orderDateLabel", { date: formatDate(order.orderedAt) })}
-          </AppText>
-          <View style={styles.items}>
-            {order.items.map((item) => (
-              <AppText color="muted" key={item.id} variant="body">
-                {item.productNameSnapshot}: {item.quantity} {item.unit}
-              </AppText>
-            ))}
-          </View>
-          <View style={styles.actions}>
-            <View style={styles.actionButton}>
-              <AppButton label={t("openOrders.completeButton")} onPress={() => onComplete(order.id)} size="compact" />
+      {orders.map((order, index) => {
+        const isCompleting = completingOrderId === order.id;
+        const isDeleting = deletingOrderId === order.id;
+        const isBusy = isCompleting || isDeleting;
+
+        return (
+          <View
+            key={order.id}
+            style={[styles.orderBlock, index > 0 ? [styles.orderBlockDivider, { borderTopColor: colors.border }] : null]}
+          >
+            <AppText color="secondary" variant="label">
+              {t("openOrders.orderDateLabel", { date: formatDate(order.orderedAt) })}
+            </AppText>
+            <View style={styles.items}>
+              {order.items.map((item) => (
+                <AppText color="muted" key={item.id} variant="body">
+                  {item.productNameSnapshot}: {item.quantity} {item.unit}
+                </AppText>
+              ))}
             </View>
-            <View style={styles.actionButton}>
-              <AppButton
-                label={t("openOrders.deleteButton")}
-                onPress={() => onDelete(order.id)}
-                size="compact"
-                variant="danger"
-              />
+            <View style={styles.actions}>
+              <View style={styles.actionButton}>
+                <AppButton
+                  disabled={isBusy}
+                  label={t("openOrders.completeButton")}
+                  loading={isCompleting}
+                  onPress={() => onComplete(order.id)}
+                  size="compact"
+                />
+              </View>
+              <View style={styles.actionButton}>
+                <AppButton
+                  disabled={isBusy}
+                  label={t("openOrders.deleteButton")}
+                  loading={isDeleting}
+                  onPress={() => onDelete(order.id)}
+                  size="compact"
+                  variant="danger"
+                />
+              </View>
             </View>
           </View>
-        </View>
-      ))}
+        );
+      })}
     </AppCard>
   );
 }

@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
 
-import { requireCurrentUserId, requireDb } from "@/src/repositories/repositoryContext";
+import { countryRepository } from "@/src/repositories/countryRepository";
+import { customerRepository } from "@/src/repositories/customerRepository";
+import { orderRepository } from "@/src/repositories/orderRepository";
+import { productRepository } from "@/src/repositories/productRepository";
 import { dailyCompletionTracker } from "@/src/services/dailyCompletionTracker";
 import { Country } from "@/src/types/country";
 import { Customer } from "@/src/types/customer";
@@ -33,98 +35,34 @@ export function useOverviewStats() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Completed orders are deleted immediately (see orderRepository.completeOrder),
-  // so "completed" is tracked separately as a rolling 24h count that resets on
-  // its own — refreshed whenever this screen regains focus.
-  useFocusEffect(
-    useCallback(() => {
-      void dailyCompletionTracker.getCount().then((completedOrders) => {
-        setStats((current) => ({ ...current, completedOrders }));
-      });
-    }, []),
-  );
-
-  useEffect(() => {
-    let active = true;
-
+  const load = useCallback(async () => {
     try {
-      const db = requireDb();
-      const ownerId = requireCurrentUserId();
-      const customersQuery = query(collection(db, "customers"), where("ownerId", "==", ownerId));
-      const ordersQuery = query(collection(db, "orders"), where("ownerId", "==", ownerId), where("status", "==", "open"));
-      const countriesQuery = query(collection(db, "countries"), where("ownerId", "==", ownerId));
-      const productsQuery = query(collection(db, "products"), where("ownerId", "==", ownerId));
-      let customers: Customer[] = [];
-      let openOrders: Order[] = [];
-      let countries: Country[] = [];
-      let products: Product[] = [];
+      // Completed orders are deleted immediately (see orderRepository.completeOrder),
+      // so "completed" is tracked separately as a rolling 24h count that resets on its own.
+      const [customers, openOrders, countries, products, completedOrders] = await Promise.all([
+        customerRepository.getCustomers(),
+        orderRepository.getOpenOrders(),
+        countryRepository.getCountries(),
+        productRepository.getProducts(),
+        dailyCompletionTracker.getCount(),
+      ]);
 
-      const updateStats = () => {
-        if (!active) {
-          return;
-        }
-
-        setStats((current) => ({ ...buildOverviewStats(customers, openOrders, countries, products), completedOrders: current.completedOrders }));
-        setError(null);
-        setLoading(false);
-      };
-
-      const handleError = (value: unknown) => {
-        if (!active) {
-          return;
-        }
-
-        setError(formatError(value).message);
-        setLoading(false);
-      };
-
-      const unsubscribers = [
-        onSnapshot(
-          customersQuery,
-          (snapshot) => {
-            customers = snapshot.docs.map((value) => ({ id: value.id, ...value.data() }) as Customer);
-            updateStats();
-          },
-          handleError,
-        ),
-        onSnapshot(
-          ordersQuery,
-          (snapshot) => {
-            openOrders = snapshot.docs.map((value) => ({ id: value.id, ...value.data() }) as Order);
-            updateStats();
-          },
-          handleError,
-        ),
-        onSnapshot(
-          countriesQuery,
-          (snapshot) => {
-            countries = snapshot.docs.map((value) => ({ id: value.id, ...value.data() }) as Country);
-            updateStats();
-          },
-          handleError,
-        ),
-        onSnapshot(
-          productsQuery,
-          (snapshot) => {
-            products = snapshot.docs.map((value) => ({ id: value.id, ...value.data() }) as Product);
-            updateStats();
-          },
-          handleError,
-        ),
-      ];
-
-      return () => {
-        active = false;
-        unsubscribers.forEach((unsubscribe) => unsubscribe());
-      };
+      setStats({ ...buildOverviewStats(customers, openOrders, countries, products), completedOrders });
+      setError(null);
     } catch (value) {
       setError(formatError(value).message);
+    } finally {
+      // Only the very first load should show the full-screen loading state —
+      // focus-triggered refreshes below update stats silently in place.
       setLoading(false);
-      return () => {
-        active = false;
-      };
     }
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      void load();
+    }, [load]),
+  );
 
   return { stats, loading, error };
 }

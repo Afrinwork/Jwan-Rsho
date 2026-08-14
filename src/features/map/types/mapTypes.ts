@@ -25,6 +25,26 @@ export type MapCustomerMarker = {
   region: string;
 };
 
+export type MapMarkerCoordinate = {
+  latitude: number;
+  longitude: number;
+};
+
+export type MapMarkerClusterItem =
+  | {
+      type: "marker";
+      id: string;
+      coordinate: MapMarkerCoordinate;
+      marker: MapCustomerMarker;
+    }
+  | {
+      type: "cluster";
+      id: string;
+      coordinate: MapMarkerCoordinate;
+      markers: MapCustomerMarker[];
+      count: number;
+    };
+
 export type MapCustomerDetails = {
   customer: Customer;
   openOrders: OrderWithItems[];

@@ -20,7 +20,7 @@ export function CityCustomerActions(props: CityCustomerActionsProps) {
       <AppButton label={props.selected ? t("customerActions.deselect") : t("customerActions.select")} onPress={props.onToggleSelection} variant="secondary" />
       <AppButton label={t("customerActions.details")} onPress={props.onPressDetails} variant="secondary" />
       {props.canComplete ? (
-        <AppButton label={t("customerActions.complete")} loading={props.completing} onPress={props.onComplete} />
+        <AppButton disabled={props.completing} label={t("customerActions.complete")} loading={props.completing} onPress={props.onComplete} />
       ) : null}
     </View>
   );

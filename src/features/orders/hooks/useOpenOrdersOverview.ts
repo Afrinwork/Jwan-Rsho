@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { customerRepository } from "@/src/repositories/customerRepository";
 import { orderDetailsRepository } from "@/src/repositories/orderDetailsRepository";
@@ -17,6 +17,9 @@ export function useOpenOrdersOverview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [pendingActionOrderId, setPendingActionOrderId] = useState<string | null>(null);
+  const [pendingActionType, setPendingActionType] = useState<"complete" | "delete" | null>(null);
+  const pendingActionOrderIdRef = useRef<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -26,7 +29,7 @@ export function useOpenOrdersOverview() {
       const customerIds = [...new Set(openOrders.map((value) => value.customerId))];
       const [ordersWithItems, customers] = await Promise.all([
         orderDetailsRepository.getOpenOrdersWithItemsByCustomerIds(customerIds),
-        customerRepository.getCustomers(),
+        customerRepository.getCustomersByIds(customerIds),
       ]);
 
       setGroups(groupByCustomer(ordersWithItems, customers));
@@ -43,22 +46,44 @@ export function useOpenOrdersOverview() {
   }, [load]);
 
   const completeOrder = useCallback(async (orderId: string) => {
+    if (pendingActionOrderIdRef.current === orderId) {
+      return;
+    }
+
     try {
+      pendingActionOrderIdRef.current = orderId;
+      setPendingActionOrderId(orderId);
+      setPendingActionType("complete");
       setActionError(null);
       await orderRepository.completeOrder(orderId);
       await load();
     } catch (value) {
       setActionError(formatError(value).message);
+    } finally {
+      pendingActionOrderIdRef.current = null;
+      setPendingActionOrderId(null);
+      setPendingActionType(null);
     }
   }, [load]);
 
   const deleteOrder = useCallback(async (orderId: string) => {
+    if (pendingActionOrderIdRef.current === orderId) {
+      return;
+    }
+
     try {
+      pendingActionOrderIdRef.current = orderId;
+      setPendingActionOrderId(orderId);
+      setPendingActionType("delete");
       setActionError(null);
       await orderRepository.deleteOrder(orderId);
       await load();
     } catch (value) {
       setActionError(formatError(value).message);
+    } finally {
+      pendingActionOrderIdRef.current = null;
+      setPendingActionOrderId(null);
+      setPendingActionType(null);
     }
   }, [load]);
 
@@ -67,7 +92,18 @@ export function useOpenOrdersOverview() {
     [groups],
   );
 
-  return { groups, cities, loading, error, actionError, completeOrder, deleteOrder, reload: load };
+  return {
+    groups,
+    cities,
+    loading,
+    error,
+    actionError,
+    completeOrder,
+    deleteOrder,
+    pendingActionOrderId,
+    pendingActionType,
+    reload: load,
+  };
 }
 
 function groupByCustomer(orders: OrderWithItems[], customers: Customer[]): CustomerOpenOrders[] {

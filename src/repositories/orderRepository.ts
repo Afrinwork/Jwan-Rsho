@@ -1,6 +1,5 @@
 import {
   collection,
-  deleteDoc,
   doc,
   getCountFromServer,
   getDoc,
@@ -157,9 +156,12 @@ export const orderRepository = {
 
 async function deleteOrderById(id: string) {
   const snapshot = await getOwnedOrder(id);
-  const itemsSnapshot = await getDocs(collection(requireDb(), "orders", id, "items"));
-  await Promise.all(itemsSnapshot.docs.map((item) => deleteDoc(item.ref)));
-  await deleteDoc(snapshot.ref);
+  const db = requireDb();
+  const itemsSnapshot = await getDocs(collection(db, "orders", id, "items"));
+  const batch = writeBatch(db);
+  itemsSnapshot.docs.forEach((item) => batch.delete(item.ref));
+  batch.delete(snapshot.ref);
+  await batch.commit();
 }
 
 export async function getOwnedOrder(id: string) {

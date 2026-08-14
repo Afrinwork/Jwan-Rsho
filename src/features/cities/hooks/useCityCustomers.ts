@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { cityRepository } from "@/src/repositories/cityRepository";
 import { customerRepository } from "@/src/repositories/customerRepository";
@@ -24,6 +24,7 @@ export function useCityCustomers(normalizedCity: string) {
   const [completingOrderId, setCompletingOrderId] = useState<string | null>(null);
   const [renaming, setRenaming] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const completingOrderIdRef = useRef<string | null>(null);
 
   const loadCityData = useCallback(async () => {
     const [customers, city] = await Promise.all([
@@ -57,11 +58,12 @@ export function useCityCustomers(normalizedCity: string) {
   }, [loadCityData]);
 
   async function completeOrder(orderId: string) {
-    if (completingOrderId === orderId) {
+    if (completingOrderIdRef.current === orderId) {
       return;
     }
 
     try {
+      completingOrderIdRef.current = orderId;
       setCompletingOrderId(orderId);
       setError(null);
       await orderRepository.completeOrder(orderId);
@@ -69,6 +71,7 @@ export function useCityCustomers(normalizedCity: string) {
     } catch (value) {
       setError(formatError(value).message);
     } finally {
+      completingOrderIdRef.current = null;
       setCompletingOrderId(null);
     }
   }

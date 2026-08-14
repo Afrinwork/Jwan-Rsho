@@ -49,6 +49,7 @@ export function CityCustomerListScreen(props: CityCustomerListScreenProps) {
   const selection = useCityCustomerSelection(customers);
   const [renameVisible, setRenameVisible] = useState(false);
   const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
+  const [completeTarget, setCompleteTarget] = useState<string | null>(null);
 
   if (loading) {
     return <LoadingView label={t("customerList.loading")} />;
@@ -106,7 +107,7 @@ export function CityCustomerListScreen(props: CityCustomerListScreenProps) {
           <CityCustomerCard
             completing={completingOrderId === item.currentOpenOrderId}
             customer={item}
-            onComplete={() => item.currentOpenOrderId && completeOrder(item.currentOpenOrderId)}
+            onComplete={() => item.currentOpenOrderId && setCompleteTarget(item.currentOpenOrderId)}
             onPressDetails={() => router.push(`/customer/${item.id}`)}
             onToggleSelection={() => selection.toggleSelection(item.id)}
             selected={selection.isSelected(item.id)}
@@ -143,6 +144,19 @@ export function CityCustomerListScreen(props: CityCustomerListScreenProps) {
         }}
         title={t("deleteCity.confirmTitle")}
         visible={deleteConfirmVisible}
+      />
+      <ConfirmDialog
+        destructive
+        message={t("completeOrder.confirmMessage")}
+        onCancel={() => setCompleteTarget(null)}
+        onConfirm={() => {
+          if (completeTarget) {
+            void completeOrder(completeTarget);
+          }
+          setCompleteTarget(null);
+        }}
+        title={t("completeOrder.confirmTitle")}
+        visible={Boolean(completeTarget)}
       />
     </ScreenContainer>
   );

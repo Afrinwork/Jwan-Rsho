@@ -3,16 +3,13 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
-import { AppButton } from "@/src/components/ui/AppButton";
 import { CompactScreenHeader } from "@/src/components/ui/CompactScreenHeader";
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
 import { routes } from "@/src/constants/routes";
 import { spacing } from "@/src/constants/spacing";
 import { ManagementMenuButton } from "@/src/features/management/components/ManagementMenuButton";
-import { useAuthStore } from "@/src/store/authStore";
 
 export function ManagementScreen() {
-  const isAdmin = useAuthStore((state) => state.isAdmin);
   const router = useRouter();
   const { t } = useTranslation("management");
 
@@ -20,15 +17,7 @@ export function ManagementScreen() {
     <ScreenContainer>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <AnimatedEntrance>
-          <CompactScreenHeader
-            rightSlot={
-              isAdmin ? (
-                <AppButton label={t("screen.adminButton")} onPress={() => router.push(routes.admin)} variant="secondary" />
-              ) : null
-            }
-            subtitle={t("screen.subtitle")}
-            title={t("screen.title")}
-          />
+          <CompactScreenHeader subtitle={t("screen.subtitle")} title={t("screen.title")} />
         </AnimatedEntrance>
         <AnimatedEntrance delay={50} style={styles.menu}>
           <ManagementMenuButton

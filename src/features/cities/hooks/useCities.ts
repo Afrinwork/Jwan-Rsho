@@ -1,17 +1,15 @@
-import { useEffect, useState } from "react";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { useCallback, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 
 import { cityRepository } from "@/src/repositories/cityRepository";
 import { customerRepository } from "@/src/repositories/customerRepository";
-import { requireCurrentUserId, requireDb } from "@/src/repositories/repositoryContext";
+import { orderRepository } from "@/src/repositories/orderRepository";
 import { formatError } from "@/src/utils/formatError";
 import { normalizeCity } from "@/src/utils/normalizeCity";
 
 import { buildCitySummaries, filterCitySummaries, getCountryOptions } from "@/src/features/cities/services/cityService";
 import { CitySummary } from "@/src/features/cities/types/cityTypes";
-import { City } from "@/src/types/city";
 import { Customer } from "@/src/types/customer";
-import { Order } from "@/src/types/order";
 
 export function useCities() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,79 +18,32 @@ export function useCities() {
   const [error, setError] = useState<string | null>(null);
   const [summaries, setSummaries] = useState<CitySummary[]>([]);
 
-  useEffect(() => {
-    let active = true;
-
-    void backfillMissingCityEntities();
-
+  const load = useCallback(async () => {
     try {
-      const db = requireDb();
-      const ownerId = requireCurrentUserId();
-      const citiesQuery = query(collection(db, "cities"), where("ownerId", "==", ownerId));
-      const customersQuery = query(collection(db, "customers"), where("ownerId", "==", ownerId));
-      const openOrdersQuery = query(collection(db, "orders"), where("ownerId", "==", ownerId), where("status", "==", "open"));
-      let cities: City[] = [];
-      let customers: Customer[] = [];
-      let orders: Order[] = [];
+      const [customers, openOrders] = await Promise.all([
+        customerRepository.getCustomers(),
+        orderRepository.getOpenOrders(),
+      ]);
 
-      const updateSummaries = () => {
-        if (!active) {
-          return;
-        }
+      await backfillMissingCityEntities(customers);
+      const cities = await cityRepository.getCities();
 
-        setSummaries(buildCitySummaries(cities, customers, orders));
-        setError(null);
-        setLoading(false);
-      };
-
-      const handleError = (value: unknown) => {
-        if (!active) {
-          return;
-        }
-
-        setError(formatError(value).message);
-        setLoading(false);
-      };
-
-      const unsubscribers = [
-        onSnapshot(
-          citiesQuery,
-          (snapshot) => {
-            cities = snapshot.docs.map((value) => ({ id: value.id, ...value.data() }) as City);
-            updateSummaries();
-          },
-          handleError,
-        ),
-        onSnapshot(
-          customersQuery,
-          (snapshot) => {
-            customers = snapshot.docs.map((value) => ({ id: value.id, ...value.data() }) as Customer);
-            updateSummaries();
-          },
-          handleError,
-        ),
-        onSnapshot(
-          openOrdersQuery,
-          (snapshot) => {
-            orders = snapshot.docs.map((value) => ({ id: value.id, ...value.data() }) as Order);
-            updateSummaries();
-          },
-          handleError,
-        ),
-      ];
-
-      return () => {
-        active = false;
-        unsubscribers.forEach((unsubscribe) => unsubscribe());
-      };
+      setSummaries(buildCitySummaries(cities, customers, openOrders));
+      setError(null);
     } catch (value) {
       setError(formatError(value).message);
+    } finally {
+      // Only the very first load should show the full-screen loading state —
+      // focus-triggered refreshes below update summaries silently in place.
       setLoading(false);
-      return () => {
-        active = false;
-      };
     }
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      void load();
+    }, [load]),
+  );
 
   return {
     loading,
@@ -106,11 +57,12 @@ export function useCities() {
   };
 }
 
-// One-time self-heal for customers whose city predates city entities being
-// tracked — creates the missing City doc so it shows up going forward too.
-async function backfillMissingCityEntities() {
+// Self-heal for customers whose city predates city entities being tracked —
+// creates any missing City docs so they show up going forward too. Best
+// effort: failures here don't block the normal summary load above.
+async function backfillMissingCityEntities(customers: Customer[]) {
   try {
-    const [cities, customers] = await Promise.all([cityRepository.getCities(), customerRepository.getCustomers()]);
+    const cities = await cityRepository.getCities();
     const known = new Set(cities.map((value) => value.normalizedName));
     const missing = new Map<string, string>();
 
@@ -124,6 +76,6 @@ async function backfillMissingCityEntities() {
 
     await Promise.all([...missing.values()].map((name) => cityRepository.ensureCityExists(name)));
   } catch {
-    // Best-effort — the live listeners above still work off whatever already exists.
+    // Best-effort — the normal load above still works off whatever already exists.
   }
 }

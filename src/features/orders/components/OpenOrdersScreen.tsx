@@ -25,7 +25,17 @@ const ALL_CITIES = "__all__";
 export function OpenOrdersScreen() {
   const { t } = useTranslation("orders");
   const preferredNavigationApp = useAppStore((state) => state.preferredNavigationApp);
-  const { groups, cities, loading, error, actionError, completeOrder, deleteOrder } = useOpenOrdersOverview();
+  const {
+    groups,
+    cities,
+    loading,
+    error,
+    actionError,
+    completeOrder,
+    deleteOrder,
+    pendingActionOrderId,
+    pendingActionType,
+  } = useOpenOrdersOverview();
   const [selectedCity, setSelectedCity] = useState(ALL_CITIES);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [navigationApps, setNavigationApps] = useState<MapNavigationApp[] | null>(null);
@@ -82,6 +92,8 @@ export function OpenOrdersScreen() {
           <View style={styles.list}>
             {filteredGroups.map((group) => (
               <OpenOrdersCustomerCard
+                completingOrderId={pendingActionType === "complete" ? pendingActionOrderId : null}
+                deletingOrderId={pendingActionType === "delete" ? pendingActionOrderId : null}
                 group={group}
                 key={group.customer.id}
                 onComplete={(orderId) => void completeOrder(orderId)}

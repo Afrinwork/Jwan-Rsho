@@ -22,10 +22,9 @@ export function useMapCustomers(): MapCustomersState {
     setError(null);
 
     try {
-      const [customers, openOrders] = await Promise.all([
-        customerRepository.getCustomers(),
-        orderRepository.getOpenOrders(),
-      ]);
+      const openOrders = await orderRepository.getOpenOrders();
+      const customerIds = [...new Set(openOrders.map((value) => value.customerId))];
+      const customers = await customerRepository.getCustomersByIds(customerIds);
 
       setMarkers(buildMapCustomerMarkers(customers, openOrders));
     } catch (loadError) {

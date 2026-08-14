@@ -6,6 +6,7 @@ import MapView from "react-native-maps";
 import { mapT } from "@/src/features/map/i18n/mapT";
 
 import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
+import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
 import { LoadingView } from "@/src/components/ui/LoadingView";
 import { spacing } from "@/src/constants/spacing";
 import { CustomerMarker } from "@/src/features/map/components/CustomerMarker";
@@ -22,6 +23,7 @@ import { useMapCustomerDetails } from "@/src/features/map/hooks/useMapCustomerDe
 import { useMapCustomers } from "@/src/features/map/hooks/useMapCustomers";
 import { useMapCustomerSelection } from "@/src/features/map/hooks/useMapCustomerSelection";
 import { useMapFilters } from "@/src/features/map/hooks/useMapFilters";
+import { mapClusteringService } from "@/src/features/map/services/mapClusteringService";
 import { useUserLocation } from "@/src/features/map/hooks/useUserLocation";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 
@@ -31,9 +33,11 @@ export function MapScreen() {
   const colors = useThemeColors();
   const t = mapT;
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const [completeConfirmVisible, setCompleteConfirmVisible] = useState(false);
   const { error, hasPermission, isLoading, region, reload } = useUserLocation();
   const { error: customersError, isLoading: customersLoading, markers, reload: reloadCustomers } = useMapCustomers();
   const { filters, filteredMarkers, countryOptions, cityOptions, regionOptions, resetFilters, selectCity, selectCountry, selectRegion } = useMapFilters(markers);
+  const [visibleRegion, setVisibleRegion] = useState(region);
   const { details, error: detailsError, isLoading: detailsLoading, reload: reloadDetails } = useMapCustomerDetails(selectedCustomerId);
   const selectedMarker = useMemo(() => filteredMarkers.find((value) => value.id === selectedCustomerId) ?? null, [filteredMarkers, selectedCustomerId]);
   const mapActions = useMapActions(details, selectedMarker);
@@ -41,6 +45,14 @@ export function MapScreen() {
   const customerSelection = useMapCustomerSelection(markers, filteredMarkers, productEmojiById);
   const selectedIdSet = useMemo(() => new Set(customerSelection.selection.selectedIds), [customerSelection.selection.selectedIds]);
   const drawingSelection = customerSelection.selection.activeTool === "polygon";
+  const clusterItems = useMemo(
+    () => mapClusteringService.buildClusterItems({ markers: filteredMarkers, region: visibleRegion }),
+    [filteredMarkers, visibleRegion],
+  );
+
+  useEffect(() => {
+    setVisibleRegion(region);
+  }, [region]);
 
   useFocusEffect(useCallback(() => {
     void reloadCustomers();
@@ -61,6 +73,14 @@ export function MapScreen() {
       });
     }
   }, [filteredMarkers]);
+
+  async function handleConfirmComplete() {
+    setCompleteConfirmVisible(false);
+    const completed = await mapActions.completeOpenOrder();
+    if (!completed) return;
+    setSelectedCustomerId(null);
+    await reloadCustomers();
+  }
 
   if (isLoading) return <LoadingView label={t("screen.loading")} />;
 
@@ -116,6 +136,7 @@ export function MapScreen() {
         <View style={styles.mapWrapper}>
           <MapView
             initialRegion={region}
+            onRegionChangeComplete={setVisibleRegion}
             onPanDrag={(event) => {
               if (customerSelection.selection.activeTool === "polygon") {
                 customerSelection.selection.handleMapDrag(event.nativeEvent.coordinate);
@@ -130,18 +151,26 @@ export function MapScreen() {
             style={[styles.map, { borderColor: colors.border }]}
             zoomEnabled={!drawingSelection}
           >
-            {filteredMarkers.map((marker) => (
-              <CustomerMarker
-                key={marker.id}
-                marker={marker}
-                onPress={() => {
-                  if (customerSelection.selection.activeTool === "single") return customerSelection.selection.handleMarkerPress(marker);
-                  if (customerSelection.selection.activeTool !== "none") return;
-                  setSelectedCustomerId(marker.id);
-                }}
-                selected={selectedIdSet.has(marker.id)}
-              />
-            ))}
+            {clusterItems.map((item) => {
+              if (item.type === "cluster") {
+                return null;
+              }
+
+              const marker = item.marker;
+
+              return (
+                <CustomerMarker
+                  key={item.id}
+                  marker={marker}
+                  onPress={() => {
+                    if (customerSelection.selection.activeTool === "single") return customerSelection.selection.handleMarkerPress(marker);
+                    if (customerSelection.selection.activeTool !== "none") return;
+                    setSelectedCustomerId(marker.id);
+                  }}
+                  selected={selectedIdSet.has(marker.id)}
+                />
+              );
+            })}
             <PolygonSelectionOverlay confirmedPolygon={customerSelection.selection.polygonConfirmed} draftPoints={customerSelection.selection.polygonPoints} />
           </MapView>
         </View>
@@ -166,22 +195,32 @@ export function MapScreen() {
         error={detailsError}
         loading={detailsLoading}
         onCall={() => void mapActions.callCustomer()}
-        onClose={() => setSelectedCustomerId(null)}
+        onClose={() => {
+          setSelectedCustomerId(null);
+          setCompleteConfirmVisible(false);
+        }}
         onEdit={() => {
           if (selectedCustomerId) router.push(`/customer/edit/${selectedCustomerId}`);
         }}
-        onComplete={() => void (async () => {
-          const completed = await mapActions.completeOpenOrder();
-          if (!completed) return;
-          setSelectedCustomerId(null);
-          await reloadCustomers();
-        })()}
+        onComplete={() => setCompleteConfirmVisible(true)}
         completing={mapActions.completingOrder}
         onNavigate={() => void mapActions.openNavigationMenu()}
         onRetry={() => void reloadDetails()}
         onShare={() => void mapActions.shareLocation()}
         onShareOrder={() => void mapActions.shareOrder()}
         visible={selectedCustomerId !== null}
+      />
+      <ConfirmDialog
+        destructive
+        message={
+          (details?.openOrders.length ?? 0) > 1
+            ? t("sheet.completeAllConfirmMessage", { count: details?.openOrders.length ?? 0 })
+            : t("sheet.completeConfirmMessage")
+        }
+        onCancel={() => setCompleteConfirmVisible(false)}
+        onConfirm={() => void handleConfirmComplete()}
+        title={t("sheet.completeConfirmTitle")}
+        visible={completeConfirmVisible}
       />
     </View>
   );

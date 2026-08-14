@@ -12,7 +12,6 @@ export const routes = {
   managementRegions: "/management/regions",
   managementCatalog: "/management/catalog",
   settings: "/(tabs)/settings",
-  admin: "/admin",
   adminUsers: "/admin/users",
   adminCreateUser: "/admin/create-user",
 } as const;

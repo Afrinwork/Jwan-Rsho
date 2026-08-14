@@ -22,7 +22,7 @@ test("Netzwerkfehler: auth offline error is translated", () => {
 
 test("Netzwerkfehler: firestore unavailable is translated", () => {
   const result = formatError(new FirebaseError("unavailable", "unavailable"));
-  assert.equal(result.message, errorMessages.dataLoadFailed);
+  assert.equal(result.message, errorMessages.noInternet);
 });
 
 test("Firestore Fehler: missing composite index (failed-precondition) is translated, not generic", () => {
