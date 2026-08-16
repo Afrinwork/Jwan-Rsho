@@ -22,6 +22,8 @@ export function PasswordField({ control }: PasswordFieldProps) {
       render={({ field: { onBlur, onChange, value } }) => (
         <View style={styles.container}>
           <AppInput
+            autoCapitalize="none"
+            autoCorrect={false}
             onBlur={onBlur}
             onChangeText={onChange}
             placeholder={t("login.passwordPlaceholder")}

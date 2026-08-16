@@ -13,6 +13,8 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
   const [polygonPoints, setPolygonPoints] = useState<MapSelectionPoint[]>([]);
   const [polygonConfirmed, setPolygonConfirmed] = useState<MapSelectionPoint[] | null>(null);
   const [polygonBaseSelectedIds, setPolygonBaseSelectedIds] = useState<string[]>([]);
+  const [polygonPaused, setPolygonPaused] = useState(false);
+  const polygonPausedRef = useRef(false);
   const activeToolRef = useRef<MapSelectionTool>("none");
   const polygonPointsRef = useRef<MapSelectionPoint[]>([]);
   const polygonBaseSelectedIdsRef = useRef<string[]>([]);
@@ -30,6 +32,10 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
   useEffect(() => {
     polygonBaseSelectedIdsRef.current = polygonBaseSelectedIds;
   }, [polygonBaseSelectedIds]);
+
+  useEffect(() => {
+    polygonPausedRef.current = polygonPaused;
+  }, [polygonPaused]);
 
   useEffect(() => () => {
     if (frameRef.current !== null) {
@@ -62,7 +68,17 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
     setPolygonPoints([]);
     polygonPointsRef.current = [];
     setPolygonConfirmed(null);
+    setPolygonPaused(false);
+    polygonPausedRef.current = false;
   }, [selectedIds]);
+
+  const togglePolygonPause = useCallback(() => {
+    setPolygonPaused((current) => {
+      const next = !current;
+      polygonPausedRef.current = next;
+      return next;
+    });
+  }, []);
 
   const toggleSelection = useCallback((markerId: string) => {
     setSelectedIds((current) => mapSelectionService.toggleMarkerSelection(current, markerId));
@@ -99,7 +115,7 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
 
   const handleMapDrag = useCallback(
     (point: MapSelectionPoint) => {
-      if (activeToolRef.current !== "polygon") {
+      if (activeToolRef.current !== "polygon" || polygonPausedRef.current) {
         return;
       }
 
@@ -178,6 +194,8 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
     setPolygonBaseSelectedIds([]);
     polygonBaseSelectedIdsRef.current = [];
     pendingPolygonPointsRef.current = null;
+    setPolygonPaused(false);
+    polygonPausedRef.current = false;
   }, []);
 
   return {
@@ -188,6 +206,7 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
     circleConfirmed,
     polygonPoints,
     polygonConfirmed,
+    polygonPaused,
     selectTool,
     toggleSelection,
     handleMarkerPress,
@@ -195,6 +214,7 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
     handleMapDrag,
     closePolygon,
     undoPolygonPoint,
+    togglePolygonPause,
     resetSelection,
   };
 }

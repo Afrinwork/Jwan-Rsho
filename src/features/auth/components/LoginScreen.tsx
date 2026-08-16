@@ -1,4 +1,4 @@
-import { StyleSheet, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
@@ -17,39 +17,53 @@ export function LoginScreen() {
 
   return (
     <ScreenContainer>
-      <View style={styles.shell}>
-        <AnimatedEntrance delay={60} distance={12}>
-          <LoginLogoBadge />
-        </AnimatedEntrance>
-        <AnimatedEntrance delay={160} distance={14}>
-          <View style={styles.header}>
-            <AppText color="primary" style={styles.kicker} variant="label">
-              {t("login.kicker")}
-            </AppText>
-            <AppText style={styles.title} variant="display">
-              {t("login.title")}
-            </AppText>
-            <AppText color="muted" style={styles.subtitle} variant="body">
-              {t("login.subtitle")}
-            </AppText>
-          </View>
-        </AnimatedEntrance>
-        <AnimatedEntrance delay={260}>
-          <AppCard contentStyle={styles.panel} frosted>
-            {authError ? <ErrorState message={authError} /> : null}
-            <LoginForm />
-          </AppCard>
-        </AnimatedEntrance>
-      </View>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 24 : 0}
+        style={styles.flex}
+      >
+        <ScrollView
+          contentContainerStyle={styles.shell}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <AnimatedEntrance delay={60} distance={12}>
+            <LoginLogoBadge />
+          </AnimatedEntrance>
+          <AnimatedEntrance delay={160} distance={14}>
+            <View style={styles.header}>
+              <AppText color="primary" style={styles.kicker} variant="label">
+                {t("login.kicker")}
+              </AppText>
+              <AppText style={styles.title} variant="display">
+                {t("login.title")}
+              </AppText>
+              <AppText color="muted" style={styles.subtitle} variant="body">
+                {t("login.subtitle")}
+              </AppText>
+            </View>
+          </AnimatedEntrance>
+          <AnimatedEntrance delay={260}>
+            <AppCard contentStyle={styles.panel} frosted>
+              {authError ? <ErrorState message={authError} /> : null}
+              <LoginForm />
+            </AppCard>
+          </AnimatedEntrance>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  shell: {
+  flex: {
     flex: 1,
+  },
+  shell: {
+    flexGrow: 1,
     justifyContent: "center",
     gap: spacing.lg,
+    paddingBottom: spacing.xl,
   },
   header: {
     gap: 8,

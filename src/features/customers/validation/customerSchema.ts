@@ -6,7 +6,7 @@ export const customerSchema = z.object({
   id: z.string().optional(),
   ownerId: z.string().optional(),
   fullName: z.string().trim().min(1, t("customers:validation.nameRequired")),
-  phone: z.string().trim().min(1, t("customers:validation.phoneRequired")),
+  phone: z.string().trim().optional().default(""),
   address: z.string().trim().min(1, t("customers:validation.addressRequired")),
   city: z.string().trim().min(1, t("customers:validation.cityRequired")),
   normalizedCity: z.string().optional(),

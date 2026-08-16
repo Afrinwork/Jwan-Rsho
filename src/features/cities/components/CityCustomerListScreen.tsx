@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Delete20Regular, Edit20Regular } from "@fluentui/react-native-icons";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
@@ -15,10 +15,12 @@ import { spacing } from "@/src/theme/spacing";
 import { CityCustomerCard } from "@/src/features/cities/components/CityCustomerCard";
 import { CityCustomerFilters } from "@/src/features/cities/components/CityCustomerFilters";
 import { CityProductTotals } from "@/src/features/cities/components/CityProductTotals";
+import { CitySelectionActionsBar } from "@/src/features/cities/components/CitySelectionActionsBar";
 import { CitySelectionBar } from "@/src/features/cities/components/CitySelectionBar";
 import { CitySummaryHeader } from "@/src/features/cities/components/CitySummaryHeader";
 import { RenameCityDialog } from "@/src/features/cities/components/RenameCityDialog";
 import { useCityCustomerSelection } from "@/src/features/cities/hooks/useCityCustomerSelection";
+import { useCitySelectionActions } from "@/src/features/cities/hooks/useCitySelectionActions";
 import { useCityCustomers } from "@/src/features/cities/hooks/useCityCustomers";
 
 type CityCustomerListScreenProps = {
@@ -45,11 +47,21 @@ export function CityCustomerListScreen(props: CityCustomerListScreenProps) {
     renameCity,
     deleting,
     deleteCity,
+    reload,
   } = useCityCustomers(props.normalizedCity);
   const selection = useCityCustomerSelection(customers);
+  const selectedCustomers = useMemo(
+    () => customers.filter((customer) => selection.selectedIds.includes(customer.id)),
+    [customers, selection.selectedIds],
+  );
+  const selectionActions = useCitySelectionActions({
+    selectedCustomers,
+    reload,
+  });
   const [renameVisible, setRenameVisible] = useState(false);
   const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
   const [completeTarget, setCompleteTarget] = useState<string | null>(null);
+  const [completeSelectionVisible, setCompleteSelectionVisible] = useState(false);
 
   if (loading) {
     return <LoadingView label={t("customerList.loading")} />;
@@ -92,8 +104,25 @@ export function CityCustomerListScreen(props: CityCustomerListScreenProps) {
               }
               title={cityDisplayName || undefined}
             />
+            <CitySelectionBar
+              allSelected={selection.allSelected}
+              hasSelection={selection.hasSelection}
+              onClearSelection={selection.clearSelection}
+              onSelectAll={selection.selectAll}
+              selectedCount={selection.selectedCount}
+              totalCount={customers.length}
+            />
+            <CitySelectionActionsBar
+              actionError={selectionActions.actionError}
+              completingAll={selectionActions.completingAll}
+              emailing={selectionActions.emailing}
+              onCompleteAll={() => setCompleteSelectionVisible(true)}
+              onShare={() => void selectionActions.share()}
+              onShareByEmail={() => void selectionActions.shareByEmail()}
+              selectedCount={selection.selectedCount}
+              sharing={selectionActions.sharing}
+            />
             <CityProductTotals totals={productTotals} />
-            <CitySelectionBar selectedCount={selection.selectedCount} />
             <CityCustomerFilters
               onSearchTermChange={setSearchTerm}
               onStatusChange={setStatus}
@@ -158,6 +187,21 @@ export function CityCustomerListScreen(props: CityCustomerListScreenProps) {
         title={t("completeOrder.confirmTitle")}
         visible={Boolean(completeTarget)}
       />
+      <ConfirmDialog
+        destructive
+        message={t("selectionActions.completeSelectedMessage")}
+        onCancel={() => setCompleteSelectionVisible(false)}
+        onConfirm={() => {
+          setCompleteSelectionVisible(false);
+          void selectionActions.completeAllOpenOrders().then((success) => {
+            if (success) {
+              selection.clearSelection();
+            }
+          });
+        }}
+        title={t("selectionActions.completeSelectedTitle", { count: selectionActions.selectedOpenCustomerCount })}
+        visible={completeSelectionVisible}
+      />
     </ScreenContainer>
   );
 }
@@ -167,20 +211,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    gap: 12,
+    gap: 10,
     paddingBottom: 24,
   },
   header: {
-    gap: 12,
-    marginBottom: 12,
+    gap: 10,
+    marginBottom: 8,
   },
   headerActions: {
     flexDirection: "row",
     gap: spacing.xs,
   },
   iconButton: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     borderRadius: radius.pill,
     borderWidth: 1,
     alignItems: "center",

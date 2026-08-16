@@ -132,6 +132,7 @@ export function useCityCustomers(normalizedCity: string) {
     renameCity,
     deleting,
     deleteCity,
+    reload: loadCityData,
     customers: filterCityCustomerItems(items, searchTerm, status),
   };
 }

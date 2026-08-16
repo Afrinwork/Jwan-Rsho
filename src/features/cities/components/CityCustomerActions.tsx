@@ -17,10 +17,10 @@ export function CityCustomerActions(props: CityCustomerActionsProps) {
 
   return (
     <View style={styles.container}>
-      <AppButton label={props.selected ? t("customerActions.deselect") : t("customerActions.select")} onPress={props.onToggleSelection} variant="secondary" />
-      <AppButton label={t("customerActions.details")} onPress={props.onPressDetails} variant="secondary" />
+      <AppButton label={props.selected ? t("customerActions.deselect") : t("customerActions.select")} onPress={props.onToggleSelection} size="compact" variant="secondary" />
+      <AppButton label={t("customerActions.details")} onPress={props.onPressDetails} size="compact" variant="secondary" />
       {props.canComplete ? (
-        <AppButton disabled={props.completing} label={t("customerActions.complete")} loading={props.completing} onPress={props.onComplete} />
+        <AppButton disabled={props.completing} label={t("customerActions.complete")} loading={props.completing} onPress={props.onComplete} size="compact" />
       ) : null}
     </View>
   );
@@ -30,5 +30,7 @@ const styles = StyleSheet.create({
   container: {
     marginTop: 8,
     gap: 8,
+    flexDirection: "row",
+    flexWrap: "wrap",
   },
 });

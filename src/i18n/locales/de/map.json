@@ -27,7 +27,9 @@
   },
   "polygonDraw": {
     "back": "Zurueck",
-    "closeSelection": "Auswahl schliessen"
+    "closeSelection": "Auswahl schliessen",
+    "pause": "Pause",
+    "resume": "Weiter zeichnen"
   },
   "selectedBar": {
     "count": "{{count}} Kunden ausgewaehlt",

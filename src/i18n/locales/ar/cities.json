@@ -43,7 +43,20 @@
     "complete": "إنهاء"
   },
   "selectionBar": {
-    "selectedCount": "{{count}} محدد"
+    "selectedCount": "{{count}} محدد",
+    "selectAll": "تحديد الكل",
+    "clearSelection": "إلغاء التحديد"
+  },
+  "selectionActions": {
+    "title": "إجراءات التحديد",
+    "whatsapp": "واتساب",
+    "email": "Gmail",
+    "completeAll": "إنهاء الكل",
+    "defaultEmailSubject": "قائمة الزبائن المحددة",
+    "noCustomersSelected": "لا يوجد زبائن محددون.",
+    "noOpenOrdersSelected": "لا توجد طلبات مفتوحة ضمن التحديد.",
+    "completeSelectedTitle": "إنهاء الطلبات المفتوحة للعملاء المحددين ({{count}})",
+    "completeSelectedMessage": "سيتم حذف جميع الطلبات المفتوحة للعملاء المحددين نهائيًا بعد الإنهاء. لا يمكن التراجع عن هذا الإجراء."
   },
   "productTotals": {
     "title": "إجمالي المنتجات المفتوحة"

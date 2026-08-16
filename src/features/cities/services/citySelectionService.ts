@@ -6,10 +6,8 @@ export function toggleCustomerSelection(selectedIds: string[], customerId: strin
     : [...selectedIds, customerId];
 }
 
-export function selectAllOpenCustomerIds(customers: CityCustomerItem[]) {
-  return customers
-    .filter((value) => value.status === "open")
-    .map((value) => value.id);
+export function selectAllCustomerIds(customers: CityCustomerItem[]) {
+  return customers.map((value) => value.id);
 }
 
 export function resetCustomerSelection() {

@@ -1,8 +1,11 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { AppInput } from "@/src/components/ui/AppInput";
-import { colors } from "@/src/constants/colors";
+import { AppText } from "@/src/components/ui/AppText";
+import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { radius } from "@/src/theme/radius";
+import { spacing } from "@/src/theme/spacing";
 
 type CityCustomerFiltersProps = {
   searchTerm: string;
@@ -13,6 +16,7 @@ type CityCustomerFiltersProps = {
 
 export function CityCustomerFilters(props: CityCustomerFiltersProps) {
   const { t } = useTranslation("cities");
+  const colors = useThemeColors();
   const options = [
     { label: t("customerFilters.all"), value: "all" },
     { label: t("customerFilters.open"), value: "open" },
@@ -22,12 +26,33 @@ export function CityCustomerFilters(props: CityCustomerFiltersProps) {
 
   return (
     <View style={styles.container}>
-      <AppInput onChangeText={props.onSearchTermChange} placeholder={t("customerFilters.searchPlaceholder")} value={props.searchTerm} />
+      <AppInput
+        onChangeText={props.onSearchTermChange}
+        placeholder={t("customerFilters.searchPlaceholder")}
+        style={styles.searchInput}
+        value={props.searchTerm}
+      />
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={styles.row}>
           {options.map((value) => (
-            <Pressable key={value.value} onPress={() => props.onStatusChange(value.value)} style={[styles.chip, props.selectedStatus === value.value && styles.activeChip]}>
-              <Text style={[styles.label, props.selectedStatus === value.value && styles.activeLabel]}>{value.label}</Text>
+            <Pressable
+              key={value.value}
+              onPress={() => props.onStatusChange(value.value)}
+              style={[
+                styles.chip,
+                {
+                  backgroundColor: props.selectedStatus === value.value ? colors.primary : colors.surface,
+                  borderColor: props.selectedStatus === value.value ? colors.primary : colors.border,
+                },
+              ]}
+            >
+              <AppText
+                color={props.selectedStatus === value.value ? colors.primaryContrast : "default"}
+                style={styles.label}
+                variant="caption"
+              >
+                {value.label}
+              </AppText>
             </Pressable>
           ))}
         </View>
@@ -37,10 +62,18 @@ export function CityCustomerFilters(props: CityCustomerFiltersProps) {
 }
 
 const styles = StyleSheet.create({
-  container: { gap: 12 },
-  row: { flexDirection: "row", gap: 8 },
-  chip: { borderWidth: 1, borderColor: colors.border, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: colors.surface },
-  activeChip: { backgroundColor: colors.primary, borderColor: colors.primary },
-  label: { color: colors.text, fontSize: 14 },
-  activeLabel: { color: colors.surface, fontWeight: "600" },
+  container: { gap: spacing.xs },
+  searchInput: {
+    paddingVertical: 11,
+  },
+  row: { flexDirection: "row", gap: spacing.xs },
+  chip: {
+    borderWidth: 1,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 7,
+  },
+  label: {
+    fontWeight: "700",
+  },
 });
