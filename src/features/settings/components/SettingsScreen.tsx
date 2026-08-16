@@ -7,12 +7,14 @@ import { FormField } from "@/src/components/forms/FormField";
 import { AppButton } from "@/src/components/ui/AppButton";
 import { AppInput } from "@/src/components/ui/AppInput";
 import { AppText } from "@/src/components/ui/AppText";
+import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { LoadingView } from "@/src/components/ui/LoadingView";
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
 import { SuccessState } from "@/src/components/ui/SuccessState";
 import { appConfig } from "@/src/constants/app";
 import { spacing } from "@/src/constants/spacing";
+import { useDeleteAccount } from "@/src/features/settings/hooks/useDeleteAccount";
 import { useLogout } from "@/src/features/settings/hooks/useLogout";
 import { useSettings } from "@/src/features/settings/hooks/useSettings";
 import { SettingsChoiceRow } from "@/src/features/settings/components/SettingsChoiceRow";
@@ -22,6 +24,7 @@ import { SettingsToggleRow } from "@/src/features/settings/components/SettingsTo
 export function SettingsScreen() {
   const { t } = useTranslation("settings");
   const { logout, loading, error } = useLogout();
+  const deleteAccount = useDeleteAccount();
   const settings = useSettings();
 
   if (settings.loading) {
@@ -122,8 +125,25 @@ export function SettingsScreen() {
         <AnimatedEntrance delay={270}><SettingsSection title={t("sections.account")}>
           <AppButton label={settings.saving ? t("actions.saving") : t("actions.save")} loading={settings.saving} onPress={() => void settings.save()} />
           <AppButton label={loading ? t("actions.loggingOut") : t("common:logout")} loading={loading} onPress={logout} variant="secondary" />
+          {deleteAccount.error ? <ErrorState message={deleteAccount.error} /> : null}
+          <AppButton
+            label={deleteAccount.loading ? t("actions.deletingAccount") : t("actions.deleteAccount")}
+            loading={deleteAccount.loading}
+            onPress={deleteAccount.requestDelete}
+            variant="danger"
+          />
         </SettingsSection></AnimatedEntrance>
       </ScrollView>
+      <ConfirmDialog
+        cancelLabel={t("common:cancel")}
+        confirmLabel={t("actions.deleteAccountConfirm")}
+        destructive
+        message={t("actions.deleteAccountMessage")}
+        onCancel={deleteAccount.cancelDelete}
+        onConfirm={() => void deleteAccount.confirmDelete()}
+        title={t("actions.deleteAccountTitle")}
+        visible={deleteAccount.confirming}
+      />
     </ScreenContainer>
   );
 }

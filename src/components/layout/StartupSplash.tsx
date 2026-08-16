@@ -2,15 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { Animated, Easing, StyleSheet } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
-import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { radius } from "@/src/theme/radius";
 
-const splashLogo = require("../../../assets/ChatGPT Image 9. Aug. 2026, 08_10_30.png");
+const splashLogo = require("../../../assets/splash-logo-transparent.png");
 const SPLASH_DURATION_MS = 4000;
 const FADE_OUT_MS = 450;
+const SPLASH_GRADIENT = ["#FFFFFF", "#FFFDF8", "#FBF6EC"] as const;
+const SPLASH_GLOW_COLOR = "rgba(203, 168, 90, 0.16)";
 
 export function StartupSplash() {
-  const colors = useThemeColors();
   const [visible, setVisible] = useState(true);
   const opacity = useRef(new Animated.Value(1)).current;
   const scale = useRef(new Animated.Value(0.82)).current;
@@ -47,12 +47,12 @@ export function StartupSplash() {
   return (
     <Animated.View pointerEvents="none" style={[styles.overlay, { opacity }]}>
       <LinearGradient
-        colors={[colors.primaryStrong, colors.primary, colors.secondary]}
+        colors={SPLASH_GRADIENT}
         end={{ x: 1, y: 1 }}
         start={{ x: 0, y: 0 }}
         style={StyleSheet.absoluteFillObject}
       />
-      <Animated.View style={[styles.glow, { backgroundColor: colors.primaryMuted, transform: [{ scale }] }]} />
+      <Animated.View style={[styles.glow, { backgroundColor: SPLASH_GLOW_COLOR, transform: [{ scale }] }]} />
       <Animated.Image
         resizeMode="contain"
         source={splashLogo}

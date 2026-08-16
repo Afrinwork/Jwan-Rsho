@@ -42,7 +42,12 @@
   "actions": {
     "save": "حفظ الإعدادات",
     "saving": "جارٍ الحفظ...",
-    "loggingOut": "جارٍ تسجيل الخروج..."
+    "loggingOut": "جارٍ تسجيل الخروج...",
+    "deleteAccount": "حذف الحساب",
+    "deletingAccount": "جارٍ حذف الحساب...",
+    "deleteAccountTitle": "حذف الحساب نهائيًا؟",
+    "deleteAccountMessage": "سيتم حذف حسابك وجميع بياناتك (العملاء والطلبات والإعدادات) نهائيًا. لا يمكن التراجع عن هذا الإجراء.",
+    "deleteAccountConfirm": "حذف نهائي"
   },
   "saveSuccess": "تم حفظ الإعدادات."
 }

@@ -1,5 +1,6 @@
+import { useEffect, useRef } from "react";
 import { Controller } from "react-hook-form";
-import { StyleSheet, View } from "react-native";
+import { Animated, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
@@ -11,9 +12,27 @@ import { PasswordField } from "@/src/features/auth/components/PasswordField";
 export function LoginForm() {
   const { t } = useTranslation("auth");
   const { form, submit, submitError } = useLogin();
+  const shake = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!submitError) {
+      return;
+    }
+
+    shake.setValue(0);
+    Animated.sequence([
+      Animated.timing(shake, { toValue: 1, duration: 60, useNativeDriver: true }),
+      Animated.timing(shake, { toValue: -1, duration: 60, useNativeDriver: true }),
+      Animated.timing(shake, { toValue: 0.6, duration: 60, useNativeDriver: true }),
+      Animated.timing(shake, { toValue: -0.6, duration: 60, useNativeDriver: true }),
+      Animated.timing(shake, { toValue: 0, duration: 60, useNativeDriver: true }),
+    ]).start();
+  }, [shake, submitError]);
+
+  const translateX = shake.interpolate({ inputRange: [-1, 1], outputRange: [-10, 10] });
 
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container, { transform: [{ translateX }] }]}>
       <Controller
         control={form.control}
         name="email"
@@ -35,7 +54,7 @@ export function LoginForm() {
         label={form.formState.isSubmitting ? t("login.submitting") : t("login.submit")}
         onPress={submit}
       />
-    </View>
+    </Animated.View>
   );
 }
 
