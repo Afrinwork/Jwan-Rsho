@@ -13,7 +13,7 @@ type AppButtonProps = {
   onPress: () => void;
   disabled?: boolean;
   loading?: boolean;
-  variant?: "primary" | "secondary" | "danger";
+  variant?: "primary" | "secondary" | "danger" | "success";
   size?: "medium" | "compact";
 };
 
@@ -34,8 +34,22 @@ export function AppButton({
       disabled={isDisabled}
       onPress={onPress}
       style={({ pressed }) => {
-        const backgroundColor = variant === "secondary" ? colors.surfaceMuted : variant === "danger" ? colors.danger : colors.primary;
-        const borderColor = variant === "secondary" ? colors.border : variant === "danger" ? colors.danger : colors.primaryStrong;
+        const backgroundColor =
+          variant === "secondary"
+            ? colors.surfaceMuted
+            : variant === "danger"
+              ? colors.danger
+              : variant === "success"
+                ? colors.success
+                : colors.primary;
+        const borderColor =
+          variant === "secondary"
+            ? colors.border
+            : variant === "danger"
+              ? colors.danger
+              : variant === "success"
+                ? colors.success
+                : colors.primaryStrong;
 
         return [
           styles.button,
@@ -45,7 +59,7 @@ export function AppButton({
             borderColor,
             opacity: isDisabled ? 0.55 : 1,
             transform: [{ scale: pressed && !isDisabled ? 0.985 : 1 }],
-            shadowColor: variant === "primary" ? colors.primary : colors.shadow,
+            shadowColor: variant === "primary" || variant === "success" ? backgroundColor : colors.shadow,
           },
           pressed && !isDisabled ? styles.buttonPressed : null,
         ];
@@ -54,7 +68,13 @@ export function AppButton({
       {variant === "secondary" ? <View style={[styles.secondaryFill, { backgroundColor: colors.surfaceMuted }]} /> : null}
       {variant !== "secondary" ? (
         <LinearGradient
-          colors={variant === "danger" ? [colors.danger, "#D92D20"] : [colors.primary, colors.primaryStrong]}
+          colors={
+            variant === "danger"
+              ? [colors.danger, "#D92D20"]
+              : variant === "success"
+                ? [colors.success, "#039855"]
+                : [colors.primary, colors.primaryStrong]
+          }
           end={{ x: 1, y: 1 }}
           start={{ x: 0, y: 0 }}
           style={StyleSheet.absoluteFillObject}

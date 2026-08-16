@@ -35,7 +35,7 @@ export function CityCustomerCard(props: CityCustomerCardProps) {
       <AppText color="muted" style={styles.meta} variant="body">
         {props.customer.currentOpenOrderLabel ?? t("customerList.noOpenOrder")}
       </AppText>
-      <AppText color="primary" style={styles.status} variant="bodyMedium">
+      <AppText color={statusColor(props.customer.status)} style={styles.status} variant="bodyMedium">
         {labelForStatus(props.customer.status, t)}
       </AppText>
       <CityCustomerActions canComplete={Boolean(props.customer.currentOpenOrderId)} completing={props.completing} onComplete={props.onComplete} onPressDetails={props.onPressDetails} onToggleSelection={props.onToggleSelection} selected={props.selected} />
@@ -53,6 +53,18 @@ function labelForStatus(status: CityCustomerItem["status"], t: (key: string) => 
   }
 
   return t("customerStatus.noOpenOrder");
+}
+
+function statusColor(status: CityCustomerItem["status"]) {
+  if (status === "open") {
+    return "danger";
+  }
+
+  if (status === "completed") {
+    return "success";
+  }
+
+  return "muted";
 }
 
 const styles = StyleSheet.create({

@@ -38,5 +38,12 @@ export function useCityCustomerSelection(customers: CityCustomerItem[]) {
       setSelectedIds((value) => toggleCustomerSelection(value, customerId)),
     selectAll: () => setSelectedIds(selectAllCustomerIds(customers)),
     clearSelection: () => setSelectedIds(resetCustomerSelection()),
+    toggleSelectAll: () =>
+      setSelectedIds((value) =>
+        visibleCustomerIds.length > 0 &&
+        visibleCustomerIds.every((customerId) => value.includes(customerId))
+          ? resetCustomerSelection()
+          : selectAllCustomerIds(customers),
+      ),
   };
 }

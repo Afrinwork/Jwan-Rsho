@@ -10,7 +10,6 @@ import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
 import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
 import { LoadingView } from "@/src/components/ui/LoadingView";
 import { spacing } from "@/src/constants/spacing";
-import { shadows } from "@/src/theme/shadows";
 import { CustomerMarker } from "@/src/features/map/components/CustomerMarker";
 import { MapCustomerSheet } from "@/src/features/map/components/MapCustomerSheet";
 import { MapFilters } from "@/src/features/map/components/MapFilters";
@@ -27,14 +26,12 @@ import { useMapCustomerSelection } from "@/src/features/map/hooks/useMapCustomer
 import { useMapFilters } from "@/src/features/map/hooks/useMapFilters";
 import { mapClusteringService } from "@/src/features/map/services/mapClusteringService";
 import { useUserLocation } from "@/src/features/map/hooks/useUserLocation";
-import { useThemeColors } from "@/src/hooks/useThemeColors";
 
 const TAB_BAR_CLEARANCE = 68 + 14 + spacing.sm;
 
 export function MapScreen() {
   const mapRef = useRef<MapView | null>(null);
   const router = useRouter();
-  const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const t = mapT;
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
@@ -134,7 +131,7 @@ export function MapScreen() {
       </MapView>
 
       <SafeAreaView edges={["top"]} pointerEvents="box-none" style={styles.topOverlay}>
-        <View style={[styles.topOverlayContent, { backgroundColor: colors.background, shadowColor: colors.shadow }]}>
+        <View style={styles.topOverlayContent}>
           <AnimatedEntrance>
             <MapToolbar
               customersError={customersError}
@@ -147,36 +144,42 @@ export function MapScreen() {
             />
           </AnimatedEntrance>
           <AnimatedEntrance delay={40}>
-            <MapFilters
-              cityOptions={cityOptions}
-              countryOptions={countryOptions}
-              filters={filters}
-              onCityChange={selectCity}
-              onCountryChange={selectCountry}
-              onRegionChange={selectRegion}
-              onReset={resetFilters}
-              regionOptions={regionOptions}
-            />
-          </AnimatedEntrance>
-          {!drawingSelection ? (
-            <SelectedCustomersBar
-              emailing={customerSelection.emailing}
-              onResetSelection={customerSelection.resetSelection}
-              onShare={() => void customerSelection.share()}
-              onShareByEmail={() => void customerSelection.shareByEmail()}
-              onViewSelection={customerSelection.openList}
-              selectedCount={customerSelection.selectedMarkers.length}
-              shareError={customerSelection.shareError}
-              sharing={customerSelection.sharing}
-            />
-          ) : null}
-          <AnimatedEntrance delay={60}>
             <MapSelectionToolbar
               activeTool={customerSelection.selection.activeTool}
               onResetSelection={customerSelection.resetSelection}
               onSelectTool={customerSelection.selection.selectTool}
+              rightSlot={
+                <View style={styles.inlineControls}>
+                  <MapFilters
+                    cityOptions={cityOptions}
+                    countryOptions={countryOptions}
+                    filters={filters}
+                    inline
+                    onCityChange={selectCity}
+                    onCountryChange={selectCountry}
+                    onRegionChange={selectRegion}
+                    onReset={resetFilters}
+                    regionOptions={regionOptions}
+                  />
+                </View>
+              }
             />
           </AnimatedEntrance>
+          {!drawingSelection ? (
+            <AnimatedEntrance delay={80}>
+              <SelectedCustomersBar
+                emailing={customerSelection.emailing}
+                inline
+                onResetSelection={customerSelection.resetSelection}
+                onShare={() => void customerSelection.share()}
+                onShareByEmail={() => void customerSelection.shareByEmail()}
+                onViewSelection={customerSelection.openList}
+                selectedCount={customerSelection.selectedMarkers.length}
+                shareError={customerSelection.shareError}
+                sharing={customerSelection.sharing}
+              />
+            </AnimatedEntrance>
+          ) : null}
         </View>
       </SafeAreaView>
 
@@ -250,9 +253,11 @@ const styles = StyleSheet.create({
   topOverlayContent: {
     padding: spacing.sm,
     gap: spacing.xs,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    ...shadows.md,
+  },
+  inlineControls: {
+    flexDirection: "row",
+    gap: spacing.xs,
+    alignItems: "flex-start",
   },
   bottomOverlay: {
     position: "absolute",

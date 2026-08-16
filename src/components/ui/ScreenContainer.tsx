@@ -1,5 +1,5 @@
 import { PropsWithChildren } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -7,7 +7,11 @@ import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { radius } from "@/src/theme/radius";
 import { spacing } from "@/src/theme/spacing";
 
-export function ScreenContainer({ children }: PropsWithChildren) {
+type ScreenContainerProps = PropsWithChildren<{
+  contentStyle?: StyleProp<ViewStyle>;
+}>;
+
+export function ScreenContainer({ children, contentStyle }: ScreenContainerProps) {
   const colors = useThemeColors();
 
   return (
@@ -20,7 +24,7 @@ export function ScreenContainer({ children }: PropsWithChildren) {
       />
       <View style={[styles.backdropGlow, { backgroundColor: colors.primaryMuted }]} />
       <View style={[styles.backdropGlowSecondary, { backgroundColor: colors.secondaryMuted }]} />
-      <View style={styles.content}>{children}</View>
+      <View style={[styles.content, contentStyle]}>{children}</View>
     </SafeAreaView>
   );
 }

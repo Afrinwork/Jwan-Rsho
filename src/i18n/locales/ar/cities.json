@@ -25,11 +25,7 @@
     "noOpenOrder": "لا يوجد طلب مفتوح"
   },
   "customerFilters": {
-    "searchPlaceholder": "البحث بالاسم أو الهاتف أو الشارع",
-    "all": "الكل",
-    "open": "مفتوح",
-    "completed": "مكتمل",
-    "noOpenOrder": "بدون طلب مفتوح"
+    "searchPlaceholder": "البحث بالاسم أو الهاتف أو الشارع"
   },
   "customerStatus": {
     "open": "الحالة: مفتوح",
@@ -48,7 +44,7 @@
     "clearSelection": "إلغاء التحديد"
   },
   "selectionActions": {
-    "title": "إجراءات التحديد",
+    "dropdown": "مشاركة",
     "whatsapp": "واتساب",
     "email": "Gmail",
     "completeAll": "إنهاء الكل",

@@ -4,7 +4,6 @@ import { mapT } from "@/src/features/map/i18n/mapT";
 import { AppButton } from "@/src/components/ui/AppButton";
 import { AppCard } from "@/src/components/ui/AppCard";
 import { AppText } from "@/src/components/ui/AppText";
-import { CompactScreenHeader } from "@/src/components/ui/CompactScreenHeader";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { spacing } from "@/src/theme/spacing";
 
@@ -23,7 +22,6 @@ export function MapToolbar(props: MapToolbarProps) {
 
   return (
     <View style={styles.container}>
-      <CompactScreenHeader subtitle={t("toolbar.subtitle")} title={t("toolbar.title")} />
       {props.locationError ? (
         <View style={styles.banner}>
           <ErrorState message={props.locationError} />
@@ -50,7 +48,7 @@ export function MapToolbar(props: MapToolbarProps) {
 }
 
 const styles = StyleSheet.create({
-  container: { gap: spacing.md },
+  container: { gap: spacing.sm },
   banner: { gap: spacing.sm },
   statusCard: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
 });

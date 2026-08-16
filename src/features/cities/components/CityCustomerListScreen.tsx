@@ -9,8 +9,8 @@ import { EmptyState } from "@/src/components/ui/EmptyState";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { LoadingView } from "@/src/components/ui/LoadingView";
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
-import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { radius } from "@/src/theme/radius";
+import { shadows } from "@/src/theme/shadows";
 import { spacing } from "@/src/theme/spacing";
 import { CityCustomerCard } from "@/src/features/cities/components/CityCustomerCard";
 import { CityCustomerFilters } from "@/src/features/cities/components/CityCustomerFilters";
@@ -29,7 +29,6 @@ type CityCustomerListScreenProps = {
 
 export function CityCustomerListScreen(props: CityCustomerListScreenProps) {
   const router = useRouter();
-  const colors = useThemeColors();
   const { t } = useTranslation("cities");
   const {
     loading,
@@ -37,8 +36,6 @@ export function CityCustomerListScreen(props: CityCustomerListScreenProps) {
     customers,
     searchTerm,
     setSearchTerm,
-    status,
-    setStatus,
     productTotals,
     completeOrder,
     completingOrderId,
@@ -68,8 +65,10 @@ export function CityCustomerListScreen(props: CityCustomerListScreenProps) {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer contentStyle={styles.screenContent}>
       <FlatList
+        automaticallyAdjustContentInsets={false}
+        contentInsetAdjustmentBehavior="never"
         contentContainerStyle={styles.content}
         data={customers}
         keyExtractor={(item) => item.id}
@@ -81,54 +80,87 @@ export function CityCustomerListScreen(props: CityCustomerListScreenProps) {
         }
         ListHeaderComponent={
           <View style={styles.header}>
-            <CitySummaryHeader
-              cityCount={customers.length}
-              rightSlot={
-                cityDisplayName ? (
-                  <View style={styles.headerActions}>
-                    <Pressable
-                      onPress={() => setRenameVisible(true)}
-                      style={[styles.iconButton, { backgroundColor: colors.primaryMuted, borderColor: colors.border }]}
-                    >
-                      <Edit20Regular color={colors.primary} />
-                    </Pressable>
-                    <Pressable
-                      disabled={deleting}
-                      onPress={() => setDeleteConfirmVisible(true)}
-                      style={[styles.iconButton, { backgroundColor: colors.dangerBackground, borderColor: colors.border, opacity: deleting ? 0.5 : 1 }]}
-                    >
-                      <Delete20Regular color={colors.danger} />
-                    </Pressable>
-                  </View>
-                ) : null
-              }
-              title={cityDisplayName || undefined}
-            />
-            <CitySelectionBar
-              allSelected={selection.allSelected}
-              hasSelection={selection.hasSelection}
-              onClearSelection={selection.clearSelection}
-              onSelectAll={selection.selectAll}
-              selectedCount={selection.selectedCount}
-              totalCount={customers.length}
-            />
-            <CitySelectionActionsBar
-              actionError={selectionActions.actionError}
-              completingAll={selectionActions.completingAll}
-              emailing={selectionActions.emailing}
-              onCompleteAll={() => setCompleteSelectionVisible(true)}
-              onShare={() => void selectionActions.share()}
-              onShareByEmail={() => void selectionActions.shareByEmail()}
-              selectedCount={selection.selectedCount}
-              sharing={selectionActions.sharing}
-            />
-            <CityProductTotals totals={productTotals} />
-            <CityCustomerFilters
-              onSearchTermChange={setSearchTerm}
-              onStatusChange={setStatus}
-              searchTerm={searchTerm}
-              selectedStatus={status}
-            />
+            <View
+              style={[
+                styles.topCard,
+                {
+                  backgroundColor: "#050816",
+                  borderColor: "rgba(148, 163, 184, 0.18)",
+                  shadowColor: "#020617",
+                },
+              ]}
+            >
+              <CitySummaryHeader
+                cityCount={customers.length}
+                inverted
+                rightSlot={
+                  cityDisplayName ? (
+                    <View style={styles.headerActions}>
+                      <Pressable
+                        onPress={() => setRenameVisible(true)}
+                        style={[
+                          styles.iconButton,
+                          styles.topCardButton,
+                          {
+                            backgroundColor: "rgba(255,255,255,0.08)",
+                            borderColor: "rgba(255,255,255,0.14)",
+                          },
+                        ]}
+                      >
+                        <Edit20Regular color="#F8FAFC" />
+                      </Pressable>
+                      <Pressable
+                        disabled={deleting}
+                        onPress={() => setDeleteConfirmVisible(true)}
+                        style={[
+                          styles.iconButton,
+                          styles.topCardButton,
+                          {
+                            backgroundColor: "rgba(127, 29, 29, 0.34)",
+                            borderColor: "rgba(252, 165, 165, 0.2)",
+                            opacity: deleting ? 0.5 : 1,
+                          },
+                        ]}
+                      >
+                        <Delete20Regular color="#FCA5A5" />
+                      </Pressable>
+                    </View>
+                  ) : null
+                }
+                title={cityDisplayName || undefined}
+              />
+              <CityProductTotals embedded inverted totals={productTotals} />
+            </View>
+            <View style={styles.controlsRow}>
+              <View style={styles.selectionColumn}>
+                <CitySelectionBar
+                  actionSlot={
+                    selection.selectedCount > 0 ? (
+                      <CitySelectionActionsBar
+                        actionError={selectionActions.actionError}
+                        completingAll={selectionActions.completingAll}
+                        emailing={selectionActions.emailing}
+                        onCompleteAll={() => setCompleteSelectionVisible(true)}
+                        onShare={() => void selectionActions.share()}
+                        onShareByEmail={() => void selectionActions.shareByEmail()}
+                        selectedCount={selection.selectedCount}
+                        sharing={selectionActions.sharing}
+                      />
+                    ) : null
+                  }
+                  allSelected={selection.allSelected}
+                  onToggleSelectAll={selection.toggleSelectAll}
+                  selectedCount={selection.selectedCount}
+                  totalCount={customers.length}
+                />
+              </View>
+              <View style={styles.searchColumn}>
+                <CityCustomerFilters
+                  onSearchTermChange={setSearchTerm}
+                  searchTerm={searchTerm}
+                />
+              </View>
+            </View>
             {error ? <ErrorState message={error} /> : null}
           </View>
         }
@@ -214,13 +246,40 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingBottom: 24,
   },
+  screenContent: {
+    paddingTop: 0,
+  },
   header: {
     gap: 10,
     marginBottom: 8,
   },
+  controlsRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+  },
+  selectionColumn: {
+    flex: 1,
+    minWidth: 220,
+  },
+  searchColumn: {
+    flex: 1,
+    minWidth: 220,
+  },
+  topCard: {
+    borderWidth: 1,
+    borderRadius: radius.card,
+    padding: spacing.lg,
+    gap: spacing.md,
+    ...shadows.lg,
+  },
   headerActions: {
     flexDirection: "row",
     gap: spacing.xs,
+  },
+  topCardButton: {
+    shadowColor: "transparent",
   },
   iconButton: {
     width: 36,

@@ -10,9 +10,11 @@ import { CityProductTotal } from "@/src/features/cities/types/cityProductTotalTy
 
 type CityProductTotalsProps = {
   totals: CityProductTotal[];
+  embedded?: boolean;
+  inverted?: boolean;
 };
 
-export function CityProductTotals({ totals }: CityProductTotalsProps) {
+export function CityProductTotals({ totals, embedded = false, inverted = false }: CityProductTotalsProps) {
   const { t } = useTranslation("cities");
   const colors = useThemeColors();
 
@@ -25,12 +27,12 @@ export function CityProductTotals({ totals }: CityProductTotalsProps) {
       style={[
         styles.card,
         {
-          backgroundColor: colors.surfaceMuted,
-          borderColor: colors.border,
+          backgroundColor: embedded ? "rgba(255, 255, 255, 0.04)" : colors.surfaceMuted,
+          borderColor: embedded ? "rgba(255, 255, 255, 0.08)" : colors.border,
         },
       ]}
     >
-      <AppText style={styles.title} variant="caption">
+      <AppText color={inverted ? "#F8FAFC" : "default"} style={styles.title} variant="caption">
         {t("productTotals.title")}
       </AppText>
       <View style={styles.items}>
@@ -40,12 +42,12 @@ export function CityProductTotals({ totals }: CityProductTotalsProps) {
             style={[
               styles.itemChip,
               {
-                backgroundColor: colors.surface,
-                borderColor: colors.border,
+                backgroundColor: embedded ? "rgba(255, 255, 255, 0.08)" : colors.surface,
+                borderColor: embedded ? "rgba(255, 255, 255, 0.12)" : colors.border,
               },
             ]}
           >
-            <AppText color="muted" style={styles.itemText} variant="caption">
+            <AppText color={inverted ? "#E2E8F0" : "muted"} style={styles.itemText} variant="caption">
               {value.productName}: {value.quantity} {value.unit}
             </AppText>
           </View>
@@ -59,9 +61,9 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderRadius: radius.lg,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    gap: spacing.xs,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    gap: spacing.sm,
   },
   title: {
     fontWeight: "700",
@@ -75,7 +77,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: radius.pill,
     paddingHorizontal: spacing.sm,
-    paddingVertical: 6,
+    paddingVertical: 7,
   },
   itemText: {},
 });

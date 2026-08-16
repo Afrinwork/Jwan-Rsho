@@ -17,7 +17,6 @@ export function useCityCustomers(normalizedCity: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [status, setStatus] = useState("all");
   const [items, setItems] = useState<CityCustomerItem[]>([]);
   const [cityEntity, setCityEntity] = useState<City | null>(null);
   const [productTotals, setProductTotals] = useState<CityProductTotal[]>([]);
@@ -122,8 +121,6 @@ export function useCityCustomers(normalizedCity: string) {
     error,
     searchTerm,
     setSearchTerm,
-    status,
-    setStatus,
     productTotals,
     completeOrder,
     completingOrderId,
@@ -133,6 +130,6 @@ export function useCityCustomers(normalizedCity: string) {
     deleting,
     deleteCity,
     reload: loadCityData,
-    customers: filterCityCustomerItems(items, searchTerm, status),
+    customers: filterCityCustomerItems(items, searchTerm),
   };
 }

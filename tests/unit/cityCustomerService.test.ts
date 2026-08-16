@@ -18,13 +18,13 @@ test("city customer items expose current open order and status", () => {
   assert.equal(items[1]?.status, "completed");
 });
 
-test("city customer filters search and status correctly", () => {
+test("city customer filters search correctly", () => {
   const items = [
     { id: "c1", fullName: "Ahmad", phone: "123", address: "Main 1", city: "Hamburg", currentOpenOrderId: "o1", currentOpenOrderLabel: "Offen seit 8/8/2026", status: "open" as const },
     { id: "c2", fullName: "Sara", phone: "456", address: "River 2", city: "Hamburg", currentOpenOrderId: null, currentOpenOrderLabel: null, status: "no-open-order" as const },
   ];
 
-  assert.equal(filterCityCustomerItems(items, "Ahm", "all").length, 1);
-  assert.equal(filterCityCustomerItems(items, "", "open").length, 1);
-  assert.equal(filterCityCustomerItems(items, "", "no-open-order").length, 1);
+  assert.equal(filterCityCustomerItems(items, "Ahm").length, 1);
+  assert.equal(filterCityCustomerItems(items, "River").length, 1);
+  assert.equal(filterCityCustomerItems(items, "").length, 2);
 });

@@ -10,12 +10,11 @@ export function buildCityCustomerItems(customers: Customer[], orders: Order[]) {
     .sort((left, right) => left.fullName.localeCompare(right.fullName));
 }
 
-export function filterCityCustomerItems(items: CityCustomerItem[], searchTerm: string, status: string) {
+export function filterCityCustomerItems(items: CityCustomerItem[], searchTerm: string) {
   const term = searchTerm.trim().toLowerCase();
   return items.filter((value) => {
     const matchesSearch = !term || [value.fullName, value.phone, value.address].some((field) => field.toLowerCase().includes(term));
-    const matchesStatus = status === "all" || value.status === status;
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 }
 

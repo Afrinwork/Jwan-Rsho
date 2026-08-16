@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
@@ -10,9 +11,8 @@ type CitySelectionBarProps = {
   selectedCount: number;
   totalCount: number;
   allSelected: boolean;
-  hasSelection: boolean;
-  onSelectAll: () => void;
-  onClearSelection: () => void;
+  onToggleSelectAll: () => void;
+  actionSlot?: ReactNode;
 };
 
 export function CitySelectionBar(props: CitySelectionBarProps) {
@@ -44,37 +44,22 @@ export function CitySelectionBar(props: CitySelectionBarProps) {
           </AppText>
         </View>
         <Pressable
-          disabled={!props.totalCount || props.allSelected}
-          onPress={props.onSelectAll}
+          disabled={!props.totalCount}
+          onPress={props.onToggleSelectAll}
           style={[
             styles.actionChip,
             {
               backgroundColor: props.allSelected ? colors.primaryMuted : colors.surface,
               borderColor: props.allSelected ? colors.primary : colors.border,
-              opacity: !props.totalCount || props.allSelected ? 0.65 : 1,
+              opacity: !props.totalCount ? 0.65 : 1,
             },
           ]}
         >
           <AppText color={props.allSelected ? "primary" : "default"} style={styles.actionText} variant="caption">
-            {t("selectionBar.selectAll")}
+            {props.allSelected ? t("selectionBar.clearSelection") : t("selectionBar.selectAll")}
           </AppText>
         </Pressable>
-        {props.hasSelection ? (
-          <Pressable
-            onPress={props.onClearSelection}
-            style={[
-              styles.actionChip,
-              {
-                backgroundColor: colors.dangerBackground,
-                borderColor: colors.dangerBorder,
-              },
-            ]}
-          >
-            <AppText color="danger" style={styles.actionText} variant="caption">
-              {t("selectionBar.clearSelection")}
-            </AppText>
-          </Pressable>
-        ) : null}
+        {props.actionSlot}
       </View>
     </View>
   );

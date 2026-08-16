@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { mapT } from "@/src/features/map/i18n/mapT";
 
 import { spacing } from "@/src/constants/spacing";
@@ -15,6 +15,7 @@ type MapFiltersProps = {
   onCityChange: (value: string) => void;
   onRegionChange: (value: string) => void;
   onReset: () => void;
+  inline?: boolean;
 };
 
 type FilterKey = "country" | "city" | "region";
@@ -44,48 +45,48 @@ export function MapFilters(props: MapFiltersProps) {
 
   return (
     <View style={styles.container}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={styles.row}>
-          <Pressable
-            disabled={!hasActiveFilter}
-            onPress={props.onReset}
-            style={[
-              styles.dropdownChip,
-              {
-                backgroundColor: hasActiveFilter ? colors.primary : colors.surface,
-                borderColor: hasActiveFilter ? colors.primaryStrong : colors.border,
-                opacity: hasActiveFilter ? 1 : 0.5,
-              },
-            ]}
-          >
-            <Text style={[styles.chipLabel, { color: hasActiveFilter ? colors.primaryContrast : colors.mutedText }]}>
-              {allLabel}
-            </Text>
-          </Pressable>
-          {categories.map((category) => {
-            const active = Boolean(category.value);
-            const label = active ? category.value : category.label;
+      <View style={[styles.row, props.inline ? styles.inlineRow : null]}>
+        <Pressable
+          disabled={!hasActiveFilter}
+          onPress={props.onReset}
+          style={[
+            styles.dropdownChip,
+            props.inline ? styles.inlineChip : null,
+            {
+              backgroundColor: hasActiveFilter ? colors.primary : colors.surface,
+              borderColor: hasActiveFilter ? colors.primaryStrong : colors.border,
+              opacity: hasActiveFilter ? 1 : 0.5,
+            },
+          ]}
+        >
+          <Text style={[styles.chipLabel, { color: hasActiveFilter ? colors.primaryContrast : colors.mutedText }]}>
+            {allLabel}
+          </Text>
+        </Pressable>
+        {categories.map((category) => {
+          const active = Boolean(category.value);
+          const label = active ? category.value : category.label;
 
-            return (
-              <Pressable
-                key={category.key}
-                onPress={() => setOpenFilter(category.key)}
-                style={[
-                  styles.dropdownChip,
-                  {
-                    backgroundColor: active ? colors.primary : colors.surface,
-                    borderColor: active ? colors.primaryStrong : colors.border,
-                  },
-                ]}
-              >
-                <Text numberOfLines={1} style={[styles.chipLabel, { color: active ? colors.primaryContrast : colors.text }]}>
-                  {label} ▾
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </ScrollView>
+          return (
+            <Pressable
+              key={category.key}
+              onPress={() => setOpenFilter(category.key)}
+              style={[
+                styles.dropdownChip,
+                props.inline ? styles.inlineChip : null,
+                {
+                  backgroundColor: active ? colors.primary : colors.surface,
+                  borderColor: active ? colors.primaryStrong : colors.border,
+                },
+              ]}
+            >
+              <Text numberOfLines={1} style={[styles.chipLabel, { color: active ? colors.primaryContrast : colors.text }]}>
+                {label} v
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
 
       <Modal animationType="fade" onRequestClose={() => setOpenFilter(null)} transparent visible={activeCategory !== null}>
         <View style={styles.overlay}>
@@ -141,6 +142,15 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 14,
     paddingVertical: 10,
+  },
+  inlineRow: {
+    paddingRight: 0,
+  },
+  inlineChip: {
+    minWidth: 76,
+    maxWidth: 150,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
   },
   chipLabel: {
     fontSize: 14,
