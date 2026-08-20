@@ -18,8 +18,9 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
   const activeToolRef = useRef<MapSelectionTool>("none");
   const polygonPointsRef = useRef<MapSelectionPoint[]>([]);
   const polygonBaseSelectedIdsRef = useRef<string[]>([]);
-  const frameRef = useRef<number | null>(null);
+  const frameRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingPolygonPointsRef = useRef<MapSelectionPoint[] | null>(null);
+  const DRAG_THROTTLE_MS = 50;
 
   useEffect(() => {
     activeToolRef.current = activeTool;
@@ -39,7 +40,7 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
 
   useEffect(() => () => {
     if (frameRef.current !== null) {
-      cancelAnimationFrame(frameRef.current);
+      clearTimeout(frameRef.current);
     }
   }, []);
 
@@ -47,7 +48,7 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
     const nextTool = activeToolRef.current === tool ? "none" : tool;
 
     if (frameRef.current !== null) {
-      cancelAnimationFrame(frameRef.current);
+      clearTimeout(frameRef.current);
       frameRef.current = null;
     }
 
@@ -131,7 +132,7 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
         return;
       }
 
-      frameRef.current = requestAnimationFrame(() => {
+      frameRef.current = setTimeout(() => {
         frameRef.current = null;
         const latestPoints = pendingPolygonPointsRef.current;
 
@@ -142,7 +143,7 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
         polygonPointsRef.current = latestPoints;
         setPolygonPoints(latestPoints);
         setSelectedIds(buildPolygonSelection(latestPoints, polygonBaseSelectedIdsRef.current, markers));
-      });
+      }, DRAG_THROTTLE_MS);
     },
     [markers],
   );
@@ -155,7 +156,7 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
     }
 
     if (frameRef.current !== null) {
-      cancelAnimationFrame(frameRef.current);
+      clearTimeout(frameRef.current);
       frameRef.current = null;
     }
 
@@ -181,7 +182,7 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
 
   const resetSelection = useCallback(() => {
     if (frameRef.current !== null) {
-      cancelAnimationFrame(frameRef.current);
+      clearTimeout(frameRef.current);
       frameRef.current = null;
     }
 
