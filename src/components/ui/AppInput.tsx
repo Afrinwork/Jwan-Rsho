@@ -30,7 +30,7 @@ export const AppInput = forwardRef(function AppInput(
       style={[
         styles.input,
         {
-          backgroundColor: colors.surfaceMuted,
+          backgroundColor: colors.surfaceElevated,
           borderColor: focused ? colors.primary : colors.border,
           color: colors.text,
           shadowColor: focused ? colors.primary : "transparent",
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: radius.input,
     paddingHorizontal: spacing.md,
-    paddingVertical: 14,
+    paddingVertical: 15,
     ...typography.body,
     ...shadows.sm,
   },

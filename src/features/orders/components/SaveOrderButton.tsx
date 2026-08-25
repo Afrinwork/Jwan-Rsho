@@ -16,6 +16,7 @@ export function SaveOrderButton({ isSubmitting, onPress }: SaveOrderButtonProps)
       label={isSubmitting ? t("save.saving") : t("save.button")}
       loading={isSubmitting}
       onPress={onPress}
+      size="compact"
     />
   );
 }

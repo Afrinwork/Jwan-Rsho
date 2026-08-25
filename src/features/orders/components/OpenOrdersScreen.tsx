@@ -3,12 +3,12 @@ import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { AppText } from "@/src/components/ui/AppText";
-import { CompactScreenHeader } from "@/src/components/ui/CompactScreenHeader";
 import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
 import { EmptyState } from "@/src/components/ui/EmptyState";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { LoadingView } from "@/src/components/ui/LoadingView";
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
+import { SuccessState } from "@/src/components/ui/SuccessState";
 import { CustomerOpenOrders, useOpenOrdersOverview } from "@/src/features/orders/hooks/useOpenOrdersOverview";
 import { OpenOrdersCustomerCard } from "@/src/features/orders/components/OpenOrdersCustomerCard";
 import { NavigationAppSheet } from "@/src/features/map/components/NavigationAppSheet";
@@ -31,6 +31,7 @@ export function OpenOrdersScreen() {
     loading,
     error,
     actionError,
+    actionSuccess,
     completeOrder,
     deleteOrder,
     pendingActionOrderId,
@@ -71,11 +72,11 @@ export function OpenOrdersScreen() {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer contentStyle={styles.screenContent}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <CompactScreenHeader subtitle={t("openOrders.screenSubtitle")} title={t("openOrders.screenTitle")} />
         {error ? <ErrorState message={error} /> : null}
         {actionError ? <ErrorState message={actionError} /> : null}
+        {actionSuccess ? <SuccessState message={actionSuccess} /> : null}
         {cities.length > 0 ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.filterRow}>
@@ -158,20 +159,23 @@ function CityChip({ label, active, onPress }: CityChipProps) {
 }
 
 const styles = StyleSheet.create({
+  screenContent: {
+    paddingTop: 0,
+  },
   content: {
-    gap: spacing.md,
+    gap: spacing.xs,
     paddingBottom: spacing.xl,
   },
   filterRow: {
     flexDirection: "row",
-    gap: spacing.sm,
+    gap: spacing.xs,
     paddingRight: spacing.sm,
   },
   chip: {
     borderWidth: 1,
     borderRadius: radius.pill,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 10,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 8,
   },
   list: {
     gap: spacing.sm,

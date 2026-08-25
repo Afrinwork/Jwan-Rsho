@@ -1,8 +1,12 @@
 import { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
+import { AppCard } from "@/src/components/ui/AppCard";
+import { AppText } from "@/src/components/ui/AppText";
 import { spacing } from "@/src/constants/spacing";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { radius } from "@/src/theme/radius";
+import { typography } from "@/src/theme/typography";
 
 type ManagementSectionMode = "list" | "create";
 
@@ -18,22 +22,16 @@ type ManagementSectionShellProps = {
 
 export function ManagementSectionShell(props: ManagementSectionShellProps) {
   const colors = useThemeColors();
+  const showHeader = Boolean(props.title.trim() || props.subtitle.trim());
 
   return (
-    <View
-      style={[
-        styles.card,
-        {
-          backgroundColor: colors.surfaceElevated,
-          borderColor: colors.border,
-          shadowColor: colors.shadow,
-        },
-      ]}
-    >
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.text }]}>{props.title}</Text>
-        <Text style={[styles.subtitle, { color: colors.mutedText }]}>{props.subtitle}</Text>
-      </View>
+    <AppCard contentStyle={styles.card} style={{ shadowColor: colors.shadow }}>
+      {showHeader ? (
+        <View style={styles.header}>
+          <AppText variant="heading">{props.title}</AppText>
+          <AppText color="muted" variant="body">{props.subtitle}</AppText>
+        </View>
+      ) : null}
       <View style={[styles.switchRow, { backgroundColor: colors.surfaceMuted, borderColor: colors.border }]}>
         <ModeButton
           active={props.mode === "list"}
@@ -49,7 +47,7 @@ export function ManagementSectionShell(props: ManagementSectionShellProps) {
         />
       </View>
       {props.children}
-    </View>
+    </AppCard>
   );
 }
 
@@ -63,53 +61,41 @@ function ModeButton(props: { active: boolean; label: string; onPress: () => void
         styles.modeButton,
         {
           backgroundColor: props.active ? props.color : "transparent",
+          borderColor: props.active ? props.color : "transparent",
         },
       ]}
     >
-      <Text style={[styles.modeLabel, { color: props.active ? colors.primaryContrast : colors.text }]}>
+      <AppText style={[styles.modeLabel, { color: props.active ? colors.primaryContrast : colors.text }]} variant="bodyMedium">
         {props.label}
-      </Text>
+      </AppText>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 24,
-    borderWidth: 1,
-    padding: spacing.md,
+    padding: spacing.lg,
     gap: spacing.md,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 18,
   },
   header: {
-    gap: 4,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "800",
-  },
-  subtitle: {
-    fontSize: 14,
-    lineHeight: 20,
+    gap: spacing.xs,
   },
   switchRow: {
     flexDirection: "row",
     borderWidth: 1,
-    borderRadius: 18,
+    borderRadius: radius.lg,
     padding: 4,
     gap: 4,
   },
   modeButton: {
     flex: 1,
     borderRadius: 14,
-    paddingVertical: 10,
+    borderWidth: 1,
+    paddingVertical: 11,
     paddingHorizontal: 12,
     alignItems: "center",
   },
   modeLabel: {
-    fontSize: 14,
-    fontWeight: "700",
+    ...typography.label,
   },
 });

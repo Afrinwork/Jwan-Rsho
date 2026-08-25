@@ -21,6 +21,8 @@
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
+    "@expo-google-fonts/lora": "^0.4.2",
+    "@expo-google-fonts/manrope": "^0.4.2",
     "@expo/vector-icons": "^15.0.3",
     "@fluentui/react-native-icons": "^2.0.335",
     "@hookform/resolvers": "^5.7.1",

@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
+import { AppCard } from "@/src/components/ui/AppCard";
 import { AppText } from "@/src/components/ui/AppText";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { radius } from "@/src/theme/radius";
@@ -20,15 +21,7 @@ export function CitySelectionBar(props: CitySelectionBarProps) {
   const { t } = useTranslation("cities");
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: colors.surfaceMuted,
-          borderColor: colors.border,
-        },
-      ]}
-    >
+    <AppCard contentStyle={styles.container}>
       <View style={styles.row}>
         <View
           style={[
@@ -61,16 +54,15 @@ export function CitySelectionBar(props: CitySelectionBarProps) {
         </Pressable>
         {props.actionSlot}
       </View>
-    </View>
+    </AppCard>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    borderWidth: 1,
-    borderRadius: radius.lg,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
+    gap: spacing.xs,
   },
   row: {
     flexDirection: "row",

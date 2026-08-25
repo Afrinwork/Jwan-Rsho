@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { customerRepository } from "@/src/repositories/customerRepository";
 import { orderDetailsRepository } from "@/src/repositories/orderDetailsRepository";
@@ -13,10 +14,12 @@ export type CustomerOpenOrders = {
 };
 
 export function useOpenOrdersOverview() {
+  const { t } = useTranslation("orders");
   const [groups, setGroups] = useState<CustomerOpenOrders[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [pendingActionOrderId, setPendingActionOrderId] = useState<string | null>(null);
   const [pendingActionType, setPendingActionType] = useState<"complete" | "delete" | null>(null);
   const pendingActionOrderIdRef = useRef<string | null>(null);
@@ -55,16 +58,19 @@ export function useOpenOrdersOverview() {
       setPendingActionOrderId(orderId);
       setPendingActionType("complete");
       setActionError(null);
+      setActionSuccess(null);
       await orderRepository.completeOrder(orderId);
+      setActionSuccess(t("openOrders.completeSuccess"));
       await load();
     } catch (value) {
       setActionError(formatError(value).message);
+      setActionSuccess(null);
     } finally {
       pendingActionOrderIdRef.current = null;
       setPendingActionOrderId(null);
       setPendingActionType(null);
     }
-  }, [load]);
+  }, [load, t]);
 
   const deleteOrder = useCallback(async (orderId: string) => {
     if (pendingActionOrderIdRef.current === orderId) {
@@ -76,16 +82,19 @@ export function useOpenOrdersOverview() {
       setPendingActionOrderId(orderId);
       setPendingActionType("delete");
       setActionError(null);
+      setActionSuccess(null);
       await orderRepository.deleteOrder(orderId);
+      setActionSuccess(t("openOrders.deleteSuccess"));
       await load();
     } catch (value) {
       setActionError(formatError(value).message);
+      setActionSuccess(null);
     } finally {
       pendingActionOrderIdRef.current = null;
       setPendingActionOrderId(null);
       setPendingActionType(null);
     }
-  }, [load]);
+  }, [load, t]);
 
   const cities = useMemo(
     () => [...new Set(groups.map((value) => value.customer.city.trim()).filter(Boolean))].sort((left, right) => left.localeCompare(right, "de")),
@@ -98,6 +107,7 @@ export function useOpenOrdersOverview() {
     loading,
     error,
     actionError,
+    actionSuccess,
     completeOrder,
     deleteOrder,
     pendingActionOrderId,

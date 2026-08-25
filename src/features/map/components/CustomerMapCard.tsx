@@ -21,9 +21,6 @@ export function CustomerMapCard({ details }: CustomerMapCardProps) {
       <Text style={[styles.meta, { color: colors.mutedText }]}>
         {details.customer.address}, {details.customer.city}, {details.customer.country}
       </Text>
-      {details.customer.region ? (
-        <Text style={[styles.meta, { color: colors.mutedText }]}>{t("customerCard.region", { region: details.customer.region })}</Text>
-      ) : null}
       {details.customer.note ? (
         <View style={[styles.card, { backgroundColor: colors.background, borderColor: colors.border }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>{t("customerCard.note")}</Text>

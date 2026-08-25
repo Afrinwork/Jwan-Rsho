@@ -9,7 +9,6 @@ export const routes = {
   management: "/(tabs)/management",
   managementProducts: "/management/products",
   managementCountries: "/management/countries",
-  managementRegions: "/management/regions",
   managementCatalog: "/management/catalog",
   settings: "/(tabs)/settings",
   adminUsers: "/admin/users",

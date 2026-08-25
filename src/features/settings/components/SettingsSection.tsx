@@ -7,12 +7,18 @@ import { spacing } from "@/src/theme/spacing";
 
 type SettingsSectionProps = PropsWithChildren<{
   title: string;
+  subtitle?: string;
 }>;
 
-export function SettingsSection({ title, children }: SettingsSectionProps) {
+export function SettingsSection({ title, subtitle, children }: SettingsSectionProps) {
   return (
-    <AppCard contentStyle={styles.card} frosted>
+    <AppCard contentStyle={styles.card}>
       <AppText variant="subheading">{title}</AppText>
+      {subtitle ? (
+        <AppText color="muted" variant="caption">
+          {subtitle}
+        </AppText>
+      ) : null}
       {children}
     </AppCard>
   );
@@ -20,7 +26,7 @@ export function SettingsSection({ title, children }: SettingsSectionProps) {
 
 const styles = StyleSheet.create({
   card: {
-    padding: spacing.md,
+    padding: spacing.lg,
     gap: spacing.sm,
   },
 });

@@ -19,23 +19,24 @@ export function ManagementScreen() {
         <AnimatedEntrance>
           <CompactScreenHeader subtitle={t("screen.subtitle")} title={t("screen.title")} />
         </AnimatedEntrance>
-        <AnimatedEntrance delay={50} style={styles.menu}>
+        <AnimatedEntrance delay={30} style={styles.menu}>
           <ManagementMenuButton
+            icon="products"
+            meta="01"
             onPress={() => router.push(routes.managementProducts)}
             subtitle={t("menu.products.subtitle")}
             title={t("menu.products.title")}
           />
           <ManagementMenuButton
+            icon="countries"
+            meta="02"
             onPress={() => router.push("/management/countries" as never)}
             subtitle={t("menu.countries.subtitle")}
             title={t("menu.countries.title")}
           />
           <ManagementMenuButton
-            onPress={() => router.push(routes.managementRegions)}
-            subtitle={t("menu.regions.subtitle")}
-            title={t("menu.regions.title")}
-          />
-          <ManagementMenuButton
+            icon="catalog"
+            meta="03"
             onPress={() => router.push(routes.managementCatalog)}
             subtitle={t("menu.catalog.subtitle")}
             title={t("menu.catalog.title")}
@@ -52,6 +53,6 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
   },
   menu: {
-    gap: spacing.sm,
+    gap: spacing.md,
   },
 });

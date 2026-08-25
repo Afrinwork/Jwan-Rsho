@@ -42,7 +42,7 @@ export function CitySelectionActionsBar(props: CitySelectionActionsBarProps) {
         ]}
       >
         <AppText style={styles.dropdownLabel} variant="caption">
-          مشاركة {open ? "^" : "v"}
+          {t("selectionActions.dropdown")} {open ? "^" : "v"}
         </AppText>
       </Pressable>
       {props.actionError ? <ErrorState durationMs={4200} message={props.actionError} /> : null}

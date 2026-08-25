@@ -10,15 +10,13 @@ type MapFiltersProps = {
   filters: MapFilterState;
   countryOptions: string[];
   cityOptions: string[];
-  regionOptions: string[];
   onCountryChange: (value: string) => void;
   onCityChange: (value: string) => void;
-  onRegionChange: (value: string) => void;
   onReset: () => void;
   inline?: boolean;
 };
 
-type FilterKey = "country" | "city" | "region";
+type FilterKey = "country" | "city";
 
 type FilterCategory = {
   key: FilterKey;
@@ -36,11 +34,10 @@ export function MapFilters(props: MapFiltersProps) {
   const categories: FilterCategory[] = [
     { key: "country", label: t("filters.country"), value: props.filters.country, options: props.countryOptions, onChange: props.onCountryChange },
     { key: "city", label: t("filters.city"), value: props.filters.city, options: props.cityOptions, onChange: props.onCityChange },
-    { key: "region", label: t("filters.region"), value: props.filters.region, options: props.regionOptions, onChange: props.onRegionChange },
   ];
 
   const activeCategory = categories.find((category) => category.key === openFilter) ?? null;
-  const hasActiveFilter = Boolean(props.filters.country || props.filters.city || props.filters.region);
+  const hasActiveFilter = Boolean(props.filters.country || props.filters.city);
   const allLabel = t("filters.all");
 
   return (

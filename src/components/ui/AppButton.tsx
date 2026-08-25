@@ -36,7 +36,7 @@ export function AppButton({
       style={({ pressed }) => {
         const backgroundColor =
           variant === "secondary"
-            ? colors.surfaceMuted
+            ? colors.surfaceElevated
             : variant === "danger"
               ? colors.danger
               : variant === "success"
@@ -44,7 +44,7 @@ export function AppButton({
                 : colors.primary;
         const borderColor =
           variant === "secondary"
-            ? colors.border
+            ? colors.borderStrong
             : variant === "danger"
               ? colors.danger
               : variant === "success"
@@ -58,14 +58,14 @@ export function AppButton({
             backgroundColor,
             borderColor,
             opacity: isDisabled ? 0.55 : 1,
-            transform: [{ scale: pressed && !isDisabled ? 0.985 : 1 }],
+            transform: [{ scale: pressed && !isDisabled ? 0.988 : 1 }],
             shadowColor: variant === "primary" || variant === "success" ? backgroundColor : colors.shadow,
           },
           pressed && !isDisabled ? styles.buttonPressed : null,
         ];
       }}
     >
-      {variant === "secondary" ? <View style={[styles.secondaryFill, { backgroundColor: colors.surfaceMuted }]} /> : null}
+      {variant === "secondary" ? <View style={[styles.secondaryFill, { backgroundColor: colors.surfaceElevated }]} /> : null}
       {variant !== "secondary" ? (
         <LinearGradient
           colors={
@@ -75,8 +75,8 @@ export function AppButton({
                 ? [colors.success, "#039855"]
                 : [colors.primary, colors.primaryStrong]
           }
-          end={{ x: 1, y: 1 }}
-          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0.9 }}
+          start={{ x: 0.1, y: 0 }}
           style={StyleSheet.absoluteFillObject}
         />
       ) : null}
@@ -101,13 +101,13 @@ const styles = StyleSheet.create({
     borderRadius: radius.button,
     borderWidth: 1,
     paddingHorizontal: spacing.md,
-    paddingVertical: 14,
+    paddingVertical: 15,
     alignItems: "center",
     justifyContent: "center",
     ...shadows.md,
   },
   buttonPressed: {
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.12,
   },
   secondaryFill: {
     ...StyleSheet.absoluteFillObject,
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
   },
   label: {
-    letterSpacing: 0.2,
+    letterSpacing: 0.1,
   },
   labelCompact: {
     ...typography.label,

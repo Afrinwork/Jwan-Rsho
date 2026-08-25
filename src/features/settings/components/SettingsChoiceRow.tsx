@@ -25,7 +25,7 @@ export function SettingsChoiceRow(props: SettingsChoiceRowProps) {
       <AppText color="muted" variant="label">
         {props.label}
       </AppText>
-      <View style={styles.row}>
+      <View style={[styles.row, { backgroundColor: colors.surfaceMuted, borderColor: colors.border }]}>
         {props.options.map((option) => {
           const active = props.value === option.value;
           return (
@@ -35,8 +35,8 @@ export function SettingsChoiceRow(props: SettingsChoiceRowProps) {
               style={[
                 styles.chip,
                 {
-                  backgroundColor: active ? colors.primary : colors.surfaceMuted,
-                  borderColor: active ? colors.primaryStrong : colors.border,
+                  backgroundColor: active ? colors.primary : colors.surfaceElevated,
+                  borderColor: active ? colors.primaryStrong : "transparent",
                 },
               ]}
             >
@@ -53,6 +53,20 @@ export function SettingsChoiceRow(props: SettingsChoiceRowProps) {
 
 const styles = StyleSheet.create({
   container: { gap: spacing.xs },
-  row: { flexDirection: "row", gap: spacing.xs, flexWrap: "wrap" },
-  chip: { borderWidth: 1, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 8 },
+  row: {
+    flexDirection: "row",
+    gap: spacing.xs,
+    flexWrap: "wrap",
+    borderWidth: 1,
+    borderRadius: radius.lg,
+    padding: spacing.xs,
+  },
+  chip: {
+    borderWidth: 1,
+    borderRadius: radius.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    minWidth: 88,
+    alignItems: "center",
+  },
 });

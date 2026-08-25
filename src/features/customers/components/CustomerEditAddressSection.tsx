@@ -6,7 +6,6 @@ import { FormField } from "@/src/components/forms/FormField";
 import { AppInput } from "@/src/components/ui/AppInput";
 import { CountrySelectField } from "@/src/features/countries/components/CountrySelectField";
 import { CitySelectField } from "@/src/features/customers/components/CitySelectField";
-import { RegionSelectField } from "@/src/features/regions/components/RegionSelectField";
 import { spacing } from "@/src/constants/spacing";
 import { CustomerEditFormValues } from "@/src/features/customers/validation/customerEditSchema";
 
@@ -56,18 +55,6 @@ export function CustomerEditAddressSection({
           <CitySelectField
             country={countryValue}
             error={errors?.city?.message}
-            onChange={field.onChange}
-            value={field.value ?? ""}
-          />
-        )}
-      />
-      <Controller
-        control={control}
-        name="customer.region"
-        render={({ field }) => (
-          <RegionSelectField
-            country={countryValue}
-            error={errors?.region?.message}
             onChange={field.onChange}
             value={field.value ?? ""}
           />

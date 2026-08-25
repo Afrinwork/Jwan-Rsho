@@ -50,7 +50,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   eyebrow: {
-    letterSpacing: 1.4,
+    letterSpacing: 1.1,
+    textTransform: "uppercase",
   },
   title: {},
   subtitle: {},

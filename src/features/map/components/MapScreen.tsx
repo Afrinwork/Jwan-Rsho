@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 import { StyleSheet, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import MapView from "react-native-maps";
 import { mapT } from "@/src/features/map/i18n/mapT";
@@ -30,6 +31,7 @@ import { useUserLocation } from "@/src/features/map/hooks/useUserLocation";
 const TAB_BAR_CLEARANCE = 68 + 14 + spacing.sm;
 
 export function MapScreen() {
+  const { t: actionT } = useTranslation("map");
   const mapRef = useRef<MapView | null>(null);
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -38,7 +40,7 @@ export function MapScreen() {
   const [completeConfirmVisible, setCompleteConfirmVisible] = useState(false);
   const { error, hasPermission, isLoading, region, reload } = useUserLocation();
   const { error: customersError, isLoading: customersLoading, markers, reload: reloadCustomers } = useMapCustomers();
-  const { filters, filteredMarkers, countryOptions, cityOptions, regionOptions, resetFilters, selectCity, selectCountry, selectRegion } = useMapFilters(markers);
+  const { filters, filteredMarkers, countryOptions, cityOptions, resetFilters, selectCity, selectCountry } = useMapFilters(markers);
   const [visibleRegion, setVisibleRegion] = useState(region);
   const { details, error: detailsError, isLoading: detailsLoading, reload: reloadDetails } = useMapCustomerDetails(selectedCustomerId);
   const selectedMarker = useMemo(() => filteredMarkers.find((value) => value.id === selectedCustomerId) ?? null, [filteredMarkers, selectedCustomerId]);
@@ -157,9 +159,7 @@ export function MapScreen() {
                     inline
                     onCityChange={selectCity}
                     onCountryChange={selectCountry}
-                    onRegionChange={selectRegion}
                     onReset={resetFilters}
-                    regionOptions={regionOptions}
                   />
                 </View>
               }
@@ -204,6 +204,7 @@ export function MapScreen() {
       />
       <MapCustomerSheet
         actionError={mapActions.actionError}
+        actionSuccess={mapActions.actionSuccess}
         details={details}
         error={detailsError}
         loading={detailsLoading}
@@ -221,18 +222,18 @@ export function MapScreen() {
         onRetry={() => void reloadDetails()}
         onShare={() => void mapActions.shareLocation()}
         onShareOrder={() => void mapActions.shareOrder()}
-        visible={selectedCustomerId !== null}
+        visible={selectedCustomerId !== null && !completeConfirmVisible}
       />
       <ConfirmDialog
         destructive
         message={
           (details?.openOrders.length ?? 0) > 1
-            ? t("sheet.completeAllConfirmMessage", { count: details?.openOrders.length ?? 0 })
-            : t("sheet.completeConfirmMessage")
+            ? actionT("sheet.completeAllConfirmMessage", { count: details?.openOrders.length ?? 0 })
+            : actionT("sheet.completeConfirmMessage")
         }
         onCancel={() => setCompleteConfirmVisible(false)}
         onConfirm={() => void handleConfirmComplete()}
-        title={t("sheet.completeConfirmTitle")}
+        title={actionT("sheet.completeConfirmTitle")}
         visible={completeConfirmVisible}
       />
     </View>

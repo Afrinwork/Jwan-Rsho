@@ -1,7 +1,7 @@
 {
   "form": {
     "nameLabel": "الدولة",
-    "namePlaceholder": "الدولة",
+    "namePlaceholder": "اسم الدولة",
     "nameArPlaceholder": "الاسم بالعربية (اختياري)",
     "isoCodeLabel": "رمز ISO (اختياري)",
     "isoCodePlaceholder": "DE",
@@ -19,26 +19,31 @@
   },
   "management": {
     "title": "الدول",
-    "subtitle": "إدارة الدول كقائمة ثابتة للعملاء وفلاتر الخريطة والمناطق.",
+    "subtitle": "إدارة الدول كقائمة ثابتة للعملاء وفلاتر الخريطة بشكل مرتب وواضح.",
     "createLabel": "إضافة دولة",
     "listLabel": "عرض الدول",
+    "createTabLabel": "إضافة دولة",
+    "listTabLabel": "عرض الدول",
     "loading": "جارٍ تحميل الدول...",
     "emptyTitle": "لا توجد دول",
-    "emptyMessage": "الدول اختيارية. أضف عناصر فقط إذا كنت تريد لاحقًا التصفية حسب الدولة أو التنظيم بشكل منظم.",
+    "emptyMessage": "أضف الدول التي تحتاجها فقط لتنظيم العملاء والتصفية بسهولة.",
     "saveNewLabel": "حفظ الدولة",
     "saveChangesLabel": "حفظ التغييرات",
     "addSuccess": "تمت إضافة الدولة بنجاح.",
     "updateSuccess": "تم تحديث الدولة بنجاح.",
     "activatedSuccess": "تم تفعيل الدولة مجددًا.",
-    "deactivatedSuccess": "تم إلغاء تفعيل الدولة.",
+    "deactivatedSuccess": "تم تعطيل الدولة.",
     "toggleError": "تعذر تحديث الدولة.",
     "deleteSuccess": "تم حذف الدولة.",
     "deleteError": "تعذر حذف الدولة.",
-    "deleteConfirmTitle": "هل تريد بالفعل حذف هذه الدولة؟",
-    "deleteConfirmMessage": "سيتم حذف هذه الدولة فقط إذا لم تكن مستخدمة من قبل أي عميل بعد."
+    "deleteConfirmTitle": "هل تريد حذف هذه الدولة فعلاً؟",
+    "deleteConfirmMessage": "سيتم حذف هذه الدولة فقط إذا لم تكن مستخدمة في أي عميل.",
+    "statsTotal": "إجمالي",
+    "statsActive": "نشط",
+    "statsInactive": "معطل"
   },
   "validation": {
-    "nameRequired": "الدولة مطلوبة",
+    "nameRequired": "اسم الدولة مطلوب",
     "isoCodeTooLong": "رمز ISO يجب ألا يتجاوز 3 أحرف"
   }
 }

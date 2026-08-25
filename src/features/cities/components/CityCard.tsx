@@ -1,8 +1,11 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Flash20Regular, People20Regular } from "@fluentui/react-native-icons";
 
+import { AppBadge } from "@/src/components/ui/AppBadge";
+import { AppCard } from "@/src/components/ui/AppCard";
+import { AppText } from "@/src/components/ui/AppText";
 import { spacing } from "@/src/constants/spacing";
 import { CitySummary } from "@/src/features/cities/types/cityTypes";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
@@ -18,56 +21,43 @@ export function CityCard({ city }: CityCardProps) {
 
   return (
     <Pressable onPress={() => router.push(`/city/${city.normalizedName}`)} style={({ pressed }) => [{ transform: [{ scale: pressed ? 0.992 : 1 }] }]}>
-      <View style={[styles.card, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, shadowColor: colors.shadow }]}>
+      <AppCard contentStyle={styles.card} style={{ shadowColor: colors.shadow }}>
         <View style={styles.topRow}>
           <View style={styles.copy}>
-            <Text style={[styles.title, { color: colors.text }]}>{city.name}</Text>
-            <Text style={[styles.meta, { color: colors.mutedText }]}>{city.country}</Text>
+            <AppText style={styles.title}>{city.name}</AppText>
+            <AppText color="muted" style={styles.meta}>{city.country}</AppText>
           </View>
-          <View style={[styles.badge, { backgroundColor: city.openOrderCount ? colors.primaryMuted : colors.surfaceMuted }]}>
-            <Text style={[styles.badgeValue, { color: city.openOrderCount ? colors.primary : colors.mutedText }]}>{city.openOrderCount}</Text>
-          </View>
+          <AppBadge label={String(city.openOrderCount)} tone={city.openOrderCount ? "primary" : "neutral"} />
         </View>
         <View style={styles.bottomRow}>
           <View style={styles.metric}>
             <People20Regular color={colors.primary} />
-            <Text style={[styles.metricText, { color: colors.text }]}>{t("card.customers", { count: city.customerCount })}</Text>
+            <AppText style={styles.metricText} variant="caption">{t("card.customers", { count: city.customerCount })}</AppText>
           </View>
           <View style={styles.metric}>
             <Flash20Regular color={colors.primary} />
-            <Text style={[styles.metricText, { color: colors.text }]}>{t("card.openOrders", { count: city.openOrderCount })}</Text>
+            <AppText style={styles.metricText} variant="caption">{t("card.openOrders", { count: city.openOrderCount })}</AppText>
           </View>
         </View>
-      </View>
+      </AppCard>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 22,
-    borderWidth: 1,
     padding: spacing.md,
     gap: spacing.md,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 18,
   },
   topRow: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "flex-start",
     gap: spacing.sm,
   },
   copy: {
     flex: 1,
     gap: 4,
-  },
-  badge: {
-    minWidth: 54,
-    height: 54,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
   },
   title: {
     fontSize: 18,
@@ -75,10 +65,6 @@ const styles = StyleSheet.create({
   },
   meta: {
     fontSize: 14,
-  },
-  badgeValue: {
-    fontSize: 22,
-    fontWeight: "800",
   },
   bottomRow: {
     flexDirection: "row",

@@ -34,11 +34,11 @@ export function OpenOrdersCustomerCard({
   const { customer, orders } = group;
 
   return (
-    <AppCard>
+    <AppCard contentStyle={styles.card}>
       <View style={styles.header}>
         <View style={styles.headerText}>
           <AppText variant="subheading">{customer.fullName}</AppText>
-          <AppText color="muted" variant="body">
+          <AppText color="muted" variant="caption">
             {[customer.address, customer.city].filter(Boolean).join(", ")}
           </AppText>
         </View>
@@ -49,9 +49,12 @@ export function OpenOrdersCustomerCard({
           <Navigation20Regular color={colors.primary} />
         </Pressable>
       </View>
-      {orders.length > 1 ? (
-        <AppBadge label={t("openOrders.multipleOrdersBadge", { count: orders.length })} tone="primary" />
-      ) : null}
+      <View style={styles.metaRow}>
+        <AppBadge label={customer.city} tone="neutral" />
+        {orders.length > 1 ? (
+          <AppBadge label={t("openOrders.multipleOrdersBadge", { count: orders.length })} tone="primary" />
+        ) : null}
+      </View>
       {orders.map((order, index) => {
         const isCompleting = completingOrderId === order.id;
         const isDeleting = deletingOrderId === order.id;
@@ -62,14 +65,17 @@ export function OpenOrdersCustomerCard({
             key={order.id}
             style={[styles.orderBlock, index > 0 ? [styles.orderBlockDivider, { borderTopColor: colors.border }] : null]}
           >
-            <AppText color="secondary" variant="label">
-              {t("openOrders.orderDateLabel", { date: formatDate(order.orderedAt) })}
-            </AppText>
+            <AppBadge label={t("openOrders.orderDateLabel", { date: formatDate(order.orderedAt) })} tone="secondary" />
             <View style={styles.items}>
               {order.items.map((item) => (
-                <AppText color="muted" key={item.id} variant="body">
-                  {item.productNameSnapshot}: {item.quantity} {item.unit}
-                </AppText>
+                <View
+                  key={item.id}
+                  style={[styles.itemChip, { backgroundColor: colors.successBackground, borderColor: colors.successBorder }]}
+                >
+                  <AppText color="success" variant="caption">
+                    {item.productNameSnapshot}: {item.quantity} {item.unit}
+                  </AppText>
+                </View>
               ))}
             </View>
             <View style={styles.actions}>
@@ -101,6 +107,10 @@ export function OpenOrdersCustomerCard({
 }
 
 const styles = StyleSheet.create({
+  card: {
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
   header: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -111,6 +121,11 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
+  metaRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.xs,
+  },
   navigateButton: {
     width: 40,
     height: 40,
@@ -120,19 +135,27 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   orderBlock: {
-    gap: spacing.xs,
+    gap: 6,
   },
   orderBlockDivider: {
     borderTopWidth: 1,
     paddingTop: spacing.sm,
   },
   items: {
-    gap: 2,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.xs,
+  },
+  itemChip: {
+    borderWidth: 1,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 6,
   },
   actions: {
     flexDirection: "row",
-    gap: spacing.sm,
-    marginTop: spacing.xs,
+    gap: spacing.xs,
+    marginTop: 2,
   },
   actionButton: {
     flex: 1,

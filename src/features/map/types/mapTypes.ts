@@ -53,7 +53,6 @@ export type MapCustomerDetails = {
 export type MapFilterState = {
   country: string;
   city: string;
-  region: string;
 };
 
 export type MapNavigationApp = {

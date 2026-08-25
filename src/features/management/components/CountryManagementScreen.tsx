@@ -15,5 +15,5 @@ export function CountryManagementScreen() {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingBottom: spacing.xl },
+  content: { paddingBottom: spacing.xl, gap: spacing.md },
 });

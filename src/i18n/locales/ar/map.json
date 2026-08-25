@@ -61,6 +61,7 @@
     "loadingDetails": "جارٍ تحميل بيانات الزبون...",
     "markCompleted": "تحديد كمكتمل",
     "markAllCompleted": "تحديد جميع الطلبات ({{count}}) كمكتملة",
+    "completeSuccess": "تم إنهاء الطلبات المفتوحة بنجاح.",
     "callPhone": "الاتصال بالرقم",
     "phoneMissing": "رقم الهاتف غير متوفر",
     "navigation": "الملاحة",

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { mapT } from "@/src/features/map/i18n/mapT";
+import { useTranslation } from "react-i18next";
 
 import { MapCustomerDetails, MapCustomerMarker, NavigationAppId } from "@/src/features/map/types/mapTypes";
 import { buildSelectionShareMessage, SelectionShareCustomer } from "@/src/features/map/services/mapShareFormatterService";
@@ -13,13 +13,14 @@ import { useAppStore } from "@/src/store/appStore";
 import { formatError } from "@/src/utils/formatError";
 
 export function useMapActions(details: MapCustomerDetails | null, marker: MapCustomerMarker | null) {
-  const t = mapT;
+  const { t } = useTranslation("map");
   const shareIncludeAddress = useAppStore((state) => state.shareIncludeAddress);
   const shareIncludePhone = useAppStore((state) => state.shareIncludePhone);
   const shopName = useAppStore((state) => state.shopName);
   const { products } = useProducts();
   const productEmojiById = useMemo(() => new Map(products.map((product) => [product.id, product.emoji])), [products]);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [completingOrder, setCompletingOrder] = useState(false);
 
   const callCustomer = useCallback(async () => {
@@ -30,6 +31,7 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
 
     try {
       setActionError(null);
+      setActionSuccess(null);
       await phoneService.call(details.customer.phone);
     } catch (error) {
       setActionError(formatError(error).message);
@@ -44,6 +46,7 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
 
     try {
       setActionError(null);
+      setActionSuccess(null);
       await navigationService.openDefaultNavigation(buildNavigationTarget(details, marker));
     } catch (navigationError) {
       setActionError(formatError(navigationError).message);
@@ -58,6 +61,7 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
 
     try {
       setActionError(null);
+      setActionSuccess(null);
       await navigationService.openNavigationApp(appId, buildNavigationTarget(details, marker));
     } catch (error) {
       setActionError(formatError(error).message);
@@ -72,6 +76,7 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
 
     try {
       setActionError(null);
+      setActionSuccess(null);
       await sharingService.shareText(
         sharingService.buildCustomerLocationMessage({
           fullName: details.customer.fullName,
@@ -96,6 +101,7 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
 
     try {
       setActionError(null);
+      setActionSuccess(null);
       const shareCustomer: SelectionShareCustomer = {
         fullName: details.customer.fullName,
         address: details.customer.address,
@@ -139,11 +145,14 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
 
     try {
       setActionError(null);
+      setActionSuccess(null);
       setCompletingOrder(true);
       await Promise.all(details.openOrders.map((order) => orderRepository.completeOrder(order.id)));
+      setActionSuccess(t("sheet.completeSuccess"));
       return true;
     } catch (error) {
       setActionError(formatError(error).message);
+      setActionSuccess(null);
       return false;
     } finally {
       setCompletingOrder(false);
@@ -152,6 +161,7 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
 
   return {
     actionError,
+    actionSuccess,
     completingOrder,
     products,
     callCustomer,
@@ -160,7 +170,10 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
     openNavigationApp,
     shareLocation,
     shareOrder,
-    clearActionError: () => setActionError(null),
+    clearActionError: () => {
+      setActionError(null);
+      setActionSuccess(null);
+    },
   };
 }
 

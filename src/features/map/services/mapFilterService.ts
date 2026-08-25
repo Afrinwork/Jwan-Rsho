@@ -4,8 +4,7 @@ export function filterMapMarkers(markers: MapCustomerMarker[], filters: MapFilte
   return markers.filter((marker) => {
     const matchesCountry = !filters.country || marker.country === filters.country;
     const matchesCity = !filters.city || marker.city === filters.city;
-    const matchesRegion = !filters.region || marker.region === filters.region;
-    return matchesCountry && matchesCity && matchesRegion;
+    return matchesCountry && matchesCity;
   });
 }
 
@@ -18,16 +17,6 @@ export function getMapCityOptions(markers: MapCustomerMarker[], filters: MapFilt
     markers
       .filter((marker) => !filters.country || marker.country === filters.country)
       .map((marker) => marker.city),
-  );
-}
-
-export function getMapRegionOptions(markers: MapCustomerMarker[], filters: MapFilterState) {
-  return getUniqueValues(
-    markers
-      .filter((marker) => !filters.country || marker.country === filters.country)
-      .filter((marker) => !filters.city || marker.city === filters.city)
-      .map((marker) => marker.region)
-      .filter(Boolean),
   );
 }
 

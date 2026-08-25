@@ -17,6 +17,8 @@
   "management": {
     "createLabel": "إضافة منتج",
     "listLabel": "عرض المنتجات",
+    "createTabLabel": "إضافة منتج",
+    "listTabLabel": "عرض المنتجات",
     "subtitle": "إنشاء المنتجات وترتيبها وتعديلها وتعطيلها وحذفها بأمان.",
     "title": "المنتجات",
     "addSubmitLabel": "حفظ المنتج",
@@ -32,11 +34,14 @@
     "deactivateMessage": "لن يظهر هذا المنتج بعد الآن في قائمة اختيار المنتجات.",
     "deactivateError": "تعذّر تعطيل المنتج.",
     "deactivateSuccess": "تم تعطيل المنتج.",
-    "deleteTitle": "هل تريد حذف المنتج فعلاً؟",
+    "deleteTitle": "هل تريد حذف المنتج فعلًا؟",
     "deleteMessage": "لن يُحذف هذا المنتج إلا إذا لم يُستخدم بعد في أي طلب.",
     "deleteError": "تعذّر حذف المنتج.",
     "deleteSuccess": "تم حذف المنتج.",
-    "reorderError": "تعذّر تغيير الترتيب."
+    "reorderError": "تعذّر تغيير الترتيب.",
+    "statsTotal": "إجمالي",
+    "statsActive": "نشط",
+    "statsInactive": "معطل"
   },
   "picker": {
     "title": "اختيار منتج",

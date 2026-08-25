@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 
+import { AppCard } from "@/src/components/ui/AppCard";
+import { AppText } from "@/src/components/ui/AppText";
 import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
 import { EmptyState } from "@/src/components/ui/EmptyState";
 import { ErrorState } from "@/src/components/ui/ErrorState";
@@ -22,6 +24,8 @@ export function CountryManagementSection() {
   const [deleteTarget, setDeleteTarget] = useState<Country | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const activeCountries = countries.filter((country) => country.isActive).length;
+  const inactiveCountries = countries.length - activeCountries;
 
   async function handleAdd(values: CountryFormValues) {
     setActionError(null);
@@ -45,12 +49,12 @@ export function CountryManagementSection() {
 
   return (
     <ManagementSectionShell
-      createLabel={t("management.createLabel")}
-      listLabel={t("management.listLabel")}
+      createLabel={t("management.createTabLabel")}
+      listLabel={t("management.listTabLabel")}
       mode={mode}
       onModeChange={setMode}
-      subtitle={t("management.subtitle")}
-      title={t("management.title")}
+      subtitle=""
+      title=""
     >
       {mode === "create" ? (
         <CountryForm onCancel={() => setMode("list")} onSubmit={handleAdd} submitLabel={t("management.saveNewLabel")} />
@@ -61,6 +65,22 @@ export function CountryManagementSection() {
           {error ? <ErrorState message={error} /> : null}
           {actionError ? <ErrorState message={actionError} /> : null}
           {successMessage ? <SuccessState message={successMessage} /> : null}
+          {!loading && !error ? (
+            <View style={styles.summaryGrid}>
+              <AppCard contentStyle={styles.summaryCard}>
+                <AppText color="muted" variant="caption">{t("management.statsTotal")}</AppText>
+                <AppText variant="subheading">{String(countries.length)}</AppText>
+              </AppCard>
+              <AppCard contentStyle={styles.summaryCard}>
+                <AppText color="muted" variant="caption">{t("management.statsActive")}</AppText>
+                <AppText variant="subheading">{String(activeCountries)}</AppText>
+              </AppCard>
+              <AppCard contentStyle={styles.summaryCard}>
+                <AppText color="muted" variant="caption">{t("management.statsInactive")}</AppText>
+                <AppText variant="subheading">{String(inactiveCountries)}</AppText>
+              </AppCard>
+            </View>
+          ) : null}
           {!loading && !error && countries.length === 0 ? (
             <EmptyState
               message={t("management.emptyMessage")}
@@ -121,5 +141,16 @@ export function CountryManagementSection() {
 const styles = StyleSheet.create({
   container: {
     gap: spacing.sm,
+  },
+  summaryGrid: {
+    flexDirection: "row",
+    gap: spacing.xs,
+  },
+  summaryCard: {
+    flex: 1,
+    minWidth: 0,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+    gap: 2,
   },
 });

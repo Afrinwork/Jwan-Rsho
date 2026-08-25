@@ -47,7 +47,7 @@ export function AddOrderScreen() {
             keyboardShouldPersistTaps="handled"
           >
             <AnimatedEntrance>
-              <CompactScreenHeader subtitle={t("addScreen.subtitle")} title={t("common:add")} />
+              <CompactScreenHeader title={t("common:add")} />
             </AnimatedEntrance>
             <AnimatedEntrance delay={60}>
               <CustomerModeSelector mode={customerMode} onChange={setMode} />
@@ -71,6 +71,7 @@ export function AddOrderScreen() {
                 fields={items.fields}
                 remove={items.remove}
                 setValue={form.setValue}
+                update={items.update}
               />
             </AnimatedEntrance>
             {submitError ? <AnimatedEntrance delay={190}><ErrorState message={submitError} /></AnimatedEntrance> : null}
@@ -91,11 +92,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    gap: spacing.md,
-    paddingBottom: spacing.xl * 3,
+    gap: spacing.sm,
+    paddingBottom: spacing.xl,
     flexGrow: 1,
   },
   footerSpacer: {
-    height: spacing.xl * 2,
+    height: spacing.md,
   },
 });

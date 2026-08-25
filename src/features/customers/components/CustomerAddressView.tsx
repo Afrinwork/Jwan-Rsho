@@ -6,7 +6,7 @@ import { Customer } from "@/src/types/customer";
 import { formatAddress } from "@/src/utils/formatAddress";
 
 type CustomerAddressViewProps = {
-  address: Pick<Customer, "address" | "city" | "country" | "region">;
+  address: Pick<Customer, "address" | "city" | "country">;
 };
 
 export function CustomerAddressView({ address }: CustomerAddressViewProps) {
@@ -16,9 +16,7 @@ export function CustomerAddressView({ address }: CustomerAddressViewProps) {
     <View style={[styles.card, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
       <Text style={[styles.line, { color: colors.text }]}>{address.address}</Text>
       <Text style={[styles.line, { color: colors.text }]}>{address.city}</Text>
-      <Text style={[styles.line, { color: colors.mutedText }]}>
-        {formatAddress([address.country, address.region])}
-      </Text>
+      <Text style={[styles.line, { color: colors.mutedText }]}>{formatAddress([address.country])}</Text>
     </View>
   );
 }
@@ -27,10 +25,10 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderRadius: 14,
-    padding: spacing.md,
-    gap: 4,
+    padding: spacing.sm,
+    gap: 2,
   },
   line: {
-    fontSize: 14,
+    fontSize: 13,
   },
 });

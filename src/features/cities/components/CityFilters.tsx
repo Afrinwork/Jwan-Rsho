@@ -1,8 +1,9 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
+import { AppCard } from "@/src/components/ui/AppCard";
 import { AppInput } from "@/src/components/ui/AppInput";
-import { spacing } from "@/src/constants/spacing";
+import { AppText } from "@/src/components/ui/AppText";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 
 type CityFiltersProps = {
@@ -21,9 +22,11 @@ export function CityFilters(props: CityFiltersProps) {
   const colors = useThemeColors();
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, shadowColor: colors.shadow }]}>
+    <AppCard contentStyle={styles.container} style={{ shadowColor: colors.shadow }}>
       <AppInput onChangeText={props.onSearchTermChange} placeholder={t("filters.searchPlaceholder")} value={props.searchTerm} />
-      <Text style={[styles.kicker, { color: colors.mutedText }]}>{t("filters.countryKicker")}</Text>
+      <AppText color="muted" style={styles.kicker} variant="caption">
+        {t("filters.countryKicker")}
+      </AppText>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={styles.row}>
           {countries.map((value) => (
@@ -38,12 +41,14 @@ export function CityFilters(props: CityFiltersProps) {
                 },
               ]}
             >
-              <Text style={[styles.label, { color: currentCountry(props.selectedCountry, value) ? colors.primaryContrast : colors.text }]}>{value === ALL_COUNTRIES_VALUE ? t("filters.allCountries") : value}</Text>
+              <AppText color={currentCountry(props.selectedCountry, value) ? colors.primaryContrast : "default"} style={styles.label} variant="caption">
+                {value === ALL_COUNTRIES_VALUE ? t("filters.allCountries") : value}
+              </AppText>
             </Pressable>
           ))}
         </View>
       </ScrollView>
-    </View>
+    </AppCard>
   );
 }
 
@@ -54,12 +59,6 @@ function currentCountry(selectedCountry: string, value: string) {
 const styles = StyleSheet.create({
   container: {
     gap: 12,
-    borderRadius: 22,
-    borderWidth: 1,
-    padding: spacing.md,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.07,
-    shadowRadius: 16,
   },
   kicker: { fontSize: 12, fontWeight: "700", letterSpacing: 0.8, textTransform: "uppercase" },
   row: { flexDirection: "row", gap: 8 },

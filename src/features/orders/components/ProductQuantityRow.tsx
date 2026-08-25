@@ -11,11 +11,10 @@ type ProductQuantityRowProps = {
   index: number;
   control: Control<AddOrderFormValues>;
   error?: string;
-  onOpenPicker: () => void;
   onRemove: () => void;
 };
 
-export function ProductQuantityRow({ index, control, error, onOpenPicker, onRemove }: ProductQuantityRowProps) {
+export function ProductQuantityRow({ index, control, error, onRemove }: ProductQuantityRowProps) {
   const colors = useThemeColors();
   const { t } = useTranslation("orders");
 
@@ -24,14 +23,7 @@ export function ProductQuantityRow({ index, control, error, onOpenPicker, onRemo
       <Controller
         control={control}
         name={`items.${index}.productNameSnapshot`}
-        render={({ field }) => (
-          <Pressable onPress={onOpenPicker} style={styles.productButton}>
-            <Text style={[styles.productLabel, { color: field.value ? colors.text : colors.mutedText }]}>
-              {field.value || t("items.selectProduct")}
-            </Text>
-            <Text style={[styles.change, { color: colors.primary }]}>{t("items.change")}</Text>
-          </Pressable>
-        )}
+        render={({ field }) => <Text style={[styles.productLabel, { color: colors.text }]}>{field.value}</Text>}
       />
       <View style={styles.row}>
         <View style={styles.quantityField}>
@@ -71,21 +63,11 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderRadius: 14,
-    padding: spacing.sm,
-    gap: spacing.xs,
-  },
-  productButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    padding: spacing.xs,
+    gap: 6,
   },
   productLabel: {
-    fontSize: 15,
-    fontWeight: "600",
-    flexShrink: 1,
-  },
-  change: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "600",
   },
   row: {
@@ -101,13 +83,13 @@ const styles = StyleSheet.create({
   },
   removeButton: {
     paddingHorizontal: spacing.xs,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.xs,
   },
   removeLabel: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "600",
   },
   error: {
-    fontSize: 13,
+    fontSize: 12,
   },
 });

@@ -24,18 +24,18 @@ const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderRadius: 14,
-    padding: spacing.md,
-    gap: 4,
+    padding: spacing.sm,
+    gap: 2,
   },
   name: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: "700",
   },
   phone: {
-    fontSize: 15,
+    fontSize: 14,
   },
   note: {
-    fontSize: 13,
+    fontSize: 12,
     fontStyle: "italic",
   },
 });

@@ -4,7 +4,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { useThemeColors } from "@/src/hooks/useThemeColors";
-import { radius } from "@/src/theme/radius";
 import { spacing } from "@/src/theme/spacing";
 
 type ScreenContainerProps = PropsWithChildren<{
@@ -17,13 +16,11 @@ export function ScreenContainer({ children, contentStyle }: ScreenContainerProps
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <LinearGradient
-        colors={[colors.backgroundAccent, colors.background]}
-        end={{ x: 0.85, y: 0.95 }}
-        start={{ x: 0.15, y: 0 }}
+        colors={[colors.background, colors.background, colors.background]}
+        end={{ x: 0.82, y: 1 }}
+        start={{ x: 0.08, y: 0 }}
         style={styles.backdrop}
       />
-      <View style={[styles.backdropGlow, { backgroundColor: colors.primaryMuted }]} />
-      <View style={[styles.backdropGlowSecondary, { backgroundColor: colors.secondaryMuted }]} />
       <View style={[styles.content, contentStyle]}>{children}</View>
     </SafeAreaView>
   );
@@ -38,27 +35,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 260,
-    borderBottomLeftRadius: radius.xl,
-    borderBottomRightRadius: radius.xl,
-  },
-  backdropGlow: {
-    position: "absolute",
-    top: 24,
-    right: -26,
-    width: 170,
-    height: 170,
-    borderRadius: radius.pill,
-    opacity: 0.7,
-  },
-  backdropGlowSecondary: {
-    position: "absolute",
-    top: 112,
-    left: -42,
-    width: 132,
-    height: 132,
-    borderRadius: radius.pill,
-    opacity: 0.5,
+    bottom: 0,
   },
   content: {
     flex: 1,

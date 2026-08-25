@@ -1,7 +1,8 @@
 import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { mapT } from "@/src/features/map/i18n/mapT";
+import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
+import { SuccessState } from "@/src/components/ui/SuccessState";
 import { CustomerMapCard } from "@/src/features/map/components/CustomerMapCard";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { LoadingView } from "@/src/components/ui/LoadingView";
@@ -15,6 +16,7 @@ type MapCustomerSheetProps = {
   loading: boolean;
   error: string | null;
   actionError?: string | null;
+  actionSuccess?: string | null;
   onClose: () => void;
   onRetry: () => void;
   onEdit: () => void;
@@ -32,6 +34,7 @@ export function MapCustomerSheet({
   loading,
   error,
   actionError,
+  actionSuccess,
   onClose,
   onRetry,
   onEdit,
@@ -43,7 +46,7 @@ export function MapCustomerSheet({
   onShareOrder,
 }: MapCustomerSheetProps) {
   const colors = useThemeColors();
-  const t = mapT;
+  const { t } = useTranslation("map");
 
   return (
     <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
@@ -64,6 +67,7 @@ export function MapCustomerSheet({
             <ScrollView contentContainerStyle={styles.content}>
               <CustomerMapCard details={details} />
               {actionError ? <ErrorState message={actionError} /> : null}
+              {actionSuccess ? <SuccessState message={actionSuccess} /> : null}
               <View style={styles.actions}>
                 <AppButton label={t("common.edit")} onPress={onEdit} />
                 {details.openOrders.length ? (

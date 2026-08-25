@@ -34,7 +34,7 @@ export function AppCard({
       <View style={[styles.inner, { backgroundColor: palette.background, borderColor: palette.border }]}>
         {frosted ? (
           <BlurView
-            intensity={theme === "dark" ? 24 : 36}
+            intensity={theme === "dark" ? 22 : 28}
             style={StyleSheet.absoluteFillObject}
             tint={theme === "dark" ? "dark" : "light"}
           />
@@ -57,8 +57,8 @@ function resolveTone(tone: AppCardProps["tone"], colors: ReturnType<typeof useTh
     return {
       background: colors.primaryMuted,
       border: colors.border,
-      gradient: ["rgba(255,255,255,0.6)", "rgba(255,255,255,0)"] as const,
-      highlight: "rgba(255,255,255,0.48)",
+      gradient: ["rgba(255,248,242,0.64)", "rgba(255,248,242,0.08)"] as const,
+      highlight: "rgba(255,250,245,0.46)",
     };
   }
 
@@ -66,16 +66,16 @@ function resolveTone(tone: AppCardProps["tone"], colors: ReturnType<typeof useTh
     return {
       background: colors.secondaryMuted,
       border: colors.border,
-      gradient: ["rgba(255,255,255,0.46)", "rgba(255,255,255,0)"] as const,
-      highlight: "rgba(255,255,255,0.3)",
+      gradient: ["rgba(247,255,252,0.42)", "rgba(247,255,252,0.04)"] as const,
+      highlight: "rgba(247,255,252,0.24)",
     };
   }
 
   return {
     background: colors.surfaceElevated,
     border: colors.border,
-    gradient: ["rgba(255,255,255,0.72)", "rgba(255,255,255,0)"] as const,
-    highlight: "rgba(255,255,255,0.55)",
+    gradient: ["rgba(255,255,255,0.7)", "rgba(255,248,242,0.08)"] as const,
+    highlight: "rgba(255,255,255,0.52)",
   };
 }
 
@@ -91,10 +91,10 @@ const styles = StyleSheet.create({
   },
   highlight: {
     position: "absolute",
-    top: -36,
-    right: -28,
-    width: 132,
-    height: 132,
+    top: -28,
+    right: -20,
+    width: 126,
+    height: 126,
     borderRadius: radius.pill,
   },
   content: {

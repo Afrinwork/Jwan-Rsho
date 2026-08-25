@@ -4,13 +4,12 @@ import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
+import { AppCard } from "@/src/components/ui/AppCard";
 import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
 import { EmptyState } from "@/src/components/ui/EmptyState";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { LoadingView } from "@/src/components/ui/LoadingView";
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
-import { radius } from "@/src/theme/radius";
-import { shadows } from "@/src/theme/shadows";
 import { spacing } from "@/src/theme/spacing";
 import { CityCustomerCard } from "@/src/features/cities/components/CityCustomerCard";
 import { CityCustomerFilters } from "@/src/features/cities/components/CityCustomerFilters";
@@ -80,19 +79,10 @@ export function CityCustomerListScreen(props: CityCustomerListScreenProps) {
         }
         ListHeaderComponent={
           <View style={styles.header}>
-            <View
-              style={[
-                styles.topCard,
-                {
-                  backgroundColor: "#050816",
-                  borderColor: "rgba(148, 163, 184, 0.18)",
-                  shadowColor: "#020617",
-                },
-              ]}
-            >
+            <AppCard contentStyle={styles.topCard}>
               <CitySummaryHeader
                 cityCount={customers.length}
-                inverted
+                subtitle=""
                 rightSlot={
                   cityDisplayName ? (
                     <View style={styles.headerActions}>
@@ -102,12 +92,12 @@ export function CityCustomerListScreen(props: CityCustomerListScreenProps) {
                           styles.iconButton,
                           styles.topCardButton,
                           {
-                            backgroundColor: "rgba(255,255,255,0.08)",
-                            borderColor: "rgba(255,255,255,0.14)",
+                            backgroundColor: "#FFFFFF",
+                            borderColor: "rgba(15, 23, 42, 0.1)",
                           },
                         ]}
                       >
-                        <Edit20Regular color="#F8FAFC" />
+                        <Edit20Regular color="#111111" />
                       </Pressable>
                       <Pressable
                         disabled={deleting}
@@ -116,51 +106,44 @@ export function CityCustomerListScreen(props: CityCustomerListScreenProps) {
                           styles.iconButton,
                           styles.topCardButton,
                           {
-                            backgroundColor: "rgba(127, 29, 29, 0.34)",
-                            borderColor: "rgba(252, 165, 165, 0.2)",
+                            backgroundColor: "#FFFFFF",
+                            borderColor: "rgba(239, 68, 68, 0.16)",
                             opacity: deleting ? 0.5 : 1,
                           },
                         ]}
                       >
-                        <Delete20Regular color="#FCA5A5" />
+                        <Delete20Regular color="#DC2626" />
                       </Pressable>
                     </View>
                   ) : null
                 }
                 title={cityDisplayName || undefined}
               />
-              <CityProductTotals embedded inverted totals={productTotals} />
-            </View>
-            <View style={styles.controlsRow}>
-              <View style={styles.selectionColumn}>
-                <CitySelectionBar
-                  actionSlot={
-                    selection.selectedCount > 0 ? (
-                      <CitySelectionActionsBar
-                        actionError={selectionActions.actionError}
-                        completingAll={selectionActions.completingAll}
-                        emailing={selectionActions.emailing}
-                        onCompleteAll={() => setCompleteSelectionVisible(true)}
-                        onShare={() => void selectionActions.share()}
-                        onShareByEmail={() => void selectionActions.shareByEmail()}
-                        selectedCount={selection.selectedCount}
-                        sharing={selectionActions.sharing}
-                      />
-                    ) : null
-                  }
-                  allSelected={selection.allSelected}
-                  onToggleSelectAll={selection.toggleSelectAll}
-                  selectedCount={selection.selectedCount}
-                  totalCount={customers.length}
-                />
-              </View>
-              <View style={styles.searchColumn}>
-                <CityCustomerFilters
-                  onSearchTermChange={setSearchTerm}
-                  searchTerm={searchTerm}
-                />
-              </View>
-            </View>
+            </AppCard>
+            {productTotals.length ? <CityProductTotals embedded totals={productTotals} /> : null}
+            <AppCard contentStyle={styles.controlsCard}>
+              <CityCustomerFilters onSearchTermChange={setSearchTerm} searchTerm={searchTerm} />
+              <CitySelectionBar
+                actionSlot={
+                  selection.selectedCount > 0 ? (
+                    <CitySelectionActionsBar
+                      actionError={selectionActions.actionError}
+                      completingAll={selectionActions.completingAll}
+                      emailing={selectionActions.emailing}
+                      onCompleteAll={() => setCompleteSelectionVisible(true)}
+                      onShare={() => void selectionActions.share()}
+                      onShareByEmail={() => void selectionActions.shareByEmail()}
+                      selectedCount={selection.selectedCount}
+                      sharing={selectionActions.sharing}
+                    />
+                  ) : null
+                }
+                allSelected={selection.allSelected}
+                onToggleSelectAll={selection.toggleSelectAll}
+                selectedCount={selection.selectedCount}
+                totalCount={customers.length}
+              />
+            </AppCard>
             {error ? <ErrorState message={error} /> : null}
           </View>
         }
@@ -253,26 +236,14 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 8,
   },
-  controlsRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-  },
-  selectionColumn: {
-    flex: 1,
-    minWidth: 220,
-  },
-  searchColumn: {
-    flex: 1,
-    minWidth: 220,
-  },
   topCard: {
-    borderWidth: 1,
-    borderRadius: radius.card,
     padding: spacing.lg,
+    paddingBottom: spacing.md,
     gap: spacing.md,
-    ...shadows.lg,
+  },
+  controlsCard: {
+    padding: spacing.sm,
+    gap: spacing.sm,
   },
   headerActions: {
     flexDirection: "row",
@@ -284,7 +255,7 @@ const styles = StyleSheet.create({
   iconButton: {
     width: 36,
     height: 36,
-    borderRadius: radius.pill,
+    borderRadius: 999,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",

@@ -9,6 +9,7 @@ import { AppInput } from "@/src/components/ui/AppInput";
 import { AppText } from "@/src/components/ui/AppText";
 import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
 import { ErrorState } from "@/src/components/ui/ErrorState";
+import { HeroPanel } from "@/src/components/ui/HeroPanel";
 import { LoadingView } from "@/src/components/ui/LoadingView";
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
 import { SuccessState } from "@/src/components/ui/SuccessState";
@@ -40,7 +41,20 @@ export function SettingsScreen() {
         {settings.error ? <AnimatedEntrance delay={60}><ErrorState message={settings.error} /></AnimatedEntrance> : null}
         {error ? <AnimatedEntrance delay={80}><ErrorState message={error} /></AnimatedEntrance> : null}
         {settings.successMessage ? <AnimatedEntrance delay={100}><SuccessState message={settings.successMessage} /></AnimatedEntrance> : null}
-        <AnimatedEntrance delay={120}><SettingsSection title={t("sections.profile")}>
+        <AnimatedEntrance delay={110}>
+          <HeroPanel
+            eyebrow={t("sections.appInfo")}
+            subtitle={t("header.subtitle")}
+            title={settings.fullName.trim() || t("header.title")}
+          >
+            <View style={styles.statsGrid}>
+              <SettingsStatCard label={t("info.ownCustomers")} value={String(settings.stats.customers)} />
+              <SettingsStatCard label={t("info.totalOrders")} value={String(settings.stats.totalOrders)} />
+              <SettingsStatCard label={t("info.openOrders")} value={String(settings.stats.openOrders)} />
+            </View>
+          </HeroPanel>
+        </AnimatedEntrance>
+        <AnimatedEntrance delay={120}><SettingsSection subtitle={t("fields.email")} title={t("sections.profile")}>
           <FormField label={t("fields.name")}>
             <AppInput onChangeText={settings.setFullName} value={settings.fullName} />
           </FormField>
@@ -56,7 +70,7 @@ export function SettingsScreen() {
             <AppInput onChangeText={settings.setNewPassword} secureTextEntry value={settings.newPassword} />
           </FormField>
         </SettingsSection></AnimatedEntrance>
-        <AnimatedEntrance delay={150}><SettingsSection title={t("sections.appearance")}>
+        <AnimatedEntrance delay={150}><SettingsSection subtitle={t("theme.label")} title={t("sections.appearance")}>
           <SettingsChoiceRow
             label={t("theme.label")}
             onChange={(value) => settings.setThemeMode(value as "system" | "light" | "dark")}
@@ -68,7 +82,7 @@ export function SettingsScreen() {
             value={settings.themeMode}
           />
         </SettingsSection></AnimatedEntrance>
-        <AnimatedEntrance delay={180}><SettingsSection title={t("sections.navigation")}>
+        <AnimatedEntrance delay={180}><SettingsSection subtitle={t("navigationApp.label")} title={t("sections.navigation")}>
           <SettingsChoiceRow
             label={t("navigationApp.label")}
             onChange={(value) => settings.setPreferredNavigationApp(value as "apple-maps" | "google-maps" | "waze")}
@@ -80,7 +94,7 @@ export function SettingsScreen() {
             value={settings.preferredNavigationApp}
           />
         </SettingsSection></AnimatedEntrance>
-        <AnimatedEntrance delay={210}><SettingsSection title={t("sections.share")}>
+        <AnimatedEntrance delay={210}><SettingsSection subtitle={t("share.shopName")} title={t("sections.share")}>
           <FormField label={t("share.shopName")}>
             <AppInput
               onChangeText={settings.setShopName}
@@ -116,13 +130,13 @@ export function SettingsScreen() {
             value={settings.shareIncludeTotals}
           />
         </SettingsSection></AnimatedEntrance>
-        <AnimatedEntrance delay={240}><SettingsSection title={t("sections.appInfo")}>
+        <AnimatedEntrance delay={240}><SettingsSection subtitle={t("header.subtitle")} title={t("sections.appInfo")}>
           <View style={styles.infoRow}><AppText color="muted" style={styles.infoLabel} variant="body">{t("info.appVersion")}</AppText><AppText style={styles.infoValue} variant="bodyMedium">{appConfig.version}</AppText></View>
           <View style={styles.infoRow}><AppText color="muted" style={styles.infoLabel} variant="body">{t("info.ownCustomers")}</AppText><AppText style={styles.infoValue} variant="bodyMedium">{settings.stats.customers}</AppText></View>
           <View style={styles.infoRow}><AppText color="muted" style={styles.infoLabel} variant="body">{t("info.totalOrders")}</AppText><AppText style={styles.infoValue} variant="bodyMedium">{settings.stats.totalOrders}</AppText></View>
           <View style={styles.infoRow}><AppText color="muted" style={styles.infoLabel} variant="body">{t("info.openOrders")}</AppText><AppText style={styles.infoValue} variant="bodyMedium">{settings.stats.openOrders}</AppText></View>
         </SettingsSection></AnimatedEntrance>
-        <AnimatedEntrance delay={270}><SettingsSection title={t("sections.account")}>
+        <AnimatedEntrance delay={270}><SettingsSection subtitle={t("actions.save")} title={t("sections.account")}>
           <AppButton label={settings.saving ? t("actions.saving") : t("actions.save")} loading={settings.saving} onPress={() => void settings.save()} />
           <AppButton label={loading ? t("actions.loggingOut") : t("common:logout")} loading={loading} onPress={logout} variant="secondary" />
           {deleteAccount.error ? <ErrorState message={deleteAccount.error} /> : null}
@@ -157,10 +171,35 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     gap: spacing.sm,
+    paddingVertical: 6,
   },
   infoLabel: {},
   infoValue: {
     textAlign: "right",
     flexShrink: 1,
   },
+  statsGrid: {
+    flexDirection: "row",
+    gap: spacing.sm,
+    flexWrap: "wrap",
+  },
+  statCard: {
+    minWidth: 92,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: 18,
+    backgroundColor: "rgba(255,255,255,0.72)",
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.06)",
+    gap: 4,
+  },
 });
+
+function SettingsStatCard({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.statCard}>
+      <AppText color="muted" variant="caption">{label}</AppText>
+      <AppText variant="heading">{value}</AppText>
+    </View>
+  );
+}

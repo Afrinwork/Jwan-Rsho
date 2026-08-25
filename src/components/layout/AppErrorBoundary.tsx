@@ -5,6 +5,7 @@ import { AppButton } from "@/src/components/ui/AppButton";
 import { AppCard } from "@/src/components/ui/AppCard";
 import { AppText } from "@/src/components/ui/AppText";
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
+import { t } from "@/src/i18n/i18n";
 import { spacing } from "@/src/theme/spacing";
 
 type AppErrorBoundaryState = {
@@ -43,14 +44,13 @@ function AppCrashFallback({ onRetry }: { onRetry: () => void }) {
       <View style={styles.shell}>
         <AppCard contentStyle={styles.card} frosted>
           <AppText color="primary" variant="label">
-            Stabil weiterarbeiten
+            {t("common:errorBadge")}
           </AppText>
-          <AppText variant="title">Die Ansicht wurde sicher angehalten.</AppText>
+          <AppText variant="title">{t("errors:uiCrashTitle")}</AppText>
           <AppText color="muted" variant="body">
-            Ein Oberflaechenfehler wurde abgefangen, damit die App nicht komplett abstuerzt.
-            Du kannst die Ansicht direkt neu laden.
+            {t("errors:uiCrashMessage")}
           </AppText>
-          <AppButton label="Erneut laden" onPress={onRetry} />
+          <AppButton label={t("common:retry")} onPress={onRetry} />
         </AppCard>
       </View>
     </ScreenContainer>

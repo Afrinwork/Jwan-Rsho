@@ -1,4 +1,4 @@
-import i18next from "i18next";
+import { createInstance } from "i18next";
 import { initReactI18next } from "react-i18next";
 
 import deMap from "@/src/i18n/locales/de/map.json";
@@ -20,11 +20,6 @@ import arRegions from "@/src/i18n/locales/ar/regions.json";
 import arSettings from "@/src/i18n/locales/ar/settings.json";
 import arValidation from "@/src/i18n/locales/ar/validation.json";
 
-/**
- * The app is Arabic-only (RTL) everywhere except the Map screen, which
- * intentionally stays German + LTR (see src/features/map/i18n/mapT.ts).
- * German resources are therefore only bundled for the "map" namespace.
- */
 const resources = {
   de: {
     map: deMap,
@@ -49,6 +44,8 @@ const resources = {
   },
 };
 
+const i18next = createInstance();
+
 if (!i18next.isInitialized) {
   void i18next
     .use(initReactI18next)
@@ -63,7 +60,7 @@ if (!i18next.isInitialized) {
       initAsync: false,
       parseMissingKeyHandler:
         process.env.NODE_ENV !== "production"
-          ? (key) => `⁉MISSING:${key}⁉`
+          ? (key) => `MISSING:${key}`
           : undefined,
     });
 }

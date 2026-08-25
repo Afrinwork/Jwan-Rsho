@@ -1,6 +1,7 @@
-import { StyleSheet, View } from "react-native";
+import { StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 
+import { AppCard } from "@/src/components/ui/AppCard";
 import { AppInput } from "@/src/components/ui/AppInput";
 import { spacing } from "@/src/theme/spacing";
 
@@ -13,14 +14,14 @@ export function CityCustomerFilters(props: CityCustomerFiltersProps) {
   const { t } = useTranslation("cities");
 
   return (
-    <View style={styles.container}>
+    <AppCard contentStyle={styles.container}>
       <AppInput
         onChangeText={props.onSearchTermChange}
         placeholder={t("customerFilters.searchPlaceholder")}
         style={styles.searchInput}
         value={props.searchTerm}
       />
-    </View>
+    </AppCard>
   );
 }
 

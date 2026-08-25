@@ -1,4 +1,4 @@
-import { FlatList, Keyboard, StyleSheet, Text, View } from "react-native";
+import { FlatList, Keyboard, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { FormSectionCard } from "@/src/components/ui/FormSectionCard";
@@ -27,7 +27,7 @@ export function ExistingCustomerSection({ selectedCustomer, onSelect, error }: E
 
   return (
     <View style={styles.container}>
-      <FormSectionCard subtitle={t("existingCustomer.searchSubtitle")} title={t("existingCustomer.searchTitle")}>
+      <FormSectionCard title={t("existingCustomer.searchTitle")}>
         <CustomerSearch onQueryChange={search.setQuery} query={search.query} />
         {search.loading ? <LoadingView label={t("existingCustomer.searching")} /> : null}
         {search.error ? <ErrorState message={search.error} /> : null}
@@ -36,7 +36,6 @@ export function ExistingCustomerSection({ selectedCustomer, onSelect, error }: E
         ) : null}
         {!search.loading && hasResults ? (
           <View style={styles.resultsWrap}>
-            <Text style={styles.resultsLabel}>{t("existingCustomer.resultsCount", { count: search.results.length })}</Text>
             <FlatList
               data={search.results}
               keyExtractor={(customer) => customer.id}
@@ -56,13 +55,13 @@ export function ExistingCustomerSection({ selectedCustomer, onSelect, error }: E
             />
           </View>
         ) : null}
+        {selectedCustomer ? (
+          <View style={styles.selectedWrap}>
+            <CustomerCard customer={selectedCustomer} />
+            <CustomerAddressView address={selectedCustomer} />
+          </View>
+        ) : null}
       </FormSectionCard>
-      {selectedCustomer ? (
-        <FormSectionCard subtitle={t("existingCustomer.selectedSubtitle")} title={t("existingCustomer.selectedTitle")}>
-          <CustomerCard customer={selectedCustomer} />
-          <CustomerAddressView address={selectedCustomer} />
-        </FormSectionCard>
-      ) : null}
       {error ? <ErrorState message={error} /> : null}
     </View>
   );
@@ -75,9 +74,8 @@ const styles = StyleSheet.create({
   resultsWrap: {
     gap: spacing.sm,
   },
-  resultsLabel: {
-    fontSize: 13,
-    fontWeight: "700",
+  selectedWrap: {
+    gap: spacing.xs,
   },
   separator: {
     height: spacing.xs,

@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Control,
   FieldArrayWithId,
   FieldErrors,
   UseFieldArrayAppend,
   UseFieldArrayRemove,
+  UseFieldArrayUpdate,
   UseFormSetValue,
 } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
@@ -16,9 +17,11 @@ import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { spacing } from "@/src/constants/spacing";
 import { ProductQuantityRow } from "@/src/features/orders/components/ProductQuantityRow";
+import {
+  ProductQuantityListModal,
+  ProductQuantitySelection,
+} from "@/src/features/orders/components/ProductQuantityListModal";
 import { AddOrderFormValues } from "@/src/features/orders/validation/addOrderFormSchema";
-import { ProductPicker } from "@/src/features/products/components/ProductPicker";
-import { Product } from "@/src/types/product";
 import { getLocalizedName } from "@/src/utils/localizedName";
 
 type OrderItemsSectionProps = {
@@ -26,42 +29,53 @@ type OrderItemsSectionProps = {
   fields: FieldArrayWithId<AddOrderFormValues, "items", "id">[];
   append: UseFieldArrayAppend<AddOrderFormValues, "items">;
   remove: UseFieldArrayRemove;
+  update: UseFieldArrayUpdate<AddOrderFormValues, "items">;
   setValue: UseFormSetValue<AddOrderFormValues>;
   errors?: FieldErrors<AddOrderFormValues>["items"];
 };
 
-export function OrderItemsSection({ control, fields, append, remove, setValue, errors }: OrderItemsSectionProps) {
+export function OrderItemsSection({ control, fields, append, remove, update, errors }: OrderItemsSectionProps) {
   const { t, i18n } = useTranslation("orders");
   const [pickerVisible, setPickerVisible] = useState(false);
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [removeIndex, setRemoveIndex] = useState<number | null>(null);
 
-  const usedProductIds = fields.map((field) => field.productId).filter(Boolean);
   const rootError = errors?.root?.message ?? (typeof errors?.message === "string" ? errors.message : undefined);
 
-  function openPickerFor(index: number) {
-    setActiveIndex(index);
-    setPickerVisible(true);
-  }
+  const initialQuantities = useMemo(
+    () => Object.fromEntries(fields.map((field) => [field.productId, field.quantity])),
+    [fields],
+  );
 
-  function handleAdd() {
-    const newIndex = fields.length;
-    append({ productId: "", productNameSnapshot: "", unit: "", quantity: 0 });
-    openPickerFor(newIndex);
-  }
-
-  function handleSelect(product: Product) {
-    if (activeIndex === null) {
-      return;
+  function handleConfirmSelection(selections: ProductQuantitySelection[]) {
+    const selectedIds = new Set(selections.map((selection) => selection.product.id));
+    const indicesToRemove = fields
+      .map((field, index) => (selectedIds.has(field.productId) ? -1 : index))
+      .filter((index) => index >= 0);
+    if (indicesToRemove.length) {
+      remove(indicesToRemove);
     }
-    setValue(`items.${activeIndex}.productId`, product.id, { shouldValidate: true });
-    setValue(`items.${activeIndex}.productNameSnapshot`, getLocalizedName(product, i18n.language), { shouldValidate: true });
-    setValue(`items.${activeIndex}.unit`, product.defaultUnit, { shouldValidate: true });
+
+    selections.forEach(({ product, quantity }, order) => {
+      const existingIndex = fields.findIndex((field) => field.productId === product.id);
+      const item = {
+        productId: product.id,
+        productNameSnapshot: getLocalizedName(product, i18n.language),
+        quantity,
+        unit: product.defaultUnit,
+        sortOrder: order,
+      };
+      if (existingIndex >= 0) {
+        update(existingIndex, item);
+      } else {
+        append(item);
+      }
+    });
+
     setPickerVisible(false);
   }
 
   return (
-    <FormSectionCard subtitle={t("items.sectionSubtitle")} title={t("items.sectionTitle")}>
+    <FormSectionCard title={t("items.sectionTitle")}>
       <View style={styles.container}>
         {fields.map((field, index) => (
           <ProductQuantityRow
@@ -73,17 +87,16 @@ export function OrderItemsSection({ control, fields, append, remove, setValue, e
             }
             index={index}
             key={field.id}
-            onOpenPicker={() => openPickerFor(index)}
             onRemove={() => setRemoveIndex(index)}
           />
         ))}
-        <AppButton label={t("items.addProduct")} onPress={handleAdd} variant="secondary" />
+        <AppButton label={t("items.addProduct")} onPress={() => setPickerVisible(true)} size="compact" variant="secondary" />
         {rootError ? <ErrorState message={rootError} /> : null}
       </View>
-      <ProductPicker
-        excludeIds={usedProductIds}
-        onClose={() => setPickerVisible(false)}
-        onSelect={handleSelect}
+      <ProductQuantityListModal
+        initialQuantities={initialQuantities}
+        onCancel={() => setPickerVisible(false)}
+        onConfirm={handleConfirmSelection}
         visible={pickerVisible}
       />
       <ConfirmDialog

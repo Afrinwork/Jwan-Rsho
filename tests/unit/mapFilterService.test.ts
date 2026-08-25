@@ -5,7 +5,6 @@ import {
   filterMapMarkers,
   getMapCityOptions,
   getMapCountryOptions,
-  getMapRegionOptions,
 } from "@/src/features/map/services/mapFilterService";
 
 const markers = [
@@ -53,13 +52,12 @@ const markers = [
   },
 ];
 
-test("map filters return only matching country city and region markers", () => {
-  const filtered = filterMapMarkers(markers, { country: "DE", city: "Berlin", region: "BE" });
+test("map filters return only matching country and city markers", () => {
+  const filtered = filterMapMarkers(markers, { country: "DE", city: "Berlin" });
   assert.deepEqual(filtered.map((value) => value.id), ["c1"]);
 });
 
 test("map filter options expose only values that exist", () => {
   assert.deepEqual(getMapCountryOptions(markers), ["DE", "FR"]);
-  assert.deepEqual(getMapCityOptions(markers, { country: "DE", city: "", region: "" }), ["Berlin", "Hamburg"]);
-  assert.deepEqual(getMapRegionOptions(markers, { country: "FR", city: "Paris", region: "" }), ["IDF"]);
+  assert.deepEqual(getMapCityOptions(markers, { country: "DE", city: "" }), ["Berlin", "Hamburg"]);
 });

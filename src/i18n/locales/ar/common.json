@@ -12,6 +12,8 @@
   "loading": "جارٍ التحميل...",
   "yes": "نعم",
   "no": "لا",
+  "successBadge": "نجاح",
+  "errorBadge": "تنبيه",
   "optional": "اختياري",
   "share": "مشاركة",
   "add": "إضافة",

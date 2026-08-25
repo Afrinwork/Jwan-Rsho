@@ -23,7 +23,6 @@ export function CustomerModeSelector({ mode, onChange }: CustomerModeSelectorPro
         colors={colors}
         Icon={People20Regular}
         label={t("customerMode.existing.label")}
-        subtitle={t("customerMode.existing.subtitle")}
         onPress={() => onChange("existing")}
       />
       <ModeCard
@@ -31,7 +30,6 @@ export function CustomerModeSelector({ mode, onChange }: CustomerModeSelectorPro
         colors={colors}
         Icon={PersonAdd20Regular}
         label={t("customerMode.new.label")}
-        subtitle={t("customerMode.new.subtitle")}
         onPress={() => onChange("new")}
       />
     </View>
@@ -41,13 +39,12 @@ export function CustomerModeSelector({ mode, onChange }: CustomerModeSelectorPro
 type ModeCardProps = {
   active: boolean;
   label: string;
-  subtitle: string;
   Icon: ComponentType<{ color?: string; size?: number }>;
   onPress: () => void;
   colors: ReturnType<typeof useThemeColors>;
 };
 
-function ModeCard({ active, label, subtitle, Icon, onPress, colors }: ModeCardProps) {
+function ModeCard({ active, label, Icon, onPress, colors }: ModeCardProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -58,10 +55,9 @@ function ModeCard({ active, label, subtitle, Icon, onPress, colors }: ModeCardPr
           borderColor: active ? colors.primary : colors.border,
         },
       ]}
-    >
+      >
       <Icon color={active ? colors.primary : colors.mutedText} size={20} />
       <Text style={[styles.label, { color: active ? colors.primary : colors.text }]}>{label}</Text>
-      <Text style={[styles.subtitle, { color: colors.mutedText }]}>{subtitle}</Text>
     </Pressable>
   );
 }
@@ -73,19 +69,15 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    borderWidth: 2,
-    borderRadius: 20,
-    paddingVertical: spacing.md,
+    borderWidth: 1,
+    borderRadius: 18,
+    paddingVertical: spacing.sm,
     paddingHorizontal: spacing.sm,
     alignItems: "center",
-    gap: 6,
+    gap: 4,
   },
   label: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "700",
-  },
-  subtitle: {
-    fontSize: 12,
-    textAlign: "center",
   },
 });

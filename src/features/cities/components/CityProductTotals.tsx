@@ -32,9 +32,11 @@ export function CityProductTotals({ totals, embedded = false, inverted = false }
         },
       ]}
     >
-      <AppText color={inverted ? "#F8FAFC" : "default"} style={styles.title} variant="caption">
-        {t("productTotals.title")}
-      </AppText>
+      {!embedded ? (
+        <AppText color={inverted ? "#F8FAFC" : "default"} style={styles.title} variant="caption">
+          {t("productTotals.title")}
+        </AppText>
+      ) : null}
       <View style={styles.items}>
         {totals.map((value) => (
           <View

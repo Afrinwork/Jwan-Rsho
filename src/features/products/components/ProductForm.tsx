@@ -5,11 +5,12 @@ import { z } from "zod";
 import { StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
+import { AppCard } from "@/src/components/ui/AppCard";
 import { AppButton } from "@/src/components/ui/AppButton";
 import { AppInput } from "@/src/components/ui/AppInput";
+import { AppText } from "@/src/components/ui/AppText";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { FormField } from "@/src/components/forms/FormField";
-import { LocalizedNameField } from "@/src/components/forms/LocalizedNameField";
 import { spacing } from "@/src/constants/spacing";
 import { productSchema } from "@/src/features/products/validation/productSchema";
 import { formatError } from "@/src/utils/formatError";
@@ -45,71 +46,61 @@ export function ProductForm({ initialValues, submitLabel, onCancel, onSubmit }: 
   });
 
   return (
-    <View style={styles.container}>
-      <LocalizedNameField
-        arError={form.formState.errors.nameAr?.message}
-        arField="nameAr"
-        arPlaceholder={t("form.nameArPlaceholder")}
-        control={form.control}
-        label={t("form.nameLabel")}
-        nameError={form.formState.errors.name?.message}
-        nameField="name"
-        namePlaceholder={t("form.namePlaceholder")}
-      />
-      <FormField error={form.formState.errors.defaultUnit?.message} label={t("form.unitLabel")}>
-        <Controller
-          control={form.control}
-          name="defaultUnit"
-          render={({ field }) => (
-            <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder={t("form.unitPlaceholder")} value={field.value} />
-          )}
-        />
-      </FormField>
-      <FormField error={form.formState.errors.emoji?.message} label={t("form.emojiLabel")}>
-        <Controller
-          control={form.control}
-          name="emoji"
-          render={({ field }) => (
-            <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder={t("form.emojiPlaceholder")} value={field.value ?? ""} />
-          )}
-        />
-      </FormField>
-      <FormField error={form.formState.errors.sortOrder?.message} label={t("form.sortOrderLabel")}>
-        <Controller
-          control={form.control}
-          name="sortOrder"
-          render={({ field }) => (
-            <AppInput
-              keyboardType="number-pad"
-              onBlur={field.onBlur}
-              onChangeText={(text) => field.onChange(text === "" ? 0 : Number(text))}
-              placeholder="0"
-              value={String(field.value)}
-            />
-          )}
-        />
-      </FormField>
-      {submitError ? <ErrorState message={submitError} /> : null}
-      <View style={styles.actions}>
-        {onCancel ? (
-          <View style={styles.actionButton}>
-            <AppButton label={t("common:cancel")} onPress={onCancel} variant="secondary" />
-          </View>
-        ) : null}
-        <View style={styles.actionButton}>
-          <AppButton
-            disabled={form.formState.isSubmitting}
-            label={form.formState.isSubmitting ? t("form.submitting") : submitLabel}
-            loading={form.formState.isSubmitting}
-            onPress={submit}
+    <AppCard contentStyle={styles.card}>
+      <View style={styles.header}>
+        <AppText variant="subheading">{submitLabel}</AppText>
+        <AppText color="muted" variant="caption">
+          {t("management.subtitle")}
+        </AppText>
+      </View>
+      <View style={styles.container}>
+        <FormField error={form.formState.errors.name?.message} label={t("form.nameLabel")}>
+          <Controller
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder={t("form.namePlaceholder")} value={field.value} />
+            )}
           />
+        </FormField>
+        <FormField error={form.formState.errors.defaultUnit?.message} label={t("form.unitLabel")}>
+          <Controller
+            control={form.control}
+            name="defaultUnit"
+            render={({ field }) => (
+              <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder={t("form.unitPlaceholder")} value={field.value} />
+            )}
+          />
+        </FormField>
+        {submitError ? <ErrorState message={submitError} /> : null}
+        <View style={styles.actions}>
+          {onCancel ? (
+            <View style={styles.actionButton}>
+              <AppButton label={t("common:cancel")} onPress={onCancel} variant="secondary" />
+            </View>
+          ) : null}
+          <View style={styles.actionButton}>
+            <AppButton
+              disabled={form.formState.isSubmitting}
+              label={form.formState.isSubmitting ? t("form.submitting") : submitLabel}
+              loading={form.formState.isSubmitting}
+              onPress={submit}
+            />
+          </View>
         </View>
       </View>
-    </View>
+    </AppCard>
   );
 }
 
 const styles = StyleSheet.create({
+  card: {
+    padding: spacing.lg,
+    gap: spacing.md,
+  },
+  header: {
+    gap: spacing.xxs,
+  },
   container: {
     gap: spacing.sm,
   },

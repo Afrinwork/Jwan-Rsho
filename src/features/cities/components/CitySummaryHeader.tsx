@@ -15,18 +15,21 @@ type CitySummaryHeaderProps = {
 
 export function CitySummaryHeader({ cityCount, title, subtitle, rightSlot, inverted = false }: CitySummaryHeaderProps) {
   const { t } = useTranslation("cities");
+  const resolvedSubtitle = subtitle ?? t("summary.defaultSubtitle");
 
   return (
     <View style={styles.container}>
       <View style={styles.titleRow}>
-        <AppText color={inverted ? "#F8FAFC" : "default"} style={styles.title} variant="heading">
+        <AppText color={inverted ? "#F8FAFC" : "default"} style={[styles.title, styles.copy]} variant="heading">
           {title ?? t("summary.defaultTitle")}
         </AppText>
         {rightSlot}
       </View>
-      <AppText color={inverted ? "rgba(226, 232, 240, 0.92)" : "muted"} numberOfLines={2} style={styles.subtitle} variant="caption">
-        {subtitle ?? t("summary.defaultSubtitle")}
-      </AppText>
+      {resolvedSubtitle.trim() ? (
+        <AppText color={inverted ? "rgba(226, 232, 240, 0.92)" : "muted"} numberOfLines={2} style={styles.subtitle} variant="caption">
+          {resolvedSubtitle}
+        </AppText>
+      ) : null}
     </View>
   );
 }
@@ -36,9 +39,12 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingBottom: spacing.xs,
   },
+  copy: {
+    flex: 1,
+  },
   titleRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "space-between",
     flexWrap: "wrap",
     gap: spacing.xs,

@@ -6,7 +6,7 @@ import { ProductManagementSection } from "@/src/features/products/components/Pro
 
 export function ProductManagementScreen() {
   return (
-    <ScreenContainer>
+    <ScreenContainer contentStyle={styles.screenContent}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ProductManagementSection />
       </ScrollView>
@@ -15,5 +15,8 @@ export function ProductManagementScreen() {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingBottom: spacing.xl },
+  screenContent: {
+    paddingTop: spacing.xs,
+  },
+  content: { paddingBottom: spacing.xl, gap: spacing.sm },
 });

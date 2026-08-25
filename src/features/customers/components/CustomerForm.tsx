@@ -17,44 +17,53 @@ export function CustomerForm({ control, errors }: CustomerFormProps) {
 
   return (
     <View style={styles.container}>
-      <FormField error={errors?.fullName?.message} label={t("form.nameLabel")}>
-        <Controller
-          control={control}
-          name="customer.fullName"
-          render={({ field }) => (
-            <AppInput
-              onBlur={field.onBlur}
-              onChangeText={field.onChange}
-              placeholder={t("form.namePlaceholder")}
-              value={field.value ?? ""}
+      <View style={styles.row}>
+        <View style={styles.column}>
+          <FormField error={errors?.fullName?.message} label={t("form.nameLabel")}>
+            <Controller
+              control={control}
+              name="customer.fullName"
+              render={({ field }) => (
+                <AppInput
+                  onBlur={field.onBlur}
+                  onChangeText={field.onChange}
+                  placeholder={t("form.namePlaceholder")}
+                  value={field.value ?? ""}
+                />
+              )}
             />
-          )}
-        />
-      </FormField>
-      <FormField error={errors?.phone?.message} label={t("form.phoneLabel")}>
-        <Controller
-          control={control}
-          name="customer.phone"
-          render={({ field }) => (
-            <AppInput
-              keyboardType="phone-pad"
-              onBlur={field.onBlur}
-              onChangeText={field.onChange}
-              placeholder={t("form.phonePlaceholder")}
-              value={field.value ?? ""}
+          </FormField>
+        </View>
+        <View style={styles.column}>
+          <FormField error={errors?.phone?.message} label={t("form.phoneLabel")}>
+            <Controller
+              control={control}
+              name="customer.phone"
+              render={({ field }) => (
+                <AppInput
+                  keyboardType="phone-pad"
+                  onBlur={field.onBlur}
+                  onChangeText={field.onChange}
+                  placeholder={t("form.phonePlaceholder")}
+                  value={field.value ?? ""}
+                />
+              )}
             />
-          )}
-        />
-      </FormField>
+          </FormField>
+        </View>
+      </View>
       <FormField error={errors?.note?.message} label={t("form.noteLabel")}>
         <Controller
           control={control}
           name="customer.note"
           render={({ field }) => (
             <AppInput
+              multiline
+              numberOfLines={3}
               onBlur={field.onBlur}
               onChangeText={field.onChange}
               placeholder={t("form.notePlaceholder")}
+              style={styles.noteInput}
               value={field.value ?? ""}
             />
           )}
@@ -67,5 +76,16 @@ export function CustomerForm({ control, errors }: CustomerFormProps) {
 const styles = StyleSheet.create({
   container: {
     gap: spacing.sm,
+  },
+  row: {
+    flexDirection: "row",
+    gap: spacing.sm,
+  },
+  column: {
+    flex: 1,
+  },
+  noteInput: {
+    minHeight: 64,
+    textAlignVertical: "top",
   },
 });

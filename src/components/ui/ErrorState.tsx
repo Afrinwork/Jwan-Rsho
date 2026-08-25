@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 
 import { AppBadge } from "@/src/components/ui/AppBadge";
@@ -16,6 +17,7 @@ const DEFAULT_DURATION_MS = 3600;
 
 export function ErrorState({ message, durationMs = DEFAULT_DURATION_MS }: ErrorStateProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation("common");
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
@@ -30,16 +32,10 @@ export function ErrorState({ message, durationMs = DEFAULT_DURATION_MS }: ErrorS
 
   return (
     <View style={[styles.container, { backgroundColor: colors.dangerBackground, borderColor: colors.dangerBorder }]}>
-      <AppBadge label="Kurz stoppen" tone="danger" />
-      <AppText color="danger" variant="body">
-        {buildErrorMessage(message)}
-      </AppText>
+      <AppBadge label={t("errorBadge")} tone="danger" />
+      <AppText color="danger" variant="body">{message}</AppText>
     </View>
   );
-}
-
-function buildErrorMessage(message: string) {
-  return `Fast geschafft. ${message}`;
 }
 
 const styles = StyleSheet.create({

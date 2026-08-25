@@ -1,6 +1,7 @@
 import { StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 
+import { AppBadge } from "@/src/components/ui/AppBadge";
 import { AppCard } from "@/src/components/ui/AppCard";
 import { AppText } from "@/src/components/ui/AppText";
 import { spacing } from "@/src/theme/spacing";
@@ -35,9 +36,7 @@ export function CityCustomerCard(props: CityCustomerCardProps) {
       <AppText color="muted" style={styles.meta} variant="body">
         {props.customer.currentOpenOrderLabel ?? t("customerList.noOpenOrder")}
       </AppText>
-      <AppText color={statusColor(props.customer.status)} style={styles.status} variant="bodyMedium">
-        {labelForStatus(props.customer.status, t)}
-      </AppText>
+      <AppBadge label={labelForStatus(props.customer.status, t)} tone={statusTone(props.customer.status)} />
       <CityCustomerActions canComplete={Boolean(props.customer.currentOpenOrderId)} completing={props.completing} onComplete={props.onComplete} onPressDetails={props.onPressDetails} onToggleSelection={props.onToggleSelection} selected={props.selected} />
     </AppCard>
   );
@@ -55,7 +54,7 @@ function labelForStatus(status: CityCustomerItem["status"], t: (key: string) => 
   return t("customerStatus.noOpenOrder");
 }
 
-function statusColor(status: CityCustomerItem["status"]) {
+function statusTone(status: CityCustomerItem["status"]): "danger" | "success" | "neutral" {
   if (status === "open") {
     return "danger";
   }
@@ -64,15 +63,14 @@ function statusColor(status: CityCustomerItem["status"]) {
     return "success";
   }
 
-  return "muted";
+  return "neutral";
 }
 
 const styles = StyleSheet.create({
   card: {
     padding: spacing.md,
-    gap: 6,
+    gap: spacing.xs,
   },
   name: {},
   meta: {},
-  status: {},
 });

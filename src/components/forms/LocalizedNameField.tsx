@@ -11,10 +11,12 @@ type LocalizedNameFieldProps<T extends FieldValues> = {
   nameField: Path<T>;
   arField: Path<T>;
   label: string;
+  arLabel?: string;
   namePlaceholder?: string;
   arPlaceholder?: string;
   nameError?: string;
   arError?: string;
+  showLanguageTabs?: boolean;
 };
 
 export function LocalizedNameField<T extends FieldValues>({
@@ -22,13 +24,51 @@ export function LocalizedNameField<T extends FieldValues>({
   nameField,
   arField,
   label,
+  arLabel,
   namePlaceholder,
   arPlaceholder,
   nameError,
   arError,
+  showLanguageTabs = true,
 }: LocalizedNameFieldProps<T>) {
   const colors = useThemeColors();
   const [activeLang, setActiveLang] = useState<"de" | "ar">("de");
+
+  if (!showLanguageTabs) {
+    return (
+      <View style={styles.fieldStack}>
+        <FormField error={nameError} label={label}>
+          <Controller
+            control={control}
+            name={nameField}
+            render={({ field }) => (
+              <AppInput
+                onBlur={field.onBlur}
+                onChangeText={field.onChange}
+                placeholder={namePlaceholder}
+                value={(field.value as string | undefined) ?? ""}
+              />
+            )}
+          />
+        </FormField>
+        <FormField error={arError} label={arLabel ?? arPlaceholder ?? label}>
+          <Controller
+            control={control}
+            name={arField}
+            render={({ field }) => (
+              <AppInput
+                onBlur={field.onBlur}
+                onChangeText={field.onChange}
+                placeholder={arPlaceholder}
+                style={styles.arInput}
+                value={(field.value as string | undefined) ?? ""}
+              />
+            )}
+          />
+        </FormField>
+      </View>
+    );
+  }
 
   return (
     <FormField error={activeLang === "de" ? nameError : arError} label={label}>
@@ -84,6 +124,7 @@ export function LocalizedNameField<T extends FieldValues>({
 }
 
 const styles = StyleSheet.create({
+  fieldStack: { gap: 10 },
   tabRow: { flexDirection: "row", gap: 6, marginBottom: 6 },
   tab: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 5 },
   tabLabel: { fontSize: 12, fontWeight: "700" },

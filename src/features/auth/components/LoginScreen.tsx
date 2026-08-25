@@ -71,14 +71,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   kicker: {
-    letterSpacing: 1.6,
+    letterSpacing: 1.1,
     textAlign: "center",
+    textTransform: "uppercase",
   },
   title: {
     textAlign: "center",
   },
   subtitle: {
     textAlign: "center",
+    maxWidth: 320,
   },
   panel: {
     padding: spacing.lg,

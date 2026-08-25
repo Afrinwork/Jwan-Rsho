@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { spacing } from "@/src/constants/spacing";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 
-export type ManagementWorkspaceId = "products" | "countries" | "regions" | "seed";
+export type ManagementWorkspaceId = "products" | "countries" | "seed";
 
 type ManagementWorkspaceTabsProps = {
   active: ManagementWorkspaceId;
@@ -18,7 +18,6 @@ export function ManagementWorkspaceTabs(props: ManagementWorkspaceTabsProps) {
   const items: { id: ManagementWorkspaceId; label: string }[] = [
     { id: "products", label: t("workspaceTabs.products") },
     { id: "countries", label: t("workspaceTabs.countries") },
-    { id: "regions", label: t("workspaceTabs.regions") },
     { id: "seed", label: t("workspaceTabs.catalog") },
   ];
 

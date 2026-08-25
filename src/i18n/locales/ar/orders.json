@@ -40,14 +40,22 @@
   "items": {
     "sectionTitle": "المنتجات",
     "sectionSubtitle": "اختر المنتجات والكميات والوحدات للطلب المفتوح.",
-    "addProduct": "إضافة منتج",
+    "addProduct": "إضافة منتجات",
     "selectProduct": "اختر منتجًا",
     "change": "تغيير",
     "quantityPlaceholder": "الكمية",
     "unitPlaceholder": "الوحدة",
     "remove": "إزالة",
     "removeConfirmTitle": "إزالة المنتج؟",
-    "removeConfirmMessage": "سيتم إزالة هذا المنتج من الطلب."
+    "removeConfirmMessage": "سيتم إزالة هذا المنتج من الطلب.",
+    "bulkTitle": "إضافة منتجات",
+    "bulkEmptyTitle": "لا توجد منتجات",
+    "bulkEmptyMessage": "لا توجد منتجات مطابقة لبحثك.",
+    "searchPlaceholder": "بحث عن منتج",
+    "summaryTitle": "ملخص الطلبية",
+    "summaryCount": "إجمالي المنتجات: {{count}}",
+    "summaryQuantity": "إجمالي الكمية: {{quantity}}",
+    "confirmSelection": "إضافة المنتجات المحددة"
   },
   "save": {
     "button": "حفظ الطلب",
@@ -74,6 +82,8 @@
     "orderDateLabel": "طلب بتاريخ {{date}}",
     "completeButton": "إنهاء",
     "deleteButton": "حذف",
+    "completeSuccess": "تم إنهاء الطلب بنجاح.",
+    "deleteSuccess": "تم حذف الطلب بنجاح.",
     "deleteConfirmTitle": "هل تريد حذف هذا الطلب نهائيًا؟",
     "deleteConfirmMessage": "سيتم حذف هذا الطلب نهائيًا من قاعدة البيانات. لا يمكن التراجع عن هذا الإجراء.",
     "completeConfirmTitle": "هل تريد إنهاء هذا الطلب؟",

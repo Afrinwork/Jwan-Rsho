@@ -2,6 +2,8 @@ import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
+import { AppCard } from "@/src/components/ui/AppCard";
+import { AppText } from "@/src/components/ui/AppText";
 import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
 import { EmptyState } from "@/src/components/ui/EmptyState";
 import { ErrorState } from "@/src/components/ui/ErrorState";
@@ -23,6 +25,8 @@ export function ProductManagementSection() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const { t } = useTranslation("products");
+  const activeProducts = products.filter((product) => product.isActive).length;
+  const inactiveProducts = products.length - activeProducts;
 
   async function handleAdd(values: ProductFormValues) {
     setActionError(null);
@@ -52,22 +56,26 @@ export function ProductManagementSection() {
 
     void toggleActive(product)
       .then(() => setSuccessMessage(t("management.activateSuccess")))
-      .catch((error) =>
-        setActionError(error instanceof Error ? error.message : t("management.updateError")),
+      .catch((submitError) =>
+        setActionError(submitError instanceof Error ? submitError.message : t("management.updateError")),
       );
   }
 
   return (
     <ManagementSectionShell
-      createLabel={t("management.createLabel")}
-      listLabel={t("management.listLabel")}
+      createLabel={t("management.createTabLabel")}
+      listLabel={t("management.listTabLabel")}
       mode={mode}
       onModeChange={setMode}
       subtitle={t("management.subtitle")}
       title={t("management.title")}
     >
       {mode === "create" ? (
-        <ProductForm onCancel={() => setMode("list")} onSubmit={handleAdd} submitLabel={t("management.addSubmitLabel")} />
+        <ProductForm
+          onCancel={() => setMode("list")}
+          onSubmit={handleAdd}
+          submitLabel={t("management.addSubmitLabel")}
+        />
       ) : null}
       {mode === "list" ? (
         <View style={styles.container}>
@@ -75,6 +83,22 @@ export function ProductManagementSection() {
           {error ? <ErrorState message={error} /> : null}
           {actionError ? <ErrorState message={actionError} /> : null}
           {successMessage ? <SuccessState message={successMessage} /> : null}
+          {!loading && !error ? (
+            <View style={styles.summaryGrid}>
+              <AppCard contentStyle={styles.summaryCard}>
+                <AppText color="muted" variant="caption">{t("management.statsTotal")}</AppText>
+                <AppText variant="subheading">{String(products.length)}</AppText>
+              </AppCard>
+              <AppCard contentStyle={styles.summaryCard}>
+                <AppText color="muted" variant="caption">{t("management.statsActive")}</AppText>
+                <AppText variant="subheading">{String(activeProducts)}</AppText>
+              </AppCard>
+              <AppCard contentStyle={styles.summaryCard}>
+                <AppText color="muted" variant="caption">{t("management.statsInactive")}</AppText>
+                <AppText variant="subheading">{String(inactiveProducts)}</AppText>
+              </AppCard>
+            </View>
+          ) : null}
           {!loading && !error && products.length === 0 ? (
             <EmptyState
               message={t("management.emptyMessage")}
@@ -84,7 +108,13 @@ export function ProductManagementSection() {
           {products.map((product) =>
             editingProduct?.id === product.id ? (
               <ProductForm
-                initialValues={{ name: product.name, nameAr: product.nameAr ?? "", defaultUnit: product.defaultUnit, emoji: product.emoji ?? "", sortOrder: product.sortOrder }}
+                initialValues={{
+                  name: product.name,
+                  nameAr: product.nameAr ?? "",
+                  defaultUnit: product.defaultUnit,
+                  emoji: product.emoji ?? "",
+                  sortOrder: product.sortOrder,
+                }}
                 key={product.id}
                 onCancel={() => setEditingProduct(null)}
                 onSubmit={handleEdit}
@@ -96,13 +126,13 @@ export function ProductManagementSection() {
                 onDelete={() => setDeleteTarget(product)}
                 onEdit={() => setEditingProduct(product)}
                 onMoveDown={() =>
-                  void moveProduct(product, "down").catch((error) =>
-                    setActionError(error instanceof Error ? error.message : t("management.reorderError")),
+                  void moveProduct(product, "down").catch((moveError) =>
+                    setActionError(moveError instanceof Error ? moveError.message : t("management.reorderError")),
                   )
                 }
                 onMoveUp={() =>
-                  void moveProduct(product, "up").catch((error) =>
-                    setActionError(error instanceof Error ? error.message : t("management.reorderError")),
+                  void moveProduct(product, "up").catch((moveError) =>
+                    setActionError(moveError instanceof Error ? moveError.message : t("management.reorderError")),
                   )
                 }
                 onToggleActive={() => requestToggle(product)}
@@ -121,8 +151,8 @@ export function ProductManagementSection() {
           if (deactivateTarget) {
             void toggleActive(deactivateTarget)
               .then(() => setSuccessMessage(t("management.deactivateSuccess")))
-              .catch((error) =>
-                setActionError(error instanceof Error ? error.message : t("management.deactivateError")),
+              .catch((toggleError) =>
+                setActionError(toggleError instanceof Error ? toggleError.message : t("management.deactivateError")),
               );
           }
           setDeactivateTarget(null);
@@ -139,8 +169,8 @@ export function ProductManagementSection() {
           if (deleteTarget) {
             void deleteProduct(deleteTarget)
               .then(() => setSuccessMessage(t("management.deleteSuccess")))
-              .catch((error) =>
-                setActionError(error instanceof Error ? error.message : t("management.deleteError")),
+              .catch((deleteError) =>
+                setActionError(deleteError instanceof Error ? deleteError.message : t("management.deleteError")),
               );
           }
           setDeleteTarget(null);
@@ -155,5 +185,16 @@ export function ProductManagementSection() {
 const styles = StyleSheet.create({
   container: {
     gap: spacing.sm,
+  },
+  summaryGrid: {
+    flexDirection: "row",
+    gap: spacing.xs,
+  },
+  summaryCard: {
+    flex: 1,
+    minWidth: 0,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+    gap: 2,
   },
 });

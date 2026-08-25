@@ -28,7 +28,7 @@ export default function RootLayout() {
             },
             headerTitleStyle: {
               color: colors.text,
-              ...typography.bodyMedium,
+              ...typography.subheading,
             },
             headerLargeTitleShadowVisible: false,
             headerTintColor: colors.primary,
@@ -42,7 +42,6 @@ export default function RootLayout() {
           <Stack.Screen name="admin/users" options={{ title: t("stack.deleteUsers") }} />
           <Stack.Screen name="management/products" options={{ title: t("stack.products") }} />
           <Stack.Screen name="management/countries" options={{ title: t("stack.countries") }} />
-          <Stack.Screen name="management/regions" options={{ title: t("stack.regions") }} />
           <Stack.Screen name="management/catalog" options={{ title: t("stack.catalog") }} />
           <Stack.Screen name="cities/index" options={{ title: t("stack.cities") }} />
           <Stack.Screen name="city/[city]" options={{ title: t("stack.city") }} />
