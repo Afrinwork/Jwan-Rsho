@@ -148,7 +148,9 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
       setActionSuccess(null);
       setCompletingOrder(true);
       await Promise.all(details.openOrders.map((order) => orderRepository.completeOrder(order.id)));
-      setActionSuccess(t("sheet.completeSuccess"));
+      setActionSuccess(
+        details.openOrders.length > 1 ? t("sheet.completeAllSuccess") : t("sheet.completeSuccess"),
+      );
       return true;
     } catch (error) {
       setActionError(formatError(error).message);

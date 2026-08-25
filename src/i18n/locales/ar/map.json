@@ -27,7 +27,9 @@
   },
   "polygonDraw": {
     "back": "رجوع",
-    "closeSelection": "إغلاق التحديد"
+    "closeSelection": "إغلاق التحديد",
+    "pause": "إيقاف",
+    "resume": "متابعة الرسم"
   },
   "selectedBar": {
     "count": "تم تحديد {{count}} من الزبائن",
@@ -61,7 +63,11 @@
     "loadingDetails": "جارٍ تحميل بيانات الزبون...",
     "markCompleted": "تحديد كمكتمل",
     "markAllCompleted": "تحديد جميع الطلبات ({{count}}) كمكتملة",
-    "completeSuccess": "تم إنهاء الطلبات المفتوحة بنجاح.",
+    "completeConfirmTitle": "إنهاء الطلب؟",
+    "completeConfirmMessage": "سيتم حذف هذا الطلب نهائيًا بعد الإنهاء. سيبقى الزبون وعنوانه محفوظين. لا يمكن التراجع عن هذا الإجراء.",
+    "completeAllConfirmMessage": "سيتم حذف جميع الطلبات ({{count}}) نهائيًا بعد الإنهاء. سيبقى الزبون وعنوانه محفوظين. لا يمكن التراجع عن هذا الإجراء.",
+    "completeSuccess": "تم إنهاء الطلب بنجاح.",
+    "completeAllSuccess": "تم إنهاء جميع الطلبات المفتوحة بنجاح.",
     "callPhone": "الاتصال بالرقم",
     "phoneMissing": "رقم الهاتف غير متوفر",
     "navigation": "الملاحة",
@@ -70,7 +76,7 @@
   },
   "navigationSheet": {
     "title": "فتح تطبيق الملاحة",
-    "subtitle": "خرائط Apple هي دائماً الخيار الافتراضي الآمن.",
+    "subtitle": "خرائط Apple هي دائمًا الخيار الافتراضي الآمن.",
     "unavailable": "{{label}} غير متوفر"
   },
   "errors": {
@@ -92,6 +98,6 @@
     "ordersCountLine": "{{count}} طلبات",
     "noOpenOrder": "لا يوجد طلب مفتوح",
     "note": "ملاحظة: {{note}}",
-    "defaultSubject": "قائمة الزبائن المختارة"
+    "defaultSubject": "قائمة الزبائن المحددة"
   }
 }

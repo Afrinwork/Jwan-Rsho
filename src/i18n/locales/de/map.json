@@ -66,6 +66,8 @@
     "completeConfirmTitle": "Bestellung erledigt?",
     "completeConfirmMessage": "Die Bestellung wird danach endgueltig geloescht. Der Kunde und seine Adresse bleiben erhalten. Das kann nicht rueckgaengig gemacht werden.",
     "completeAllConfirmMessage": "Alle {{count}} Bestellungen werden danach endgueltig geloescht. Der Kunde und seine Adresse bleiben erhalten. Das kann nicht rueckgaengig gemacht werden.",
+    "completeSuccess": "Die Bestellung wurde erfolgreich erledigt.",
+    "completeAllSuccess": "Alle offenen Bestellungen wurden erfolgreich erledigt.",
     "callPhone": "Telefonnummer anrufen",
     "phoneMissing": "Telefonnummer fehlt",
     "navigation": "Navigation",
