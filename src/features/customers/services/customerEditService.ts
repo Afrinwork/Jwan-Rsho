@@ -3,7 +3,7 @@ import { OrderWithItems } from "@/src/types/order";
 
 import { CustomerEditFormValues } from "@/src/features/customers/validation/customerEditSchema";
 
-export function buildCustomerEditFormValues(customer: Customer, openOrder: OrderWithItems): CustomerEditFormValues {
+export function buildCustomerEditFormValues(customer: Customer, openOrder: OrderWithItems | null): CustomerEditFormValues {
   return {
     customerId: customer.id,
     customer: {
@@ -18,12 +18,14 @@ export function buildCustomerEditFormValues(customer: Customer, openOrder: Order
       longitude: customer.longitude,
       isActive: customer.isActive,
     },
-    items: openOrder.items.map((item) => ({
-      productId: item.productId,
-      productNameSnapshot: item.productNameSnapshot,
-      quantity: item.quantity,
-      unit: item.unit,
-      sortOrder: item.sortOrder,
-    })),
+    items: openOrder
+      ? openOrder.items.map((item) => ({
+          productId: item.productId,
+          productNameSnapshot: item.productNameSnapshot,
+          quantity: item.quantity,
+          unit: item.unit,
+          sortOrder: item.sortOrder,
+        }))
+      : [],
   };
 }

@@ -2,6 +2,8 @@ import { createInstance } from "i18next";
 import { initReactI18next } from "react-i18next";
 
 import deMap from "@/src/i18n/locales/de/map.json";
+import deNavigation from "@/src/i18n/locales/de/navigation.json";
+import deRoute from "@/src/i18n/locales/de/route.json";
 
 import arAdmin from "@/src/i18n/locales/ar/admin.json";
 import arAuth from "@/src/i18n/locales/ar/auth.json";
@@ -17,12 +19,15 @@ import arOrders from "@/src/i18n/locales/ar/orders.json";
 import arOverview from "@/src/i18n/locales/ar/overview.json";
 import arProducts from "@/src/i18n/locales/ar/products.json";
 import arRegions from "@/src/i18n/locales/ar/regions.json";
+import arRoute from "@/src/i18n/locales/ar/route.json";
 import arSettings from "@/src/i18n/locales/ar/settings.json";
 import arValidation from "@/src/i18n/locales/ar/validation.json";
 
 const resources = {
   de: {
     map: deMap,
+    navigation: deNavigation,
+    route: deRoute,
   },
   ar: {
     common: arCommon,
@@ -41,6 +46,7 @@ const resources = {
     overview: arOverview,
     products: arProducts,
     regions: arRegions,
+    route: arRoute,
   },
 };
 

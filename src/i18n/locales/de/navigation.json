@@ -1,0 +1,28 @@
+{
+  "tabs": {
+    "overview": "Uebersicht",
+    "map": "Karte",
+    "add": "Hinzufuegen",
+    "cities": "Staedte",
+    "management": "Verwaltung",
+    "settings": "Einstellungen"
+  },
+  "stack": {
+    "adminDashboard": "Admin",
+    "createUser": "Benutzer anlegen",
+    "deleteUsers": "Benutzer loeschen",
+    "customers": "Kunden",
+    "products": "Produkte",
+    "countries": "Laender",
+    "regions": "Regionen",
+    "catalog": "Katalog",
+    "cities": "Staedte",
+    "city": "Stadt",
+    "customer": "Kunde",
+    "customerEdit": "Kunde bearbeiten",
+    "order": "Bestellung",
+    "route": "Route",
+    "openOrders": "Offene Bestellungen",
+    "forgotPassword": "Passwort vergessen"
+  }
+}

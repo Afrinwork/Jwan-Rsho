@@ -1,3 +1,4 @@
+import { MapDrive20Regular } from "@fluentui/react-native-icons";
 import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { mapT } from "@/src/features/map/i18n/mapT";
@@ -16,6 +17,7 @@ type SelectedCustomersBarProps = {
   emailing: boolean;
   shareError: string | null;
   onViewSelection: () => void;
+  onOpenRoute: () => void;
   onShare: () => void;
   onShareByEmail: () => void;
   onResetSelection: () => void;
@@ -34,31 +36,40 @@ export function SelectedCustomersBar(props: SelectedCustomersBarProps) {
 
   return (
     <View style={[styles.container, props.inline ? styles.inlineContainer : null]}>
-      <Pressable
-        onPress={() => setOpen((value) => !value)}
-        style={[
-          styles.dropdownChip,
-          props.inline ? styles.inlineChip : null,
-          {
-            backgroundColor: colors.surface,
-            borderColor: colors.border,
-          },
-        ]}
-      >
-        <AppText style={styles.dropdownLabel} variant="caption">
-          {shareLabel} {open ? "^" : "v"}
-        </AppText>
-      </Pressable>
+      <View style={styles.triggerRow}>
+        <Pressable
+          onPress={() => setOpen((value) => !value)}
+          style={[
+            styles.dropdownChip,
+            props.inline ? styles.inlineChip : null,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+            },
+          ]}
+        >
+          <AppText style={styles.dropdownLabel} variant="caption">
+            {shareLabel} {open ? "^" : "v"}
+          </AppText>
+        </Pressable>
+        <Pressable
+          accessibilityLabel={t("selectedBar.route")}
+          onPress={props.onOpenRoute}
+          style={[styles.routeButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
+        >
+          <MapDrive20Regular color={colors.primary} />
+        </Pressable>
+      </View>
       {props.shareError ? <ErrorState message={props.shareError} /> : null}
       {open ? (
         <AppCard contentStyle={styles.menu} frosted style={props.inline ? styles.inlineMenu : undefined}>
           <AppText variant="label">{t("selectedBar.count", { count: props.selectedCount })}</AppText>
           <View style={styles.actions}>
             <View style={styles.actionButton}>
-              <AppButton label={t("selectedBar.view")} onPress={props.onViewSelection} size="compact" variant="secondary" />
+              <AppButton label={t("selectedBar.whatsapp")} loading={props.sharing} onPress={props.onShare} size="compact" />
             </View>
             <View style={styles.actionButton}>
-              <AppButton label={t("selectedBar.whatsapp")} loading={props.sharing} onPress={props.onShare} size="compact" />
+              <AppButton label={t("selectedBar.view")} onPress={props.onViewSelection} size="compact" variant="secondary" />
             </View>
             <View style={styles.actionButton}>
               <AppButton
@@ -84,6 +95,19 @@ const styles = StyleSheet.create({
   inlineContainer: {
     flexBasis: "auto",
     alignSelf: "flex-start",
+  },
+  triggerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+  },
+  routeButton: {
+    width: 36,
+    height: 36,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
   dropdownChip: {
     alignSelf: "flex-start",

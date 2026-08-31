@@ -1,0 +1,96 @@
+{
+  "screen": {
+    "title": "المسار",
+    "loading": "جارٍ تحضير المسار..."
+  },
+  "summary": {
+    "addressesTotal": "{{count}} عنوان بالإجمالي",
+    "completed": "{{count}} منجز",
+    "totalArrival": "الوصول للأخير {{time}} / {{distance}} كم"
+  },
+  "startCard": {
+    "title": "نقطة الانطلاق",
+    "currentLocationLabel": "الموقع الحالي",
+    "fallbackLocationLabel": "لم يتم تحديد الموقع",
+    "selectedLocation": "الموقع المختار",
+    "useCurrentLocation": "استخدام الموقع الحالي",
+    "useCurrentLocationShort": "موقعي",
+    "manualAddressTitle": "إدخال يدوي",
+    "manualAddressHint": "اكتب عنوان الانطلاق إذا لم تبدأ من موقعك الحالي.",
+    "locationPlaceholder": "اكتب عنوان الانطلاق",
+    "searchLocation": "بحث",
+    "searchLocationAction": "تأكيد العنوان",
+    "departureTimeLabel": "وقت الانطلاق",
+    "departureTimeShort": "وقت البدء",
+    "departureTimePlaceholder": "س:د",
+    "stepAddress": "العنوان",
+    "stepConfirm": "التأكيد",
+    "stepStart": "البدء",
+    "startButton": "بدء الرحلة"
+  },
+  "live": {
+    "startMarker": "نقطة الانطلاق",
+    "stopProgress": "توقف {{index}} من {{count}}",
+    "distanceRemaining": "المتبقي: {{distance}} كم",
+    "stats": {
+      "arrival": "الوصول",
+      "minutes": "دقيقة",
+      "distance": "كم"
+    },
+    "markComplete": "تحديد كمنجز",
+    "skip": "تخطي",
+    "fullNavigationFallback": "الملاحة لا تعمل؟ افتح خرائط جوجل (كل الزبائن)",
+    "arrivalTitle": "هل وصلت؟",
+    "arrivalMessage": "هل وصلت إلى {{name}}؟ يمكنك تحديد الطلب كمنجز.",
+    "allDone": "تم الوصول إلى جميع التوقفات",
+    "startNavigation": "ابدأ الرحلة",
+    "endNavigation": "إنهاء الرحلة",
+    "tripComplete": "الرحلة مكتملة",
+    "summary": {
+      "completed": "{{count}} تم إنجازه",
+      "skipped": "{{count}} تم تخطيه",
+      "duration": "المدة الإجمالية: {{duration}}"
+    }
+  },
+  "stopRow": {
+    "arrival": "الوصول {{time}} / {{distance}} كم",
+    "estimated": "تقريبي",
+    "navigate": "فتح الملاحة",
+    "orders": "الطلبات",
+    "note": "ملاحظة",
+    "select": "تحديد",
+    "deselect": "إلغاء التحديد"
+  },
+  "selectionBar": {
+    "selectedCount": "تم تحديد {{count}}",
+    "selectAll": "تحديد الكل",
+    "clearSelection": "إلغاء التحديد"
+  },
+  "selectionActions": {
+    "dropdown": "إجراءات على التحديد",
+    "whatsapp": "واتساب",
+    "email": "البريد الإلكتروني",
+    "completeAll": "إنهاء الكل",
+    "completeSelectedTitle": "إنهاء {{count}} طلبات؟",
+    "completeSelectedMessage": "سيتم حذف الطلبات المفتوحة للزبائن المحددين نهائيًا. سيبقى الزبائن وعناوينهم محفوظين. لا يمكن التراجع عن هذا الإجراء.",
+    "noCustomersSelected": "لا يوجد زبائن محددون.",
+    "noOpenOrdersSelected": "لا توجد طلبات مفتوحة للزبائن المحددين.",
+    "defaultEmailSubject": "قائمة المسار"
+  },
+  "errors": {
+    "locationNotFound": "تعذر العثور على هذا الموقع.",
+    "outsideEurope": "هذا الموقع خارج أوروبا. الرجاء إدخال عنوان داخل أوروبا.",
+    "missingApiKey": "مفتاح خرائط جوجل غير معد لحساب المسار.",
+    "requestDenied": "تم رفض طلب حساب المسار. تحقق من إعدادات مفتاح API.",
+    "overQueryLimit": "تم تجاوز الحد المسموح لطلبات المسار. حاول لاحقًا.",
+    "generic": "تعذر حساب المسار. يمكنك المحاولة مرة أخرى.",
+    "noStopsSelected": "لم يتم تحديد أي زبائن على الخريطة.",
+    "locationPermissionRequired": "يلزم إذن الوصول إلى الموقع لبدء الملاحة.",
+    "noCoordinates": "لا يمكن الملاحة إلى هذا الزبون: لا يوجد إحداثيات."
+  },
+  "empty": {
+    "title": "لا يوجد زبائن",
+    "message": "لم يتم تحديد أي زبائن لهذا المسار."
+  },
+  "retry": "إعادة المحاولة"
+}

@@ -60,8 +60,17 @@ export function MapScreen() {
     setVisibleRegion(region);
   }, [region]);
 
+  const hasFocusedOnceRef = useRef(false);
+
   useFocusEffect(useCallback(() => {
-    void reloadCustomers();
+    // useMapCustomers() already loads once on mount — reloading again on this
+    // very first focus fired a second, redundant Firestore load in parallel.
+    // Only later refocuses (coming back from another screen) should reload.
+    if (hasFocusedOnceRef.current) {
+      void reloadCustomers();
+    } else {
+      hasFocusedOnceRef.current = true;
+    }
     if (selectedCustomerId) void reloadDetails();
   }, [reloadCustomers, reloadDetails, selectedCustomerId]));
 
@@ -170,6 +179,9 @@ export function MapScreen() {
               <SelectedCustomersBar
                 emailing={customerSelection.emailing}
                 inline
+                onOpenRoute={() =>
+                  router.push({ pathname: "/map/route", params: { ids: customerSelection.selection.selectedIds.join(",") } })
+                }
                 onResetSelection={customerSelection.resetSelection}
                 onShare={() => void customerSelection.share()}
                 onShareByEmail={() => void customerSelection.shareByEmail()}

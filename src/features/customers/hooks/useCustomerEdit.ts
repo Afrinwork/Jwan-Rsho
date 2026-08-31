@@ -56,24 +56,14 @@ export function useCustomerEdit(customerId: string) {
     ])
       .then(([customer, orders]) => {
         const openOrder = orders.find((value) => value.status === "open");
-
-        if (!openOrder) {
-          throw new Error(t("edit.noOpenOrder"));
-        }
-
-        setOpenOrderId(openOrder.id);
-        form.reset(buildCustomerEditFormValues(customer, openOrder));
+        setOpenOrderId(openOrder?.id ?? null);
+        form.reset(buildCustomerEditFormValues(customer, openOrder ?? null));
       })
       .catch((loadError) => setError(formatError(loadError).message))
       .finally(() => setLoading(false));
   }, [customerId, form, t]);
 
   const submit = form.handleSubmit(async (values) => {
-    if (!openOrderId) {
-      setError(t("edit.noOpenOrder"));
-      return false;
-    }
-
     setSaving(true);
     setError(null);
     setSuccessMessage(null);
@@ -87,21 +77,32 @@ export function useCustomerEdit(customerId: string) {
         region: parsedCustomer.region,
       });
 
-      await orderRepository.updateOpenOrderCustomerAndItems({
-        customerId,
-        orderId: openOrderId,
-        customer: {
-          ...parsedCustomer,
-          latitude: coordinates?.latitude,
-          longitude: coordinates?.longitude,
-        },
-        items: values.items.map((item: CustomerEditFormValues["items"][number], index: number) => ({
-          ...item,
-          sortOrder: item.sortOrder ?? index,
-        })),
-      });
+      const customerPayload = {
+        ...parsedCustomer,
+        latitude: coordinates?.latitude,
+        longitude: coordinates?.longitude,
+      };
 
-      setSuccessMessage(t("edit.saveSuccess"));
+      if (openOrderId) {
+        if (!values.items.length) {
+          form.setError("items", { message: t("validation.itemsRequired") });
+          return false;
+        }
+
+        await orderRepository.updateOpenOrderCustomerAndItems({
+          customerId,
+          orderId: openOrderId,
+          customer: customerPayload,
+          items: values.items.map((item: CustomerEditFormValues["items"][number], index: number) => ({
+            ...item,
+            sortOrder: item.sortOrder ?? index,
+          })),
+        });
+      } else {
+        await customerRepository.updateCustomer(customerId, customerPayload);
+      }
+
+      setSuccessMessage(openOrderId ? t("edit.saveSuccess") : t("edit.saveCustomerSuccess"));
       return true;
     } catch (submitError) {
       setError(formatError(submitError).message);
@@ -118,6 +119,7 @@ export function useCustomerEdit(customerId: string) {
     saving,
     error,
     successMessage,
+    hasOpenOrder: Boolean(openOrderId),
     submit,
   };
 }

@@ -23,7 +23,7 @@ type CustomerEditScreenProps = {
 
 export function CustomerEditScreen({ customerId }: CustomerEditScreenProps) {
   const router = useRouter();
-  const { error, form, items, loading, saving, submit, successMessage } = useCustomerEdit(customerId);
+  const { error, form, hasOpenOrder, items, loading, saving, submit, successMessage } = useCustomerEdit(customerId);
   const { t } = useTranslation("customers");
 
   if (loading) {
@@ -38,7 +38,7 @@ export function CustomerEditScreen({ customerId }: CustomerEditScreenProps) {
     <ScreenContainer>
       <ScrollView contentContainerStyle={styles.content}>
         <AnimatedEntrance>
-          <CompactScreenHeader subtitle={t("edit.screenSubtitle")} title={t("edit.screenTitle")} />
+          <CompactScreenHeader subtitle={hasOpenOrder ? t("edit.screenSubtitle") : t("edit.customerOnlySubtitle")} title={t("edit.screenTitle")} />
         </AnimatedEntrance>
         {error ? <AnimatedEntrance delay={60}><ErrorState message={error} /></AnimatedEntrance> : null}
         {successMessage ? <AnimatedEntrance delay={90}><SuccessState message={successMessage} /></AnimatedEntrance> : null}
@@ -48,16 +48,18 @@ export function CustomerEditScreen({ customerId }: CustomerEditScreenProps) {
             <CustomerEditAddressSection control={form.control} errors={form.formState.errors.customer} />
           </FormSectionCard>
         </AnimatedEntrance>
-        <AnimatedEntrance delay={160}>
-          <CustomerEditOrderItemsSection
-            append={items.append}
-            control={form.control}
-            errors={form.formState.errors.items}
-            fields={items.fields}
-            remove={items.remove}
-            setValue={form.setValue}
-          />
-        </AnimatedEntrance>
+        {hasOpenOrder ? (
+          <AnimatedEntrance delay={160}>
+            <CustomerEditOrderItemsSection
+              append={items.append}
+              control={form.control}
+              errors={form.formState.errors.items}
+              fields={items.fields}
+              remove={items.remove}
+              setValue={form.setValue}
+            />
+          </AnimatedEntrance>
+        ) : null}
         <AnimatedEntrance delay={200} style={styles.actions}>
           <AppButton
             label={t("common:save")}

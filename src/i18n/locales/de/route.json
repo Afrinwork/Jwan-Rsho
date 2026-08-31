@@ -1,0 +1,96 @@
+{
+  "screen": {
+    "title": "Route",
+    "loading": "Route wird vorbereitet..."
+  },
+  "summary": {
+    "addressesTotal": "{{count}} Adressen insgesamt",
+    "completed": "{{count}} fertig",
+    "totalArrival": "Ankunft letzter Stopp {{time}} / {{distance}} km"
+  },
+  "startCard": {
+    "title": "Abfahrtsort",
+    "currentLocationLabel": "Aktueller Standort",
+    "fallbackLocationLabel": "Standort nicht ermittelt",
+    "selectedLocation": "Ausgewaehlt",
+    "useCurrentLocation": "Aktuellen Standort verwenden",
+    "useCurrentLocationShort": "Mein Ort",
+    "manualAddressTitle": "Manueller Startort",
+    "manualAddressHint": "Gib hier eine Adresse ein, wenn du nicht vom aktuellen Standort startest.",
+    "locationPlaceholder": "Abfahrtsadresse eingeben",
+    "searchLocation": "Suchen",
+    "searchLocationAction": "Adresse pruefen",
+    "departureTimeLabel": "Abfahrtszeit",
+    "departureTimeShort": "Startzeit",
+    "departureTimePlaceholder": "HH:MM",
+    "stepAddress": "Adresse",
+    "stepConfirm": "Pruefen",
+    "stepStart": "Starten",
+    "startButton": "Fahrt starten"
+  },
+  "live": {
+    "startMarker": "Startpunkt",
+    "stopProgress": "Stopp {{index}} von {{count}}",
+    "distanceRemaining": "Noch {{distance}} km",
+    "stats": {
+      "arrival": "Ankunft",
+      "minutes": "Min.",
+      "distance": "km"
+    },
+    "markComplete": "Als erledigt markieren",
+    "skip": "Ueberspringen",
+    "fullNavigationFallback": "Funktioniert die Navigation nicht? In Google Maps oeffnen (alle Kunden)",
+    "arrivalTitle": "Angekommen?",
+    "arrivalMessage": "Bist du bei {{name}} angekommen? Du kannst die Bestellung jetzt als erledigt markieren.",
+    "allDone": "Alle Stopps erreicht",
+    "startNavigation": "Route starten",
+    "endNavigation": "Route beenden",
+    "tripComplete": "Route abgeschlossen",
+    "summary": {
+      "completed": "{{count}} erledigt",
+      "skipped": "{{count}} uebersprungen",
+      "duration": "Gesamtdauer: {{duration}}"
+    }
+  },
+  "stopRow": {
+    "arrival": "Ankunft {{time}} / {{distance}} km",
+    "estimated": "geschaetzt",
+    "navigate": "Navigation oeffnen",
+    "orders": "Bestellungen",
+    "note": "Notiz",
+    "select": "Auswaehlen",
+    "deselect": "Abwaehlen"
+  },
+  "selectionBar": {
+    "selectedCount": "{{count}} ausgewaehlt",
+    "selectAll": "Alle auswaehlen",
+    "clearSelection": "Auswahl aufheben"
+  },
+  "selectionActions": {
+    "dropdown": "Aktionen fuer Auswahl",
+    "whatsapp": "WhatsApp",
+    "email": "E-Mail",
+    "completeAll": "Alle erledigen",
+    "completeSelectedTitle": "{{count}} Bestellungen erledigen?",
+    "completeSelectedMessage": "Die offenen Bestellungen der ausgewaehlten Kunden werden danach endgueltig geloescht. Kunden und Adressen bleiben erhalten. Das kann nicht rueckgaengig gemacht werden.",
+    "noCustomersSelected": "Es sind keine Kunden ausgewaehlt.",
+    "noOpenOrdersSelected": "Es gibt keine offenen Bestellungen fuer die Auswahl.",
+    "defaultEmailSubject": "Routenliste"
+  },
+  "errors": {
+    "locationNotFound": "Dieser Ort konnte nicht gefunden werden.",
+    "outsideEurope": "Dieser Ort liegt ausserhalb Europas. Bitte eine Adresse in Europa eingeben.",
+    "missingApiKey": "Der Google-Maps-Key fuer die Routenberechnung ist nicht eingerichtet.",
+    "requestDenied": "Die Routenanfrage wurde abgelehnt. Bitte den API-Key pruefen.",
+    "overQueryLimit": "Zu viele Routenanfragen. Bitte spaeter erneut versuchen.",
+    "generic": "Die Route konnte nicht berechnet werden. Bitte erneut versuchen.",
+    "noStopsSelected": "Es wurden keine Kunden auf der Karte ausgewaehlt.",
+    "locationPermissionRequired": "Standortzugriff wird benoetigt, um die Navigation zu starten.",
+    "noCoordinates": "Navigation zu diesem Kunden nicht moeglich: keine Koordinaten hinterlegt."
+  },
+  "empty": {
+    "title": "Keine Kunden",
+    "message": "Fuer diese Route sind keine Kunden ausgewaehlt."
+  },
+  "retry": "Erneut versuchen"
+}

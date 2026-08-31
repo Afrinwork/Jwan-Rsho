@@ -28,6 +28,13 @@ export function useAuthSession() {
           return;
         }
 
+        // Screens mount as soon as authLoading flips false and immediately fire
+        // several parallel Firestore reads (overview stats, map customers). Right
+        // after a cold start those can race the ID token still being attached to
+        // the SDK's credential provider and come back "permission-denied" even
+        // though the user is genuinely signed in — waiting for the token here
+        // first guarantees it's already resolved by the time anything else reads.
+        await firebaseUser.getIdToken();
         const profile = await userRepository.getUserProfile(firebaseUser.uid);
         setUser({
           uid: firebaseUser.uid,

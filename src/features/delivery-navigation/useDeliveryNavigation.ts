@@ -1,0 +1,198 @@
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { AppState, AppStateStatus } from "react-native";
+
+import { googleDirectionsApiKey } from "@/src/config/googleDirectionsEnv";
+import { deliveryNavigationReducer } from "@/src/features/delivery-navigation/deliveryNavigationReducer";
+import { DeliveryStop, initialDeliveryNavigationState } from "@/src/features/delivery-navigation/deliveryNavigationTypes";
+import { distanceKm } from "@/src/features/map/utils/circleMath";
+import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
+import { routeT } from "@/src/features/route/i18n/routeT";
+import { countryRepository } from "@/src/repositories/countryRepository";
+import { formatError } from "@/src/utils/formatError";
+import { locationTrackingService, TrackedCoordinate } from "@/src/services/location/LocationTrackingService";
+import { estimateStraightLineLeg, fetchSingleLegRoute } from "@/src/services/routing/RoutingService";
+import { RoutingError } from "@/src/services/routing/routingTypes";
+import { getTimeZoneForCountry } from "@/src/utils/time/timeZone";
+
+// Don't hit the Directions API on every ~15m GPS tick — only reroute once
+// meaningfully off the last routed point, and no more often than this.
+const REROUTE_COOLDOWN_MS = 12_000;
+const REROUTE_MIN_DISTANCE_METERS = 50;
+const DEFAULT_TIME_ZONE = "Europe/Berlin";
+
+function buildStops(markers: MapCustomerMarker[]): DeliveryStop[] {
+  return markers.map((marker) => ({
+    customerId: marker.id,
+    name: marker.title,
+    latitude: marker.latitude,
+    longitude: marker.longitude,
+    status: "pending",
+    country: marker.country,
+  }));
+}
+
+export function useDeliveryNavigation(markers: MapCustomerMarker[]) {
+  const [state, dispatch] = useReducer(deliveryNavigationReducer, initialDeliveryNavigationState);
+  const [activeTimeZone, setActiveTimeZone] = useState(DEFAULT_TIME_ZONE);
+
+  const requestVersionRef = useRef(0);
+  const unsubscribeRef = useRef<(() => void) | null>(null);
+  const lastRoutedFromRef = useRef<TrackedCoordinate | null>(null);
+  const lastRoutedAtRef = useRef(0);
+  const lastRoutedStopIndexRef = useRef(-1);
+  // Populated lazily on start() — free-text country name -> isoCode, built
+  // once from the owner's managed country list rather than refetched per stop.
+  const countryIsoByNameRef = useRef<Map<string, string> | null>(null);
+
+  const stopWatching = useCallback(() => {
+    unsubscribeRef.current?.();
+    unsubscribeRef.current = null;
+  }, []);
+
+  const end = useCallback(() => {
+    stopWatching();
+    dispatch({ type: "END" });
+  }, [stopWatching]);
+
+  const start = useCallback(async () => {
+    const hasPermission = await locationTrackingService.requestForegroundPermission();
+
+    if (!hasPermission) {
+      dispatch({ type: "ROUTE_FAILED", message: routeT("errors.locationPermissionRequired") });
+      return;
+    }
+
+    if (!countryIsoByNameRef.current) {
+      countryIsoByNameRef.current = await countryRepository
+        .getCountries()
+        .then((countries) => new Map(countries.filter((country) => country.isoCode).map((country) => [country.normalizedName, country.isoCode as string])))
+        .catch(() => new Map());
+    }
+
+    const initialPosition = await locationTrackingService.getLastKnownOrCurrentPosition();
+    lastRoutedFromRef.current = null;
+    lastRoutedAtRef.current = 0;
+    lastRoutedStopIndexRef.current = -1;
+
+    dispatch({ type: "START", stops: buildStops(markers), currentLocation: initialPosition });
+
+    stopWatching();
+    unsubscribeRef.current = await locationTrackingService.watchPosition(
+      (update) => dispatch({ type: "GPS_UPDATE", coordinate: update.coordinate }),
+      (message) => dispatch({ type: "ROUTE_FAILED", message }),
+    );
+  }, [markers, stopWatching]);
+
+  // Marks the currently active stop done/skipped once the caller (which owns
+  // the actual Firestore order mutation via useRouteLiveNavigation) confirms
+  // it succeeded — this hook only tracks live-routing state, never orders.
+  const markStopHandled = useCallback(
+    (customerId: string, status: "completed" | "skipped") => {
+      const index = state.stops.findIndex((stop) => stop.customerId === customerId && stop.status === "active");
+      if (index === -1) return;
+      dispatch({ type: status === "completed" ? "STOP_COMPLETED" : "STOP_SKIPPED", stopIndex: index });
+    },
+    [state.stops],
+  );
+
+  useEffect(() => () => stopWatching(), [stopWatching]);
+
+  // Also stop the GPS watch when navigation ends on its own (last stop
+  // completed/skipped) — not just when the user explicitly taps "beenden" —
+  // otherwise the subscription (and battery drain) would keep running until
+  // the whole screen unmounts.
+  useEffect(() => {
+    if (!state.isNavigating) {
+      stopWatching();
+    }
+  }, [state.isNavigating, stopWatching]);
+
+  // Resolves the active stop's country -> timezone. Falls back to Berlin if
+  // the country wasn't found on the managed list (covers today's all-Germany
+  // customer base without blocking on the lookup).
+  useEffect(() => {
+    const activeStop = state.stops[state.currentStopIndex];
+    if (!activeStop?.country || !countryIsoByNameRef.current) {
+      setActiveTimeZone(DEFAULT_TIME_ZONE);
+      return;
+    }
+
+    const isoCode = countryIsoByNameRef.current.get(activeStop.country.trim().toLowerCase());
+    setActiveTimeZone(getTimeZoneForCountry(isoCode));
+  }, [state.stops, state.currentStopIndex]);
+
+  // The one place currentLocation -> activeStop actually gets routed —
+  // gated by cooldown + minimum movement so a stationary/jittery GPS fix
+  // doesn't spam the Directions API, but always fires immediately the first
+  // time a stop becomes active (isNewStop below).
+  useEffect(() => {
+    if (!state.isNavigating || !state.currentLocation) {
+      return;
+    }
+
+    const activeStop = state.stops[state.currentStopIndex];
+    if (!activeStop) {
+      return;
+    }
+
+    const now = Date.now();
+    const isNewStop = lastRoutedStopIndexRef.current !== state.currentStopIndex;
+    const movedMeters = lastRoutedFromRef.current
+      ? distanceKm(lastRoutedFromRef.current, state.currentLocation) * 1000
+      : Infinity;
+    const elapsedMs = now - lastRoutedAtRef.current;
+
+    if (!isNewStop && (elapsedMs < REROUTE_COOLDOWN_MS || movedMeters < REROUTE_MIN_DISTANCE_METERS)) {
+      return;
+    }
+
+    const requestVersion = ++requestVersionRef.current;
+    const origin = state.currentLocation;
+    lastRoutedFromRef.current = origin;
+    lastRoutedAtRef.current = now;
+    lastRoutedStopIndexRef.current = state.currentStopIndex;
+
+    dispatch({ type: "ROUTE_LOADING" });
+
+    void fetchSingleLegRoute(origin, { id: activeStop.customerId, latitude: activeStop.latitude, longitude: activeStop.longitude }, googleDirectionsApiKey)
+      .then((leg) => {
+        if (requestVersionRef.current !== requestVersion) return;
+        dispatch({ type: "ROUTE_LOADED", leg });
+      })
+      .catch((error) => {
+        if (requestVersionRef.current !== requestVersion) return;
+
+        // No API key configured is an expected, known limitation — fall back
+        // to a straight-line estimate instead of a loud error, same
+        // convention as the route-planning screen's fallback legs.
+        if (error instanceof RoutingError && error.code === "MISSING_API_KEY") {
+          dispatch({ type: "ROUTE_LOADED", leg: estimateStraightLineLeg(origin, activeStop) });
+          return;
+        }
+
+        dispatch({ type: "ROUTE_FAILED", message: formatError(error).message });
+      });
+  }, [state.isNavigating, state.currentLocation, state.currentStopIndex, state.stops]);
+
+  // Returning from the background: don't wait for the next incidental GPS
+  // tick (which the OS may delay) — actively fetch a fresh fix so the route
+  // updates right away, and let the cooldown gate above evaluate it as new.
+  useEffect(() => {
+    if (!state.isNavigating) {
+      return;
+    }
+
+    const subscription = AppState.addEventListener("change", (nextAppState: AppStateStatus) => {
+      if (nextAppState !== "active") return;
+
+      lastRoutedAtRef.current = 0;
+      void locationTrackingService.getLastKnownOrCurrentPosition().then((position) => {
+        if (position) dispatch({ type: "GPS_UPDATE", coordinate: position });
+      });
+    });
+
+    return () => subscription.remove();
+  }, [state.isNavigating]);
+
+  return { state, activeTimeZone, start, end, markStopHandled };
+}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { customerRepository } from "@/src/repositories/customerRepository";
 import { orderRepository } from "@/src/repositories/orderRepository";
@@ -13,24 +13,44 @@ type MapCustomersState = {
   reload: () => Promise<void>;
 };
 
+const isDev = typeof __DEV__ === "undefined" || __DEV__;
+
 export function useMapCustomers(): MapCustomersState {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [markers, setMarkers] = useState<MapCustomerMarker[]>([]);
+  // reload() can be called again (retry button, screen refocus) before an
+  // earlier call has finished — this discards a stale response instead of
+  // letting it overwrite state from a load that started later.
+  const requestIdRef = useRef(0);
 
   const loadCustomers = useCallback(async () => {
+    const requestId = ++requestIdRef.current;
+    const startedAt = isDev ? Date.now() : 0;
+    if (isDev) console.log(`[Map] load started (request ${requestId})`);
     setError(null);
 
     try {
       const openOrders = await orderRepository.getOpenOrders();
-      const customerIds = [...new Set(openOrders.map((value) => value.customerId))];
-      const customers = await customerRepository.getCustomersByIds(customerIds);
+      const uniqueCustomerIds = [...new Set(openOrders.map((value) => value.customerId))];
+      const customers = await customerRepository.getCustomersByIds(uniqueCustomerIds);
 
-      setMarkers(buildMapCustomerMarkers(customers, openOrders));
+      if (requestIdRef.current !== requestId) return;
+
+      const nextMarkers = buildMapCustomerMarkers(customers, openOrders);
+      setMarkers(nextMarkers);
+
+      if (isDev) {
+        console.log(
+          `[Map] load finished: ${openOrders.length} open orders, ${uniqueCustomerIds.length} unique customer ids, ` +
+            `${nextMarkers.length} markers, ${Date.now() - startedAt}ms`,
+        );
+      }
     } catch (loadError) {
+      if (requestIdRef.current !== requestId) return;
       setError(formatError(loadError).message);
     } finally {
-      setIsLoading(false);
+      if (requestIdRef.current === requestId) setIsLoading(false);
     }
   }, []);
 

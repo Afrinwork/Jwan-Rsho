@@ -26,6 +26,11 @@ export const geocodingService = {
       : null;
   },
 
+  async reverseGeocode(coordinates: Coordinates): Promise<Location.LocationGeocodedAddress | null> {
+    const [result] = await Location.reverseGeocodeAsync(coordinates);
+    return result ?? null;
+  },
+
   async geocodeCustomerAddress(input: AddressInput) {
     return this.geocodeAddress(this.composeAddress(input));
   },

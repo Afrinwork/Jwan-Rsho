@@ -33,6 +33,12 @@ const firebaseMessageMap: Record<string, string> = {
 export function formatError(error: unknown): AppError {
   if (typeof __DEV__ === "undefined" || __DEV__) {
     console.error("[formatError] raw error:", error);
+    // The RN error overlay only symbolicates stacks for uncaught throws, not
+    // ones we catch and re-wrap here — log it explicitly so the origin of a
+    // caught Firebase error is still visible in the Metro terminal.
+    if (error instanceof Error && error.stack) {
+      console.error("[formatError] stack:", error.stack);
+    }
   }
 
   if (error instanceof AppError) {

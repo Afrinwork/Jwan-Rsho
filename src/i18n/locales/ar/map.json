@@ -34,6 +34,7 @@
   "selectedBar": {
     "count": "تم تحديد {{count}} من الزبائن",
     "view": "عرض",
+    "route": "المسار",
     "whatsapp": "واتساب",
     "email": "البريد الإلكتروني",
     "clear": "حذف"

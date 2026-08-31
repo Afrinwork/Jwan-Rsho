@@ -40,15 +40,17 @@
     "noCustomerMessage": "لم يتم اختيار أي عميل.",
     "screenTitle": "تعديل العميل",
     "screenSubtitle": "تعديل بيانات العميل والطلب المفتوح.",
+    "customerOnlySubtitle": "تعديل بيانات العميل وحفظها مباشرة.",
     "sectionTitle": "العميل والعنوان",
-    "sectionSubtitle": "البيانات الشخصية وعنوان وجهة منظم بوضوح.",
-    "backButton": "العودة إلى البطاقة",
+    "sectionSubtitle": "البيانات الشخصية وعنوان الوجهة بشكل منظم وواضح.",
+    "backButton": "العودة إلى القائمة",
     "noOpenOrder": "لم يتم العثور على طلب مفتوح لهذا العميل.",
-    "saveSuccess": "تم حفظ بيانات العميل والطلب المفتوح."
+    "saveSuccess": "تم حفظ بيانات العميل والطلب المفتوح.",
+    "saveCustomerSuccess": "تم حفظ بيانات العميل."
   },
   "orderItems": {
     "sectionTitle": "المنتجات",
-    "sectionSubtitle": "عدّل الطلب المفتوح مباشرة على البطاقة.",
+    "sectionSubtitle": "عدّل الطلب المفتوح مباشرة من هذه البطاقة.",
     "addProduct": "إضافة منتج",
     "change": "تغيير",
     "remove": "إزالة",

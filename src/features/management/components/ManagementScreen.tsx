@@ -28,15 +28,22 @@ export function ManagementScreen() {
             title={t("menu.products.title")}
           />
           <ManagementMenuButton
-            icon="countries"
+            icon="customers"
             meta="02"
+            onPress={() => router.push(routes.managementCustomers)}
+            subtitle={t("menu.customers.subtitle")}
+            title={t("menu.customers.title")}
+          />
+          <ManagementMenuButton
+            icon="countries"
+            meta="03"
             onPress={() => router.push("/management/countries" as never)}
             subtitle={t("menu.countries.subtitle")}
             title={t("menu.countries.title")}
           />
           <ManagementMenuButton
             icon="catalog"
-            meta="03"
+            meta="04"
             onPress={() => router.push(routes.managementCatalog)}
             subtitle={t("menu.catalog.subtitle")}
             title={t("menu.catalog.title")}

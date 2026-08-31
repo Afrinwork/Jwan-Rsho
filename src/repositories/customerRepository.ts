@@ -2,7 +2,6 @@ import {
   collection,
   deleteDoc,
   doc,
-  documentId,
   getCountFromServer,
   getDoc,
   getDocs,
@@ -66,31 +65,22 @@ export const customerRepository = {
     return sortCustomers((await getDocs(customerQuery)).docs.map((value) => mapSnapshot<Customer>(value)));
   },
 
-  // Fetches only the given customer docs, batched to respect Firestore's
-  // 30-value "in" limit — used instead of getCustomers() wherever only a
-  // known subset (e.g. customers with an open order) is actually needed.
+  // Fetches only the given customer docs. Goes through the owner-scoped
+  // getCustomers() list rather than a `documentId() in [...]` query: if any
+  // id in the list no longer belongs to the current owner (a deleted
+  // customer, a stale reference left over from an account migration, ...),
+  // Firestore's security rules can't prove the whole "in" query is safe and
+  // reject it outright — even though the ownerId filter would have excluded
+  // that id from the result anyway. Filtering client-side avoids the trap.
   async getCustomersByIds(ids: string[]) {
-    const uniqueIds = [...new Set(ids)];
+    const uniqueIds = new Set(ids);
 
-    if (uniqueIds.length === 0) {
+    if (uniqueIds.size === 0) {
       return [];
     }
 
-    const ownerId = requireCurrentUserId();
-    const db = requireDb();
-    const chunks = chunk(uniqueIds, 30);
-    const results = await Promise.all(
-      chunks.map(async (idChunk) => {
-        const customerQuery = query(
-          collection(db, "customers"),
-          where("ownerId", "==", ownerId),
-          where(documentId(), "in", idChunk),
-        );
-        return (await getDocs(customerQuery)).docs.map((value) => mapSnapshot<Customer>(value));
-      }),
-    );
-
-    return sortCustomers(results.flat());
+    const customers = await this.getCustomers();
+    return sortCustomers(customers.filter((value) => uniqueIds.has(value.id)));
   },
 
   async getCustomersByNormalizedCity(normalizedCity: string) {
@@ -137,14 +127,4 @@ function withCreateTimestamps<T extends object>(value: T) {
 
 function sortCustomers(customers: Customer[]) {
   return [...customers].sort((left, right) => left.fullName.localeCompare(right.fullName, "de"));
-}
-
-function chunk<T>(values: T[], size: number): T[][] {
-  const chunks: T[][] = [];
-
-  for (let index = 0; index < values.length; index += size) {
-    chunks.push(values.slice(index, index + size));
-  }
-
-  return chunks;
 }

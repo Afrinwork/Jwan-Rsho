@@ -11,6 +11,7 @@
     "adminDashboard": "لوحة تحكم المسؤول",
     "createUser": "إنشاء مستخدم",
     "deleteUsers": "حذف مستخدمين",
+    "customers": "العملاء",
     "products": "المنتجات",
     "countries": "الدول",
     "regions": "المناطق",
@@ -20,6 +21,7 @@
     "customer": "العميل",
     "customerEdit": "تعديل العميل",
     "order": "الطلب",
+    "route": "المسار",
     "openOrders": "الطلبات المفتوحة",
     "forgotPassword": "إعادة تعيين كلمة المرور"
   }

@@ -4,8 +4,11 @@ import * as Linking from "expo-linking";
 import { MapNavigationApp, NavigationAppId } from "@/src/features/map/types/mapTypes";
 import {
   NavigationTarget,
+  NavigationWaypoint,
   buildAppleMapsUrl,
   buildGeoUrl,
+  buildGoogleMapsMultiStopAppUrl,
+  buildGoogleMapsMultiStopWebUrl,
   buildGoogleMapsUrl,
   buildWazeUrl,
 } from "@/src/services/navigationService.shared";
@@ -54,6 +57,17 @@ export const navigationService = {
     return openIfAvailable(
       buildWazeUrl(target),
       nativeFallbackUrl(target),
+    );
+  },
+
+  // Opens driving directions through every stop in order (like typing
+  // several addresses into Google Maps and pressing start) — Apple Maps has
+  // no reliable multi-stop URL scheme, so this always goes through Google
+  // Maps (app if installed, otherwise the web/browser fallback).
+  openMultiStopDrivingRoute(origin: NavigationWaypoint, waypoints: NavigationWaypoint[]) {
+    return openIfAvailable(
+      buildGoogleMapsMultiStopAppUrl(origin, waypoints),
+      buildGoogleMapsMultiStopWebUrl(origin, waypoints),
     );
   },
 

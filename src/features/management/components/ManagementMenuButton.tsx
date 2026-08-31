@@ -3,6 +3,7 @@ import {
   Box20Regular,
   Building20Regular,
   ClipboardBulletList20Regular,
+  Person20Regular,
 } from "@fluentui/react-native-icons";
 import { Pressable, StyleSheet, View } from "react-native";
 
@@ -16,7 +17,7 @@ type ManagementMenuButtonProps = {
   title: string;
   subtitle: string;
   onPress: () => void;
-  icon?: "products" | "countries" | "catalog";
+  icon?: "products" | "countries" | "catalog" | "customers";
   meta?: string;
 };
 
@@ -65,6 +66,10 @@ function resolveIcon(icon: ManagementMenuButtonProps["icon"]) {
 
   if (icon === "catalog") {
     return ClipboardBulletList20Regular;
+  }
+
+  if (icon === "customers") {
+    return Person20Regular;
   }
 
   return Box20Regular;
