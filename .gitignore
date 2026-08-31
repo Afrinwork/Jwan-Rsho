@@ -11,7 +11,8 @@ coverage/
 firebase-debug.log
 google-services.json
 GoogleService-Info.plist
-service-account*.json
+*service-account*.json
+google-play-service-account.json
 functions/lib/
 scaffold-temp/
 
