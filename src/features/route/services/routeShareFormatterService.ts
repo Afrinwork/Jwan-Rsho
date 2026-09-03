@@ -8,6 +8,7 @@ type RouteShareEntry = {
 };
 
 export type RouteWhatsappMessage = {
+  name: string;
   message: string;
   phone: string;
 };
@@ -25,7 +26,6 @@ export function buildRouteWhatsappMessages(entries: RouteShareEntry[]): RouteWha
 
     const lines = [
       `الاسم: ${stop.marker.title}`,
-      `العنوان: ${buildAddressLine(stop)}`,
       stop.marker.phone.trim() ? `الهاتف: ${stop.marker.phone.trim()}` : null,
       "الطلب:",
       ...orderLines,
@@ -35,15 +35,9 @@ export function buildRouteWhatsappMessages(entries: RouteShareEntry[]): RouteWha
     ];
 
     return {
+      name: stop.marker.title,
       phone: stop.marker.phone.trim(),
       message: lines.filter(Boolean).join("\n"),
     };
   });
-}
-
-function buildAddressLine(stop: RouteShareEntry["stop"]) {
-  return [stop.marker.description, stop.marker.city]
-    .map((value) => value.trim())
-    .filter(Boolean)
-    .join("، ");
 }

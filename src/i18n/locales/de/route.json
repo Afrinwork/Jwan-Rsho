@@ -26,7 +26,9 @@
     "stepAddress": "Adresse",
     "stepConfirm": "Pruefen",
     "stepStart": "Starten",
-    "startButton": "Fahrt starten"
+    "startButton": "Fahrt starten",
+    "lastStopLabel": "Letzter Kunde der Route",
+    "lastStopAuto": "Automatisch"
   },
   "live": {
     "startMarker": "Startpunkt",
@@ -34,12 +36,13 @@
     "distanceRemaining": "Noch {{distance}} km",
     "stats": {
       "arrival": "Ankunft",
-      "minutes": "Min.",
+      "duration": "Dauer",
       "distance": "km"
     },
     "markComplete": "Als erledigt markieren",
     "skip": "Ueberspringen",
     "fullNavigationFallback": "Funktioniert die Navigation nicht? In Google Maps oeffnen (alle Kunden)",
+    "fullNavigationFallbackShort": "Google Maps",
     "arrivalTitle": "Angekommen?",
     "arrivalMessage": "Bist du bei {{name}} angekommen? Du kannst die Bestellung jetzt als erledigt markieren.",
     "allDone": "Alle Stopps erreicht",
@@ -75,7 +78,11 @@
     "completeSelectedMessage": "Die offenen Bestellungen der ausgewaehlten Kunden werden danach endgueltig geloescht. Kunden und Adressen bleiben erhalten. Das kann nicht rueckgaengig gemacht werden.",
     "noCustomersSelected": "Es sind keine Kunden ausgewaehlt.",
     "noOpenOrdersSelected": "Es gibt keine offenen Bestellungen fuer die Auswahl.",
-    "defaultEmailSubject": "Routenliste"
+    "defaultEmailSubject": "Routenliste",
+    "shareStepTitle": "Nachricht {{index}} von {{count}}",
+    "shareStepMessage": "Auf \"Teilen\" tippen, um die Nachricht fuer {{name}} per WhatsApp zu senden, dann den Kontakt auswaehlen.",
+    "shareStepConfirm": "Teilen",
+    "shareStepCancel": "Abbrechen"
   },
   "errors": {
     "locationNotFound": "Dieser Ort konnte nicht gefunden werden.",

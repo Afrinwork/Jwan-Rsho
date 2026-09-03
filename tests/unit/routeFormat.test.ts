@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { formatEtaTime, formatHourMinute, parseTimeInput } from "@/src/features/route/utils/routeFormat";
+import { formatDurationHM, formatEtaTime, formatHourMinute, parseTimeInput } from "@/src/features/route/utils/routeFormat";
 
 // Reads a Date's wall-clock hours/minutes in Europe/Berlin specifically —
 // used instead of getHours()/getMinutes() (device-local) so these tests pass
@@ -42,6 +42,13 @@ test("parseTimeInput rejects invalid hours or minutes", () => {
 test("parseTimeInput rejects malformed input", () => {
   assert.equal(parseTimeInput("not-a-time"), null);
   assert.equal(parseTimeInput(""), null);
+});
+
+test("formatDurationHM renders hours:minutes, hour unpadded, minutes zero-padded", () => {
+  assert.equal(formatDurationHM(133), "2:13");
+  assert.equal(formatDurationHM(45), "0:45");
+  assert.equal(formatDurationHM(5), "0:05");
+  assert.equal(formatDurationHM(600), "10:00");
 });
 
 test("formatHourMinute zero-pads hours and minutes", () => {

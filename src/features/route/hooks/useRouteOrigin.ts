@@ -4,6 +4,7 @@ import { googleDirectionsApiKey } from "@/src/config/googleDirectionsEnv";
 import { routeT } from "@/src/features/route/i18n/routeT";
 import { geocodeEuropeanAddressOnDevice } from "@/src/features/route/services/routeDeviceGeocodingService";
 import { geocodeEuropeanAddress, RouteGeocodingError, RouteGeocodingErrorCode } from "@/src/features/route/services/routeGeocodingService";
+import { geocodeEuropeanAddressViaNominatim } from "@/src/features/route/services/routeNominatimGeocodingService";
 import { RouteOrigin } from "@/src/features/route/types/routeTypes";
 import { useUserLocation } from "@/src/features/map/hooks/useUserLocation";
 
@@ -60,9 +61,13 @@ export function useRouteOrigin() {
     setGeocoding(true);
 
     try {
+      // Google (if a key is configured) -> free Nominatim (usually more
+      // complete for European addresses) -> the device's own geocoder as
+      // the last resort.
+      const trimmedQuery = query.trim();
       const result = googleDirectionsApiKey
-        ? await geocodeEuropeanAddress(query.trim())
-        : await geocodeEuropeanAddressOnDevice(query.trim());
+        ? await geocodeEuropeanAddress(trimmedQuery)
+        : await geocodeEuropeanAddressViaNominatim(trimmedQuery).catch(() => geocodeEuropeanAddressOnDevice(trimmedQuery));
       const resolvedOrigin: RouteOrigin = { latitude: result.latitude, longitude: result.longitude, label: result.formattedAddress };
       setOrigin(resolvedOrigin);
       setLabelDraft(query.trim());

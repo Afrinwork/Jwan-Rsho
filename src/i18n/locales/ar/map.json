@@ -7,6 +7,10 @@
   "screen": {
     "loading": "جارٍ تجهيز الخريطة..."
   },
+  "markerCallout": {
+    "noOpenOrder": "لا توجد طلبية مفتوحة",
+    "loadError": "تعذر تحميل الطلبية"
+  },
   "toolbar": {
     "title": "الخريطة",
     "subtitle": "الزبائن والفلاتر مباشرة على الخريطة.",

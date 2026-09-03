@@ -70,8 +70,73 @@ test("map markers include only customers with open orders and valid coordinates"
       country: "DE",
       city: "Berlin",
       region: "",
+      hasStreetAddress: true,
     },
   ]);
+});
+
+test("map markers flag customers with no street address (city-only)", () => {
+  const markers = buildMapCustomerMarkers(
+    [
+      {
+        id: "c1",
+        ownerId: "u1",
+        fullName: "Bashar",
+        phone: "111",
+        address: "",
+        city: "Berlin",
+        normalizedCity: "berlin",
+        country: "DE",
+        latitude: 52.52,
+        longitude: 13.4,
+        isActive: true,
+        createdAt: "",
+        updatedAt: "",
+      },
+    ],
+    [{ id: "o1", ownerId: "u1", customerId: "c1", status: "open", orderedAt: "", createdAt: "", updatedAt: "" }],
+  );
+
+  assert.equal(markers[0]?.hasStreetAddress, false);
+});
+
+test("map markers with identical coordinates (e.g. same city-only address) are spread apart, not stacked", () => {
+  const sharedCoordinate = { latitude: 52.52, longitude: 13.4 };
+  const customers = ["a", "b", "c"].map((suffix) => ({
+    id: `c-${suffix}`,
+    ownerId: "u1",
+    fullName: `Customer ${suffix}`,
+    phone: "",
+    address: "",
+    city: "Berlin",
+    normalizedCity: "berlin",
+    country: "DE",
+    ...sharedCoordinate,
+    isActive: true,
+    createdAt: "",
+    updatedAt: "",
+  }));
+  const openOrders = customers.map((customer, index) => ({
+    id: `o-${index}`,
+    ownerId: "u1",
+    customerId: customer.id,
+    status: "open" as const,
+    orderedAt: "",
+    createdAt: "",
+    updatedAt: "",
+  }));
+
+  const markers = buildMapCustomerMarkers(customers, openOrders);
+
+  assert.equal(markers.length, 3);
+  const coordinateKeys = markers.map((marker) => `${marker.latitude},${marker.longitude}`);
+  assert.equal(new Set(coordinateKeys).size, 3, "each marker should end up at a distinct coordinate");
+  // Still close to the real, shared point — this is a display nudge, not a
+  // relocation to somewhere unrelated.
+  markers.forEach((marker) => {
+    assert.ok(Math.abs(marker.latitude - sharedCoordinate.latitude) < 0.01);
+    assert.ok(Math.abs(marker.longitude - sharedCoordinate.longitude) < 0.01);
+  });
 });
 
 test("map markers are sorted by customer name and numbered sequentially", () => {

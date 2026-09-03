@@ -52,12 +52,6 @@ export function RouteStopRow(props: RouteStopRowProps) {
             {marker.city}
           </AppText>
         </View>
-        <Pressable
-          onPress={props.onNavigate}
-          style={[styles.navigateButton, { backgroundColor: colors.primaryMuted, borderColor: colors.border }]}
-        >
-          <Navigation20Regular color={colors.primary} />
-        </Pressable>
       </View>
       <View style={styles.addressBlock}>
         <AppText variant="body">{marker.title}</AppText>
@@ -103,6 +97,15 @@ export function RouteStopRow(props: RouteStopRowProps) {
           {props.stop.isEstimated ? <AppBadge label={t("stopRow.estimated")} tone="neutral" /> : null}
         </View>
         <Pressable
+          onPress={props.onNavigate}
+          style={[styles.navigateButton, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
+        >
+          <Navigation20Regular color={colors.primary} />
+          <AppText style={styles.selectLabel} variant="caption">
+            {t("stopRow.navigate")}
+          </AppText>
+        </Pressable>
+        <Pressable
           onPress={props.onToggleSelection}
           style={[
             styles.selectButton,
@@ -136,12 +139,14 @@ const styles = StyleSheet.create({
   },
   headerText: { flex: 1, gap: 2 },
   navigateButton: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.pill,
     borderWidth: 1,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    gap: spacing.xs,
   },
   addressBlock: { gap: 2 },
   ordersBlock: { gap: spacing.xxs },

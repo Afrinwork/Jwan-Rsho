@@ -23,6 +23,15 @@ export function formatHourMinute(hours: number, minutes: number) {
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 }
 
+// Duration display ("2:13" for 2h13m, "0:45" for 45min) — unlike
+// formatHourMinute above (a clock time, so the hour is always 2 digits),
+// a duration's hour part is left unpadded since it isn't a 0-23 clock value.
+export function formatDurationHM(totalMinutes: number) {
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${hours}:${String(minutes).padStart(2, "0")}`;
+}
+
 export function formatDistanceKm(distanceKm: number) {
   return distanceKm.toLocaleString(numberLocale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 }

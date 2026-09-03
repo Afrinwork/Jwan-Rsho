@@ -7,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { AppCard } from "@/src/components/ui/AppCard";
+import { AppErrorBoundary } from "@/src/components/layout/AppErrorBoundary";
 import { AppText } from "@/src/components/ui/AppText";
 import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
 import { EmptyState } from "@/src/components/ui/EmptyState";
@@ -20,7 +21,8 @@ import { useLiveLocation } from "@/src/features/route/hooks/useLiveLocation";
 import { useOrderedMarkers } from "@/src/features/route/hooks/useOrderedMarkers";
 import { useRouteLiveNavigation } from "@/src/features/route/hooks/useRouteLiveNavigation";
 import { useRoutePolyline } from "@/src/features/route/hooks/useRoutePolyline";
-import { formatDistanceKm, formatEtaTime } from "@/src/features/route/utils/routeFormat";
+import { formatDistanceKm, formatDurationHM, formatEtaTime } from "@/src/features/route/utils/routeFormat";
+import { distanceKm } from "@/src/features/map/utils/circleMath";
 import { navigationService } from "@/src/services/navigationService";
 import { formatArrivalTime } from "@/src/utils/time/formatArrivalTime";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
@@ -35,6 +37,11 @@ type RouteLiveScreenProps = {
   // from here immediately, without waiting for a live GPS fix. Live position
   // is still used for the "you are here" dot and arrival detection.
   initialOrigin: { latitude: number; longitude: number } | null;
+  // The departure time chosen on the list screen — arrival estimates here
+  // must stay consistent with what was already shown there instead of
+  // silently switching to "now". Falls back to the real current time when
+  // absent (e.g. deep-linked straight into this screen).
+  initialDepartureTime: Date | null;
 };
 
 export function RouteLiveScreen(props: RouteLiveScreenProps) {
@@ -49,7 +56,7 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
   // Once a stop is marked done/skipped, the line for the remaining stops is
   // recalculated starting from that stop instead of the original start point.
   const remainingRouteOrigin = navigation.legOrigin ?? polylineOrigin;
-  const polyline = useRoutePolyline(remainingRouteOrigin, navigation.pendingMarkers);
+  const polyline = useRoutePolyline(remainingRouteOrigin, navigation.pendingMarkers, props.initialDepartureTime ?? undefined);
   // Always the distance from the chosen/leg origin (useRoutePolyline now
   // covers the no-API-key and request-failed cases with a straight-line
   // fallback measured from that same origin) — never navigation.distanceToCurrentKm,
@@ -112,11 +119,29 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
   // outside of that the camera must stay on the fixed overview above (see
   // its comment). No fitToCoordinates here on purpose: a repeated hard
   // re-fit would make the map visibly jump on every GPS tick during a drive.
+  //
+  // Gated by a minimum-movement distance, not just "position changed": every
+  // GPS tick (even a stationary, jittery one) was re-animating the camera,
+  // which made it feel jumpy and — since moving/animating the map is what
+  // closes an open native Callout on both iOS and Android — kept dismissing
+  // the customer callout the moment someone tapped a pin to read it.
+  const lastCameraCenterRef = useRef<{ latitude: number; longitude: number } | null>(null);
+  const CAMERA_FOLLOW_MIN_DISTANCE_METERS = 20;
+
   useEffect(() => {
     if (!isLiveNavigating || !delivery.state.currentLocation || !mapRef.current) {
       return;
     }
 
+    const movedMeters = lastCameraCenterRef.current
+      ? distanceKm(lastCameraCenterRef.current, delivery.state.currentLocation) * 1000
+      : Infinity;
+
+    if (movedMeters < CAMERA_FOLLOW_MIN_DISTANCE_METERS) {
+      return;
+    }
+
+    lastCameraCenterRef.current = delivery.state.currentLocation;
     mapRef.current.animateCamera({ center: delivery.state.currentLocation, zoom: 16 }, { duration: 500 });
   }, [isLiveNavigating, delivery.state.currentLocation]);
 
@@ -177,6 +202,7 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
   }
 
   return (
+    <AppErrorBoundary>
     <View style={styles.screen}>
       <MapView
         initialRegion={{
@@ -206,35 +232,22 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
       </MapView>
 
       <SafeAreaView edges={["top"]} pointerEvents="box-none" style={styles.topOverlayRow}>
-        <AppCard contentStyle={styles.headerCard} style={styles.headerCardOuter}>
-          <AppText color="muted" variant="caption">
-            {t("live.stopProgress", { index: navigation.progressIndex, count: navigation.progressTotal })}
-          </AppText>
-          {navigation.currentMarker ? (
-            <>
-              <AppText variant="subheading">{navigation.currentMarker.title}</AppText>
+        {/* Only shown once the trip is finished — while a stop is active,
+            the marker callout (tap the pin) and the bottom stats card
+            already cover name/order/distance, so this header would just
+            repeat them. */}
+        {!navigation.currentMarker ? (
+          <AppCard contentStyle={styles.headerCard} style={styles.headerCardOuter}>
+            <AppText variant="subheading">{t("live.allDone")}</AppText>
+            {delivery.state.stops.length > 0 ? (
               <AppText color="muted" variant="caption">
-                {navigation.currentMarker.description}
+                {t("live.summary.completed", { count: delivery.state.stops.filter((stop) => stop.status === "completed").length })}
+                {" · "}
+                {t("live.summary.skipped", { count: delivery.state.stops.filter((stop) => stop.status === "skipped").length })}
               </AppText>
-              {effectiveDistanceKm !== null ? (
-                <AppText variant="label">
-                  {t("live.distanceRemaining", { distance: formatDistanceKm(effectiveDistanceKm) })}
-                </AppText>
-              ) : null}
-            </>
-          ) : (
-            <>
-              <AppText variant="subheading">{t("live.allDone")}</AppText>
-              {delivery.state.stops.length > 0 ? (
-                <AppText color="muted" variant="caption">
-                  {t("live.summary.completed", { count: delivery.state.stops.filter((stop) => stop.status === "completed").length })}
-                  {" · "}
-                  {t("live.summary.skipped", { count: delivery.state.stops.filter((stop) => stop.status === "skipped").length })}
-                </AppText>
-              ) : null}
-            </>
-          )}
-        </AppCard>
+            ) : null}
+          </AppCard>
+        ) : null}
         {/* Screen has headerShown: false (own map/GPS chrome), so this is the
             only way back — without it, mid-route there was no exit at all
             besides the OS back gesture. */}
@@ -259,9 +272,9 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
               </AppText>
             </View>
             <View style={styles.statColumn}>
-              <AppText variant="heading">{effectiveDurationMinutes ?? "--"}</AppText>
+              <AppText variant="heading">{effectiveDurationMinutes !== null ? formatDurationHM(effectiveDurationMinutes) : "--"}</AppText>
               <AppText color="muted" variant="caption">
-                {t("live.stats.minutes")}
+                {t("live.stats.duration")}
               </AppText>
             </View>
             <View style={styles.statColumn}>
@@ -273,7 +286,15 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
           </AppCard>
         ) : null}
         {navigation.currentMarker ? (
-          <>
+          <View style={styles.actionGrid}>
+            <View style={styles.actionRow}>
+              <View style={styles.actionButton}>
+                <DeliveryNavigationControls isNavigating={isLiveNavigating} onEnd={delivery.end} onStart={delivery.start} />
+              </View>
+              <View style={styles.actionButton}>
+                <AppButton label={t("live.skip")} onPress={handleSkip} size="compact" variant="secondary" />
+              </View>
+            </View>
             <View style={styles.actionRow}>
               <View style={styles.actionButton}>
                 <AppButton
@@ -284,27 +305,32 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
                 />
               </View>
               <View style={styles.actionButton}>
-                <AppButton label={t("live.skip")} onPress={handleSkip} size="compact" variant="secondary" />
+                <AppButton
+                  label={t("live.fullNavigationFallbackShort")}
+                  onPress={() => {
+                    const target = navigation.currentMarker;
+                    if (!target || !remainingRouteOrigin) return;
+                    // Explicit fixed origin (start location, or the last
+                    // completed customer once one has been) -> only the
+                    // current customer as destination — never the device's
+                    // live position (Google Maps uses that automatically if
+                    // no origin is given, which is NOT what's wanted here)
+                    // and never the whole remaining list. After marking a
+                    // stop done, the next tap routes from that stop to
+                    // whichever customer becomes active next.
+                    void navigationService.openMultiStopDrivingRoute(remainingRouteOrigin, [
+                      { latitude: target.latitude, longitude: target.longitude },
+                    ]);
+                  }}
+                  size="compact"
+                  variant="secondary"
+                />
               </View>
             </View>
-            <DeliveryNavigationControls isNavigating={isLiveNavigating} onEnd={delivery.end} onStart={delivery.start} />
-          </>
+          </View>
         ) : (
           <AppButton label={t("common:close")} onPress={() => router.back()} />
         )}
-        {navigation.currentMarker && remainingRouteOrigin ? (
-          <AppButton
-            label={t("live.fullNavigationFallback")}
-            onPress={() =>
-              void navigationService.openMultiStopDrivingRoute(
-                remainingRouteOrigin,
-                markers.map((marker) => ({ latitude: marker.latitude, longitude: marker.longitude })),
-              )
-            }
-            size="compact"
-            variant="secondary"
-          />
-        ) : null}
       </SafeAreaView>
 
       <ConfirmDialog
@@ -315,6 +341,7 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
         visible={navigation.arrivalPromptVisible}
       />
     </View>
+    </AppErrorBoundary>
   );
 }
 
@@ -347,10 +374,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  bottomOverlay: { position: "absolute", left: 0, right: 0, bottom: 0, padding: spacing.sm, gap: spacing.xs },
-  statsCard: { flexDirection: "row", padding: spacing.md, borderRadius: radius.card },
+  bottomOverlay: { position: "absolute", left: 0, right: 0, bottom: 0, padding: spacing.xs, gap: spacing.xxs },
+  statsCard: { flexDirection: "row", padding: spacing.sm, borderRadius: radius.card },
   statColumn: { flex: 1, alignItems: "center", gap: spacing.xxs },
-  actionRow: { flexDirection: "row", gap: spacing.xs },
+  actionGrid: { gap: spacing.xxs },
+  actionRow: { flexDirection: "row", gap: spacing.xxs },
   actionButton: { flex: 1 },
   startPin: {
     width: 30,

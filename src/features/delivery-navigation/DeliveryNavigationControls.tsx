@@ -9,10 +9,8 @@ type DeliveryNavigationControlsProps = {
   onEnd: () => void;
 };
 
-// The "Route starten"/"Route beenden" button below the existing "als
-// erledigt"/"überspringen" row — reuses the existing AppButton so it matches
-// the app's button styling instead of a new design, and is full-width like
-// its sibling buttons in this bottom sheet so it never overflows the screen.
+// Compact text "Route starten"/"Route beenden" button, sized to sit in the
+// same 2x2 grid as the mark-complete/skip/Google-Maps buttons.
 export function DeliveryNavigationControls({ isNavigating, onStart, onEnd }: DeliveryNavigationControlsProps) {
   const t = routeT;
   const [isStarting, setIsStarting] = useState(false);
@@ -31,7 +29,7 @@ export function DeliveryNavigationControls({ isNavigating, onStart, onEnd }: Del
       label={isNavigating ? t("live.endNavigation") : t("live.startNavigation")}
       loading={isStarting}
       onPress={() => void (isNavigating ? onEnd() : handleStart())}
-      variant={isNavigating ? "danger" : "success"}
+      size="compact"
     />
   );
 }

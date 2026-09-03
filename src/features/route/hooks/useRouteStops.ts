@@ -6,6 +6,7 @@ import {
   RouteDirectionsError,
   buildCumulativeStops,
   buildFallbackLegs,
+  computeOsrmTripLegs,
   computeRouteLegs,
   nearestNeighborOrder,
 } from "@/src/features/route/services/routeDirectionsService";
@@ -57,7 +58,7 @@ function toRouteStops(
     .filter((value): value is RouteStop => value !== null);
 }
 
-export function useRouteStops(selectedIds: string[], origin: RouteOrigin | null, departureDate: Date) {
+export function useRouteStops(selectedIds: string[], origin: RouteOrigin | null, departureDate: Date, lastStopId: string | null) {
   const { markers, isLoading: customersLoading, error: customersError, reload } = useMapCustomers();
   const selectedMarkers = useMemo(() => {
     const idSet = new Set(selectedIds);
@@ -85,7 +86,7 @@ export function useRouteStops(selectedIds: string[], origin: RouteOrigin | null,
       longitude: marker.longitude,
     }));
 
-    const preOrderedPoints = nearestNeighborOrder(origin, points);
+    const preOrderedPoints = nearestNeighborOrder(origin, points, lastStopId ?? undefined);
     const fallbackStops = buildCumulativeStops(buildFallbackLegs(origin, preOrderedPoints), departureDate);
     setStops(toRouteStops(fallbackStops, markerById, true));
     setStatus("loading");
@@ -93,32 +94,51 @@ export function useRouteStops(selectedIds: string[], origin: RouteOrigin | null,
 
     const timeoutId = setTimeout(() => {
       void (async () => {
-        try {
-          const legs = await computeRouteLegs(origin, points, departureDate, googleDirectionsApiKey);
+        function applyLegs(legs: Awaited<ReturnType<typeof computeRouteLegs>>) {
           if (requestIdRef.current !== requestId) return;
-
           const confirmedStops = buildCumulativeStops(legs, departureDate);
           setStops(toRouteStops(confirmedStops, markerById, false));
           setStatus("ready");
+        }
+
+        // Real road order/timing, cheapest+most-accurate first: paid Google
+        // (if a key is configured, with true optimize:true), then the free
+        // no-signup OSRM "trip" solver (also real road distances, just not
+        // Google's traffic-aware estimate). A specific, actionable Google
+        // failure (bad/quota'd key) is remembered and only shown if OSRM
+        // fails too — otherwise the free result speaks for itself.
+        let googleErrorMessage: string | null = null;
+
+        try {
+          applyLegs(await computeRouteLegs(origin, points, departureDate, googleDirectionsApiKey, lastStopId ?? undefined));
+          return;
         } catch (computeError) {
           if (requestIdRef.current !== requestId) return;
-
-          // No key configured is an expected, known limitation with an
-          // already-working fallback (the "isEstimated" badge on each stop) —
-          // not a real error, so it shouldn't show a loud red banner.
-          if (computeError instanceof RouteDirectionsError && computeError.code === "MISSING_API_KEY") {
-            setStatus("ready");
-            return;
+          if (!(computeError instanceof RouteDirectionsError) || computeError.code !== "MISSING_API_KEY") {
+            googleErrorMessage = directionsErrorMessage(computeError);
           }
+        }
 
-          setError(directionsErrorMessage(computeError));
+        try {
+          applyLegs(await computeOsrmTripLegs(origin, points, lastStopId ?? undefined));
+          return;
+        } catch {
+          // fall through — keep the straight-line preview already shown
+        }
+
+        if (requestIdRef.current !== requestId) return;
+
+        if (googleErrorMessage) {
+          setError(googleErrorMessage);
           setStatus("error");
+        } else {
+          setStatus("ready");
         }
       })();
     }, RECOMPUTE_DEBOUNCE_MS);
 
     return () => clearTimeout(timeoutId);
-  }, [origin, departureDate, selectedMarkers, markerById]);
+  }, [origin, departureDate, selectedMarkers, markerById, lastStopId]);
 
   return {
     stops,

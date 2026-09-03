@@ -29,7 +29,6 @@ test("Pflichtfelder: missing required customer fields fail in new mode", () => {
   if (!result.success) {
     const paths = result.error.issues.map((issue) => issue.path.join("."));
     assert.ok(paths.includes("customer.fullName"));
-    assert.ok(paths.includes("customer.address"));
   }
 });
 

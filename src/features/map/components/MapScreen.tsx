@@ -8,6 +8,7 @@ import MapView from "react-native-maps";
 import { mapT } from "@/src/features/map/i18n/mapT";
 
 import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
+import { AppErrorBoundary } from "@/src/components/layout/AppErrorBoundary";
 import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
 import { LoadingView } from "@/src/components/ui/LoadingView";
 import { spacing } from "@/src/constants/spacing";
@@ -100,7 +101,8 @@ export function MapScreen() {
   if (isLoading) return <LoadingView label={t("screen.loading")} />;
 
   return (
-    <View style={styles.screen}>
+    <AppErrorBoundary>
+      <View style={styles.screen}>
       <MapView
         initialRegion={region}
         onRegionChangeComplete={setVisibleRegion}
@@ -248,7 +250,8 @@ export function MapScreen() {
         title={actionT("sheet.completeConfirmTitle")}
         visible={completeConfirmVisible}
       />
-    </View>
+      </View>
+    </AppErrorBoundary>
   );
 }
 

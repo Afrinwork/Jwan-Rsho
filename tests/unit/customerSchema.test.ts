@@ -24,9 +24,9 @@ test("Kunde: missing city is rejected", () => {
   assert.equal(parsed.success, false);
 });
 
-test("Kunde: missing address is rejected", () => {
+test("Kunde: missing address (city only) is accepted", () => {
   const parsed = customerSchema.safeParse({ ...validCustomer, address: "" });
-  assert.equal(parsed.success, false);
+  assert.equal(parsed.success, true);
 });
 
 test("Kunde: valid customer is accepted", () => {

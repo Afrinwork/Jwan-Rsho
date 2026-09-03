@@ -7,6 +7,10 @@
   "screen": {
     "loading": "Karte wird vorbereitet..."
   },
+  "markerCallout": {
+    "noOpenOrder": "Keine offene Bestellung",
+    "loadError": "Bestellung konnte nicht geladen werden"
+  },
   "toolbar": {
     "title": "Karte",
     "subtitle": "Kunden und Filter direkt auf der Karte.",

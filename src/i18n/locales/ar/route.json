@@ -26,7 +26,9 @@
     "stepAddress": "العنوان",
     "stepConfirm": "التأكيد",
     "stepStart": "البدء",
-    "startButton": "بدء الرحلة"
+    "startButton": "بدء الرحلة",
+    "lastStopLabel": "آخر زبون في الرحلة",
+    "lastStopAuto": "تلقائي"
   },
   "live": {
     "startMarker": "نقطة الانطلاق",
@@ -34,12 +36,13 @@
     "distanceRemaining": "المتبقي: {{distance}} كم",
     "stats": {
       "arrival": "الوصول",
-      "minutes": "دقيقة",
+      "duration": "المدة",
       "distance": "كم"
     },
     "markComplete": "تحديد كمنجز",
     "skip": "تخطي",
     "fullNavigationFallback": "الملاحة لا تعمل؟ افتح خرائط جوجل (كل الزبائن)",
+    "fullNavigationFallbackShort": "خرائط جوجل",
     "arrivalTitle": "هل وصلت؟",
     "arrivalMessage": "هل وصلت إلى {{name}}؟ يمكنك تحديد الطلب كمنجز.",
     "allDone": "تم الوصول إلى جميع التوقفات",
@@ -75,7 +78,11 @@
     "completeSelectedMessage": "سيتم حذف الطلبات المفتوحة للزبائن المحددين نهائيًا. سيبقى الزبائن وعناوينهم محفوظين. لا يمكن التراجع عن هذا الإجراء.",
     "noCustomersSelected": "لا يوجد زبائن محددون.",
     "noOpenOrdersSelected": "لا توجد طلبات مفتوحة للزبائن المحددين.",
-    "defaultEmailSubject": "قائمة المسار"
+    "defaultEmailSubject": "قائمة المسار",
+    "shareStepTitle": "رسالة {{index}} من {{count}}",
+    "shareStepMessage": "اضغط \"مشاركة\" لإرسال رسالة {{name}} عبر واتساب، ثم اختر جهة الاتصال.",
+    "shareStepConfirm": "مشاركة",
+    "shareStepCancel": "إيقاف"
   },
   "errors": {
     "locationNotFound": "تعذر العثور على هذا الموقع.",

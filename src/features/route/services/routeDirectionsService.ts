@@ -21,12 +21,11 @@ export type RouteLeg = {
   durationSec: number;
 };
 
-// Used only for the immediate, pre-network preview of the list — a rough
-// guess so the screen isn't empty while the real Directions request is in
-// flight. 70 km/h approximates a realistic German city/highway driving mix —
-// 30 km/h (pure city-traffic speed) made routes look ~2-4x slower than they
-// actually are once the real road route comes back.
-const FALLBACK_AVERAGE_SPEED_KMH = 70;
+// Used for any straight-line preview (the list screen before the real
+// Directions request lands, and the live screen whenever there's no API key
+// or a request fails). Fixed value, chosen manually (not derived/measured) —
+// adjust this single constant if it stops matching real routes well.
+export const FALLBACK_AVERAGE_SPEED_KMH = 90;
 
 export function buildFallbackLegs(origin: RouteOrigin, orderedPoints: RoutePoint[]): RouteLeg[] {
   let current: { latitude: number; longitude: number } = origin;
@@ -43,8 +42,12 @@ export function buildFallbackLegs(origin: RouteOrigin, orderedPoints: RoutePoint
   });
 }
 
-export function nearestNeighborOrder(origin: RouteOrigin, points: RoutePoint[]): RoutePoint[] {
-  const remaining = [...points];
+// lastStopId, if given and present in points, is excluded from the greedy
+// walk and appended at the very end instead — so the walk among the rest
+// isn't distorted by detouring toward/away from a stop that's pinned last.
+export function nearestNeighborOrder(origin: RouteOrigin, points: RoutePoint[], lastStopId?: string): RoutePoint[] {
+  const pinnedLast = lastStopId ? points.find((point) => point.id === lastStopId) : undefined;
+  const remaining = pinnedLast ? points.filter((point) => point.id !== lastStopId) : [...points];
   const ordered: RoutePoint[] = [];
   let current: { latitude: number; longitude: number } = origin;
 
@@ -63,6 +66,10 @@ export function nearestNeighborOrder(origin: RouteOrigin, points: RoutePoint[]):
     const [next] = remaining.splice(nearestIndex, 1);
     ordered.push(next);
     current = next;
+  }
+
+  if (pinnedLast) {
+    ordered.push(pinnedLast);
   }
 
   return ordered;
@@ -107,7 +114,10 @@ function toDepartureTimeParam(departureDate: Date) {
   return Math.max(nowSeconds, requestedSeconds);
 }
 
-function buildDirectionsUrl(origin: RouteOrigin, stops: RoutePoint[], departureDate: Date, apiKey: string) {
+// When lastStopId is set, the request stops being a round trip back to
+// origin: the pinned stop becomes the actual destination, and every other
+// selected stop is still freely optimized as a waypoint in between.
+function buildDirectionsUrl(origin: RouteOrigin, stops: RoutePoint[], departureDate: Date, apiKey: string, lastStopId?: string) {
   const params = new URLSearchParams({
     origin: toLatLng(origin),
     mode: "driving",
@@ -115,7 +125,15 @@ function buildDirectionsUrl(origin: RouteOrigin, stops: RoutePoint[], departureD
     key: apiKey,
   });
 
-  if (stops.length === 1) {
+  const pinnedLast = lastStopId ? stops.find((stop) => stop.id === lastStopId) : undefined;
+  const optimizable = pinnedLast ? stops.filter((stop) => stop.id !== lastStopId) : stops;
+
+  if (pinnedLast) {
+    params.set("destination", toLatLng(pinnedLast));
+    if (optimizable.length) {
+      params.set("waypoints", `optimize:true|${optimizable.map(toLatLng).join("|")}`);
+    }
+  } else if (stops.length === 1) {
     params.set("destination", toLatLng(stops[0]));
   } else {
     params.set("destination", toLatLng(origin));
@@ -204,7 +222,7 @@ export function parseLegsInRequestOrder(response: DirectionsApiResponse, ordered
   });
 }
 
-export function parseDirectionsResponse(response: DirectionsApiResponse, stops: RoutePoint[]): RouteLeg[] {
+export function parseDirectionsResponse(response: DirectionsApiResponse, stops: RoutePoint[], lastStopId?: string): RouteLeg[] {
   if (response.status !== "OK") {
     throw new RouteDirectionsError(response.error_message ?? response.status, response.status);
   }
@@ -214,7 +232,21 @@ export function parseDirectionsResponse(response: DirectionsApiResponse, stops: 
     throw new RouteDirectionsError("No route returned.", "ZERO_RESULTS");
   }
 
-  if (stops.length === 1) {
+  const pinnedLast = lastStopId ? stops.find((stop) => stop.id === lastStopId) : undefined;
+  const optimizable = pinnedLast ? stops.filter((stop) => stop.id !== lastStopId) : stops;
+
+  if (pinnedLast && optimizable.length === 0) {
+    const [leg] = route.legs;
+    return [
+      {
+        point: pinnedLast,
+        distanceKm: leg.distance.value / 1000,
+        durationSec: leg.duration_in_traffic?.value ?? leg.duration.value,
+      },
+    ];
+  }
+
+  if (!pinnedLast && stops.length === 1) {
     const [leg] = route.legs;
     return [
       {
@@ -225,10 +257,17 @@ export function parseDirectionsResponse(response: DirectionsApiResponse, stops: 
     ];
   }
 
-  const orderedStops = route.waypoint_order.map((stopIndex) => stops[stopIndex]);
+  // waypoint_order only ever indexes the optimized waypoints — with a pinned
+  // last stop, that's `optimizable` (destination isn't a waypoint); without
+  // one, it's the whole stop list (destination = origin, a round trip).
+  const orderedWaypoints = route.waypoint_order.map((stopIndex) => optimizable[stopIndex]);
+  const orderedStops = pinnedLast ? [...orderedWaypoints, pinnedLast] : orderedWaypoints;
 
-  // legs.length === stops.length + 1: one leg per waypoint reached, plus a
-  // trailing leg back to the origin (round trip) that we don't need.
+  // legs.length is orderedStops.length exactly when there's a pinned
+  // destination (one leg per waypoint plus one to the destination). Without
+  // one it's stops.length + 1 (an extra trailing leg back to origin for the
+  // round trip) — mapping only `orderedStops.length` entries already ignores
+  // that trailing leg.
   return orderedStops.map((point, index) => {
     const leg = route.legs[index];
     return {
@@ -239,8 +278,8 @@ export function parseDirectionsResponse(response: DirectionsApiResponse, stops: 
   });
 }
 
-async function fetchLegsForChunk(origin: RouteOrigin, stops: RoutePoint[], departureDate: Date, apiKey: string) {
-  const url = buildDirectionsUrl(origin, stops, departureDate, apiKey);
+async function fetchLegsForChunk(origin: RouteOrigin, stops: RoutePoint[], departureDate: Date, apiKey: string, lastStopId?: string) {
+  const url = buildDirectionsUrl(origin, stops, departureDate, apiKey, lastStopId);
   const response = await fetch(url);
 
   if (!response.ok) {
@@ -248,17 +287,21 @@ async function fetchLegsForChunk(origin: RouteOrigin, stops: RoutePoint[], depar
   }
 
   const body = (await response.json()) as DirectionsApiResponse;
-  return parseDirectionsResponse(body, stops);
+  return parseDirectionsResponse(body, stops, lastStopId);
 }
 
 // >23 stops: pre-sort with straight-line nearest-neighbor first, then fetch
 // real driving legs in chunks of MAX_WAYPOINTS_PER_REQUEST. Each chunk is
 // optimized on its own, so the order is not globally optimal above the limit.
+// lastStopId, if set, is honored end-to-end: nearestNeighborOrder already
+// guarantees it lands in the final chunk, and only that chunk's request is
+// told to end there instead of looping back to that chunk's own origin.
 export async function computeRouteLegs(
   origin: RouteOrigin,
   stops: RoutePoint[],
   departureDate: Date,
   apiKey: string,
+  lastStopId?: string,
 ): Promise<RouteLeg[]> {
   if (!stops.length) {
     return [];
@@ -269,17 +312,19 @@ export async function computeRouteLegs(
   }
 
   if (stops.length <= MAX_WAYPOINTS_PER_REQUEST) {
-    return fetchLegsForChunk(origin, stops, departureDate, apiKey);
+    return fetchLegsForChunk(origin, stops, departureDate, apiKey, lastStopId);
   }
 
-  const preOrdered = nearestNeighborOrder(origin, stops);
+  const preOrdered = nearestNeighborOrder(origin, stops, lastStopId);
   const chunks = chunkPoints(preOrdered, MAX_WAYPOINTS_PER_REQUEST);
   const legs: RouteLeg[] = [];
   let chunkOrigin: RouteOrigin = origin;
   let chunkDepartureDate = departureDate;
 
-  for (const stopsChunk of chunks) {
-    const chunkLegs = await fetchLegsForChunk(chunkOrigin, stopsChunk, chunkDepartureDate, apiKey);
+  for (const [chunkIndex, stopsChunk] of chunks.entries()) {
+    const isFinalChunk = chunkIndex === chunks.length - 1;
+    const chunkLastStopId = isFinalChunk ? lastStopId : undefined;
+    const chunkLegs = await fetchLegsForChunk(chunkOrigin, stopsChunk, chunkDepartureDate, apiKey, chunkLastStopId);
     legs.push(...chunkLegs);
 
     const lastLeg = chunkLegs.at(-1)!;
@@ -354,4 +399,119 @@ export async function fetchRoutePolyline(origin: RouteLatLng, orderedPoints: Rou
   }
 
   return { coordinates, legs };
+}
+
+// Free, no-signup-required public routing server (OSRM demo instance) — used
+// as a real-road fallback when there's no Google Directions API key, instead
+// of falling straight to the straight-line/assumed-speed estimate. It's a
+// shared public demo (no SLA, can be slow or rate-limited under load), so
+// callers should still fall back to the straight line if this itself fails.
+// Fixed order only (no route optimization) — matches exactly what
+// fetchRoutePolyline needs, since the stop order here is already decided.
+const OSRM_ROUTE_ENDPOINT = "https://router.project-osrm.org/route/v1/driving/";
+const MAX_OSRM_WAYPOINTS = 50;
+
+type OsrmRouteResponse = {
+  code: string;
+  routes: {
+    geometry: string;
+    legs: { distance: number; duration: number }[];
+  }[];
+};
+
+function toOsrmCoordinate(point: { latitude: number; longitude: number }) {
+  return `${point.longitude},${point.latitude}`;
+}
+
+export async function fetchOsrmRoutePolyline(origin: RouteLatLng, orderedPoints: RoutePoint[]): Promise<RoutePolylineResult> {
+  if (!orderedPoints.length) {
+    return { coordinates: [], legs: [] };
+  }
+
+  // The public demo server caps how many coordinates it'll route at once —
+  // beyond that, just route to the nearest upcoming stops rather than fail
+  // outright (the straight-line fallback still covers the very long tail).
+  const routedPoints = orderedPoints.slice(0, MAX_OSRM_WAYPOINTS);
+  const coordinatesParam = [origin, ...routedPoints].map(toOsrmCoordinate).join(";");
+  const url = `${OSRM_ROUTE_ENDPOINT}${coordinatesParam}?overview=full&geometries=polyline`;
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new RouteDirectionsError(`OSRM request failed (${response.status}).`, "REQUEST_FAILED");
+  }
+
+  const body = (await response.json()) as OsrmRouteResponse;
+  const [route] = body.routes;
+  if (body.code !== "Ok" || !route) {
+    throw new RouteDirectionsError("No route returned.", "ZERO_RESULTS");
+  }
+
+  const legs: RouteLeg[] = route.legs.map((leg, index) => ({
+    point: routedPoints[index],
+    distanceKm: leg.distance / 1000,
+    durationSec: leg.duration,
+  }));
+
+  return { coordinates: decodePolyline(route.geometry), legs };
+}
+
+// Same free OSRM server, but its "trip" endpoint — an approximate
+// traveling-salesman solver over the REAL road network, not just straight-
+// line distance. This is the free equivalent of Google's `waypoints=
+// optimize:true`: used as the fallback for stop ORDER + realistic cumulative
+// ETA on the list screen, one tier above the instant straight-line preview
+// (nearestNeighborOrder) and one tier below paid Google (if configured).
+const OSRM_TRIP_ENDPOINT = "https://router.project-osrm.org/trip/v1/driving/";
+
+type OsrmTripResponse = {
+  code: string;
+  trips: { legs: { distance: number; duration: number }[] }[];
+  waypoints: { waypoint_index: number }[];
+};
+
+export async function computeOsrmTripLegs(origin: RouteOrigin, stops: RoutePoint[], lastStopId?: string): Promise<RouteLeg[]> {
+  if (!stops.length) {
+    return [];
+  }
+
+  const pinnedLast = lastStopId ? stops.find((stop) => stop.id === lastStopId) : undefined;
+  const ordered = pinnedLast ? [...stops.filter((stop) => stop.id !== lastStopId), pinnedLast] : stops;
+  const limited = ordered.slice(0, MAX_OSRM_WAYPOINTS);
+
+  const coordinatesParam = [origin, ...limited].map(toOsrmCoordinate).join(";");
+  const params = new URLSearchParams({
+    source: "first",
+    destination: pinnedLast ? "last" : "any",
+    roundtrip: "false",
+  });
+  const url = `${OSRM_TRIP_ENDPOINT}${coordinatesParam}?${params.toString()}`;
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new RouteDirectionsError(`OSRM trip request failed (${response.status}).`, "REQUEST_FAILED");
+  }
+
+  const body = (await response.json()) as OsrmTripResponse;
+  const [trip] = body.trips;
+  if (body.code !== "Ok" || !trip) {
+    throw new RouteDirectionsError("No trip returned.", "ZERO_RESULTS");
+  }
+
+  // waypoints[0] is the origin (source=first pins it at trip position 0);
+  // waypoints[1..] line up 1:1 with `limited` in input order, each carrying
+  // its actual position in the computed trip via waypoint_index.
+  const orderedStops = body.waypoints
+    .slice(1)
+    .map((waypoint, inputIndex) => ({ point: limited[inputIndex], order: waypoint.waypoint_index }))
+    .sort((left, right) => left.order - right.order)
+    .map((entry) => entry.point);
+
+  return orderedStops.map((point, index) => {
+    const leg = trip.legs[index];
+    return {
+      point,
+      distanceKm: leg.distance / 1000,
+      durationSec: leg.duration,
+    };
+  });
 }

@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 
 import { routeT } from "@/src/features/route/i18n/routeT";
-import { buildRouteWhatsappMessages } from "@/src/features/route/services/routeShareFormatterService";
+import { buildRouteWhatsappMessages, RouteWhatsappMessage } from "@/src/features/route/services/routeShareFormatterService";
 import { RouteStop } from "@/src/features/route/types/routeTypes";
 import { orderDetailsRepository } from "@/src/repositories/orderDetailsRepository";
 import { orderRepository } from "@/src/repositories/orderRepository";
@@ -19,6 +19,12 @@ export function useRouteSelectionActions({ selectedStops, reload }: UseRouteSele
   const [sharing, setSharing] = useState(false);
   const [completingAll, setCompletingAll] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  // One customer's message is shared at a time, confirmed by an explicit tap
+  // each time (see confirmShareCurrent) — react-native's Share.share() does
+  // not reliably wait for the user on Android, so a plain loop over all
+  // messages races ahead and only the last one ever actually gets sent.
+  const [shareQueue, setShareQueue] = useState<RouteWhatsappMessage[] | null>(null);
+  const [shareIndex, setShareIndex] = useState(0);
 
   const selectedMarkerIds = useMemo(() => selectedStops.map((stop) => stop.marker.id), [selectedStops]);
 
@@ -42,13 +48,37 @@ export function useRouteSelectionActions({ selectedStops, reload }: UseRouteSele
         return;
       }
 
-      await sharingService.shareTextsViaWhatsApp(messages);
+      setShareQueue(messages);
+      setShareIndex(0);
     } catch (error) {
       setActionError(formatError(error).message);
     } finally {
       setSharing(false);
     }
   }, [loadOrders, selectedStops, t]);
+
+  const confirmShareCurrent = useCallback(async () => {
+    if (!shareQueue) return;
+
+    try {
+      await sharingService.shareText(shareQueue[shareIndex].message);
+    } catch (error) {
+      setActionError(formatError(error).message);
+    }
+
+    const nextIndex = shareIndex + 1;
+    if (nextIndex >= shareQueue.length) {
+      setShareQueue(null);
+      setShareIndex(0);
+    } else {
+      setShareIndex(nextIndex);
+    }
+  }, [shareQueue, shareIndex]);
+
+  const cancelShareQueue = useCallback(() => {
+    setShareQueue(null);
+    setShareIndex(0);
+  }, []);
 
   const completeAllOpenOrders = useCallback(async () => {
     setActionError(null);
@@ -80,6 +110,10 @@ export function useRouteSelectionActions({ selectedStops, reload }: UseRouteSele
     clearActionError: () => setActionError(null),
     share,
     completeAllOpenOrders,
+    shareQueue,
+    shareIndex,
+    confirmShareCurrent,
+    cancelShareQueue,
   };
 }
 

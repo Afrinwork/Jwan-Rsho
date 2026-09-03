@@ -23,6 +23,11 @@ export type MapCustomerMarker = {
   country: string;
   city: string;
   region: string;
+  // No street on file (city-only address) — shown as an orange pin instead
+  // of the usual teal, so an imprecise location stands out on the map.
+  // Optional (defaults to true / teal) so the many marker fixtures in tests
+  // unrelated to this — clustering, filtering, selection — don't all need it.
+  hasStreetAddress?: boolean;
 };
 
 export type MapMarkerCoordinate = {

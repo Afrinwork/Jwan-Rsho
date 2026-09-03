@@ -4,12 +4,15 @@ import { FlatList, StyleSheet, View } from "react-native";
 
 import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
 import { AppButton } from "@/src/components/ui/AppButton";
+import { AppErrorBoundary } from "@/src/components/layout/AppErrorBoundary";
+import { AppText } from "@/src/components/ui/AppText";
 import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
 import { EmptyState } from "@/src/components/ui/EmptyState";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { LoadingView } from "@/src/components/ui/LoadingView";
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
 import { routeT } from "@/src/features/route/i18n/routeT";
+import { RouteLastStopDropdown } from "@/src/features/route/components/RouteLastStopDropdown";
 import { RouteSelectionActionsBar } from "@/src/features/route/components/RouteSelectionActionsBar";
 import { RouteSelectionBar } from "@/src/features/route/components/RouteSelectionBar";
 import { RouteStartCard } from "@/src/features/route/components/RouteStartCard";
@@ -42,8 +45,11 @@ export function RouteScreen(props: RouteScreenProps) {
   const origin = useRouteOrigin();
   const [departureDate, setDepartureDate] = useState(roundedNow);
   const [completeConfirmVisible, setCompleteConfirmVisible] = useState(false);
+  // Overrides the automatic (nearest-neighbor / Directions-optimized)
+  // ordering for exactly one stop: whoever is picked here is always last.
+  const [lastStopId, setLastStopId] = useState<string | null>(null);
 
-  const { stops, status, error, customersLoading, reload } = useRouteStops(props.selectedIds, origin.origin, departureDate);
+  const { stops, status, error, customersLoading, reload } = useRouteStops(props.selectedIds, origin.origin, departureDate, lastStopId);
   const { ordersByCustomerId } = useRouteOrderItems(props.selectedIds);
   const selection = useRouteSelection(stops);
   const selectedStops = useMemo(
@@ -51,6 +57,17 @@ export function RouteScreen(props: RouteScreenProps) {
     [stops, selection],
   );
   const selectionActions = useRouteSelectionActions({ selectedStops, reload });
+  // Labeled "N. Name" and sorted by that same stop number — matches the
+  // numbered pins/order badges shown everywhere else on this screen, so the
+  // dropdown lines up with what the driver already sees, not an unrelated
+  // alphabetical list.
+  const lastStopOptions = useMemo(
+    () =>
+      [...stops]
+        .sort((left, right) => left.orderIndex - right.orderIndex)
+        .map((stop) => ({ id: stop.marker.id, name: `${stop.orderIndex + 1}. ${stop.marker.title}` })),
+    [stops],
+  );
 
   const completedCount = Math.max(props.selectedIds.length - stops.length, 0);
   const lastStop = stops.length ? stops[stops.length - 1] : null;
@@ -71,6 +88,7 @@ export function RouteScreen(props: RouteScreenProps) {
       pathname: "/map/route/live",
       params: {
         ids: stops.map((stop) => stop.marker.id).join(","),
+        departureTime: departureDate.toISOString(),
         ...(effectiveOrigin
           ? { originLat: String(effectiveOrigin.latitude), originLng: String(effectiveOrigin.longitude) }
           : {}),
@@ -83,6 +101,7 @@ export function RouteScreen(props: RouteScreenProps) {
   }
 
   return (
+    <AppErrorBoundary>
     <ScreenContainer contentStyle={styles.screenContent}>
       <FlatList
         contentContainerStyle={styles.content}
@@ -118,6 +137,16 @@ export function RouteScreen(props: RouteScreenProps) {
                 onUseCurrentLocation={() => void origin.useCurrentLocation()}
               />
             </AnimatedEntrance>
+            {stops.length > 1 ? (
+              <AnimatedEntrance delay={70}>
+                <View style={styles.lastStopRow}>
+                  <AppText color="muted" variant="label">
+                    {t("startCard.lastStopLabel")}
+                  </AppText>
+                  <RouteLastStopDropdown onChange={setLastStopId} options={lastStopOptions} value={lastStopId} />
+                </View>
+              </AnimatedEntrance>
+            ) : null}
             <AnimatedEntrance delay={90}>
               <RouteSelectionBar
                 actionSlot={
@@ -180,7 +209,28 @@ export function RouteScreen(props: RouteScreenProps) {
         title={t("selectionActions.completeSelectedTitle", { count: selection.selectedCount })}
         visible={completeConfirmVisible}
       />
+      <ConfirmDialog
+        cancelLabel={t("selectionActions.shareStepCancel")}
+        confirmLabel={t("selectionActions.shareStepConfirm")}
+        message={
+          selectionActions.shareQueue
+            ? t("selectionActions.shareStepMessage", { name: selectionActions.shareQueue[selectionActions.shareIndex].name })
+            : ""
+        }
+        onCancel={selectionActions.cancelShareQueue}
+        onConfirm={() => void selectionActions.confirmShareCurrent()}
+        title={
+          selectionActions.shareQueue
+            ? t("selectionActions.shareStepTitle", {
+                index: selectionActions.shareIndex + 1,
+                count: selectionActions.shareQueue.length,
+              })
+            : ""
+        }
+        visible={selectionActions.shareQueue !== null}
+      />
     </ScreenContainer>
+    </AppErrorBoundary>
   );
 }
 
@@ -189,4 +239,5 @@ const styles = StyleSheet.create({
   content: { gap: spacing.sm, paddingBottom: spacing.xl },
   screenContent: { paddingTop: 0 },
   header: { gap: spacing.sm, marginBottom: spacing.xs },
+  lastStopRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
 });

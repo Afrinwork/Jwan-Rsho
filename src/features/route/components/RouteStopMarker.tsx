@@ -3,6 +3,8 @@ import { StyleSheet, Text, View } from "react-native";
 import { Marker } from "react-native-maps";
 
 import { colors } from "@/src/constants/colors";
+import { CustomerOrderCallout } from "@/src/features/map/components/CustomerOrderCallout";
+import { useLazyOrderItems } from "@/src/features/map/hooks/useLazyOrderItems";
 import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
 
 type RouteStopMarkerProps = {
@@ -15,16 +17,19 @@ type RouteStopMarkerProps = {
 };
 
 function RouteStopMarkerComponent({ marker, label, active }: RouteStopMarkerProps) {
+  const order = useLazyOrderItems(marker.id);
+
   return (
     <Marker
       coordinate={{ latitude: marker.latitude, longitude: marker.longitude }}
-      description={marker.description}
       identifier={marker.id}
+      onPress={order.load}
       title={marker.title}
     >
       <View style={[styles.pin, active && styles.pinActive]}>
         <Text style={styles.label}>{label}</Text>
       </View>
+      <CustomerOrderCallout error={order.error} items={order.items} loading={order.loading} title={marker.title} />
     </Marker>
   );
 }

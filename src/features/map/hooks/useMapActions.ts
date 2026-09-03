@@ -81,7 +81,7 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
         sharingService.buildCustomerLocationMessage({
           fullName: details.customer.fullName,
           address: shareIncludeAddress
-            ? `${details.customer.address}, ${details.customer.city}, ${details.customer.country}`
+            ? [details.customer.address, details.customer.city, details.customer.country].filter((part) => part.trim()).join(", ")
             : "",
           phone: shareIncludePhone ? details.customer.phone : "",
           latitude: marker.latitude,

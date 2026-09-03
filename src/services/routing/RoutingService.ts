@@ -1,14 +1,11 @@
 import { distanceKm } from "@/src/features/map/utils/circleMath";
-import { fetchRoutePolyline, RouteDirectionsError } from "@/src/features/route/services/routeDirectionsService";
+import {
+  fetchOsrmRoutePolyline,
+  fetchRoutePolyline,
+  FALLBACK_AVERAGE_SPEED_KMH,
+  RouteDirectionsError,
+} from "@/src/features/route/services/routeDirectionsService";
 import { RoutingCoordinate, RoutingError, RoutingLeg } from "@/src/services/routing/routingTypes";
-
-// Same assumed average speed as the route-planning screen's pre-network
-// preview (buildFallbackLegs in routeDirectionsService.ts, kept in sync with
-// that constant) — used here when no Directions API key is configured, so
-// live navigation still shows a reasonable (if approximate) distance/ETA
-// instead of erroring outright. 70 km/h approximates a realistic German
-// city/highway driving mix.
-const FALLBACK_AVERAGE_SPEED_KMH = 70;
 
 export function estimateStraightLineLeg(origin: RoutingCoordinate, destination: RoutingCoordinate): RoutingLeg {
   const distance = distanceKm(origin, destination);
@@ -55,4 +52,22 @@ export async function fetchSingleLegRoute(
 
     throw new RoutingError(error instanceof Error ? error.message : "Routing request failed.", "REQUEST_FAILED");
   }
+}
+
+// Free, no-signup fallback for live navigation, same OSRM public server the
+// route-planning polyline uses — tried after Google fails/isn't configured,
+// before giving up to the straight-line estimate.
+export async function fetchOsrmSingleLegRoute(origin: RoutingCoordinate, destination: RoutingCoordinate & { id: string }): Promise<RoutingLeg> {
+  const result = await fetchOsrmRoutePolyline(origin, [destination]);
+  const leg = result.legs[0];
+
+  if (!leg) {
+    throw new RoutingError("No route returned.", "NO_ROUTE");
+  }
+
+  return {
+    distanceMeters: leg.distanceKm * 1000,
+    durationSeconds: leg.durationSec,
+    polyline: result.coordinates,
+  };
 }

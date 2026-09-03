@@ -19,7 +19,7 @@ export function CustomerMapCard({ details }: CustomerMapCardProps) {
       <Text style={[styles.name, { color: colors.text }]}>{details.customer.fullName}</Text>
       <Text style={[styles.meta, { color: colors.mutedText }]}>{details.customer.phone}</Text>
       <Text style={[styles.meta, { color: colors.mutedText }]}>
-        {details.customer.address}, {details.customer.city}, {details.customer.country}
+        {[details.customer.address, details.customer.city, details.customer.country].filter((part) => part.trim()).join(", ")}
       </Text>
       {details.customer.note ? (
         <View style={[styles.card, { backgroundColor: colors.background, borderColor: colors.border }]}>

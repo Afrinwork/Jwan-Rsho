@@ -28,6 +28,24 @@ test("nearestNeighborOrder returns an empty list for no points", () => {
   assert.deepEqual(nearestNeighborOrder(origin, []), []);
 });
 
+test("nearestNeighborOrder with lastStopId keeps that point last even if it's the closest", () => {
+  const closest = { id: "closest", latitude: 52.521, longitude: 13.406 };
+  const far = { id: "far", latitude: 53.55, longitude: 10.0 };
+
+  const ordered = nearestNeighborOrder(origin, [closest, far], "closest");
+
+  assert.deepEqual(ordered.map((point) => point.id), ["far", "closest"]);
+});
+
+test("nearestNeighborOrder ignores an unknown lastStopId (behaves like no pin)", () => {
+  const near = { id: "near", latitude: 52.53, longitude: 13.41 };
+  const far = { id: "far", latitude: 53.55, longitude: 10.0 };
+
+  const ordered = nearestNeighborOrder(origin, [far, near], "does-not-exist");
+
+  assert.deepEqual(ordered.map((point) => point.id), ["near", "far"]);
+});
+
 test("buildFallbackLegs accumulates straight-line distance from the origin", () => {
   const points = [
     { id: "a", latitude: 52.53, longitude: 13.41 },
@@ -86,6 +104,47 @@ test("parseDirectionsResponse reorders waypoints using waypoint_order", () => {
   assert.deepEqual(legs.map((leg) => leg.point.id), ["c", "a", "b"]);
   assert.equal(legs[0].distanceKm, 1);
   assert.equal(legs[0].durationSec, 120);
+});
+
+test("parseDirectionsResponse with lastStopId puts the pinned stop last, regardless of waypoint_order", () => {
+  const stops = [
+    { id: "a", latitude: 1, longitude: 1 },
+    { id: "b", latitude: 2, longitude: 2 },
+    { id: "c", latitude: 3, longitude: 3 },
+  ];
+
+  // Only "a" and "b" are optimizable waypoints here — "c" is the fixed
+  // destination, so waypoint_order indexes into [a, b], not all 3 stops.
+  const response = {
+    status: "OK",
+    routes: [
+      {
+        waypoint_order: [1, 0],
+        legs: [
+          { distance: { value: 2000 }, duration: { value: 200 } }, // -> b
+          { distance: { value: 1000 }, duration: { value: 100 } }, // -> a
+          { distance: { value: 3000 }, duration: { value: 300 } }, // -> c (destination)
+        ],
+      },
+    ],
+  };
+
+  const legs = parseDirectionsResponse(response, stops, "c");
+
+  assert.deepEqual(legs.map((leg) => leg.point.id), ["b", "a", "c"]);
+  assert.equal(legs[2].distanceKm, 3);
+});
+
+test("parseDirectionsResponse with lastStopId as the only stop skips waypoint reordering entirely", () => {
+  const stops = [{ id: "only", latitude: 1, longitude: 1 }];
+  const response = {
+    status: "OK",
+    routes: [{ waypoint_order: [], legs: [{ distance: { value: 5000 }, duration: { value: 600 } }] }],
+  };
+
+  const legs = parseDirectionsResponse(response, stops, "only");
+
+  assert.deepEqual(legs.map((leg) => leg.point.id), ["only"]);
 });
 
 test("parseDirectionsResponse handles a single stop without waypoint reordering", () => {

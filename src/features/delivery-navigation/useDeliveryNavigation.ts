@@ -10,7 +10,7 @@ import { routeT } from "@/src/features/route/i18n/routeT";
 import { countryRepository } from "@/src/repositories/countryRepository";
 import { formatError } from "@/src/utils/formatError";
 import { locationTrackingService, TrackedCoordinate } from "@/src/services/location/LocationTrackingService";
-import { estimateStraightLineLeg, fetchSingleLegRoute } from "@/src/services/routing/RoutingService";
+import { estimateStraightLineLeg, fetchOsrmSingleLegRoute, fetchSingleLegRoute } from "@/src/services/routing/RoutingService";
 import { RoutingError } from "@/src/services/routing/routingTypes";
 import { getTimeZoneForCountry } from "@/src/utils/time/timeZone";
 
@@ -154,24 +154,39 @@ export function useDeliveryNavigation(markers: MapCustomerMarker[]) {
 
     dispatch({ type: "ROUTE_LOADING" });
 
-    void fetchSingleLegRoute(origin, { id: activeStop.customerId, latitude: activeStop.latitude, longitude: activeStop.longitude }, googleDirectionsApiKey)
-      .then((leg) => {
-        if (requestVersionRef.current !== requestVersion) return;
-        dispatch({ type: "ROUTE_LOADED", leg });
-      })
-      .catch((error) => {
-        if (requestVersionRef.current !== requestVersion) return;
+    const destination = { id: activeStop.customerId, latitude: activeStop.latitude, longitude: activeStop.longitude };
 
-        // No API key configured is an expected, known limitation — fall back
-        // to a straight-line estimate instead of a loud error, same
-        // convention as the route-planning screen's fallback legs.
-        if (error instanceof RoutingError && error.code === "MISSING_API_KEY") {
-          dispatch({ type: "ROUTE_LOADED", leg: estimateStraightLineLeg(origin, activeStop) });
+    // Same fallback order as the route-planning screen: paid Google (if
+    // configured) -> free no-signup OSRM -> straight-line estimate. Missing
+    // key, a failed request, network hiccup, quota limit — none of these
+    // should leave the driver looking at a blank "--:--"; only something
+    // that isn't a routing-request problem at all surfaces a real error.
+    void (async () => {
+      try {
+        const leg = await fetchSingleLegRoute(origin, destination, googleDirectionsApiKey);
+        if (requestVersionRef.current === requestVersion) dispatch({ type: "ROUTE_LOADED", leg });
+        return;
+      } catch (error) {
+        if (!(error instanceof RoutingError)) {
+          if (requestVersionRef.current === requestVersion) {
+            dispatch({ type: "ROUTE_FAILED", message: formatError(error).message });
+          }
           return;
         }
+      }
 
-        dispatch({ type: "ROUTE_FAILED", message: formatError(error).message });
-      });
+      try {
+        const leg = await fetchOsrmSingleLegRoute(origin, destination);
+        if (requestVersionRef.current === requestVersion) dispatch({ type: "ROUTE_LOADED", leg });
+        return;
+      } catch {
+        // fall through to the straight-line estimate
+      }
+
+      if (requestVersionRef.current === requestVersion) {
+        dispatch({ type: "ROUTE_LOADED", leg: estimateStraightLineLeg(origin, activeStop) });
+      }
+    })();
   }, [state.isNavigating, state.currentLocation, state.currentStopIndex, state.stops]);
 
   // Returning from the background: don't wait for the next incidental GPS
