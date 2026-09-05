@@ -1,5 +1,5 @@
 import { PropsWithChildren, useEffect } from "react";
-import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
+import { DarkTheme, DefaultTheme, ThemeProvider } from "expo-router/react-navigation";
 import { useFonts } from "expo-font";
 import {
   Manrope_400Regular,

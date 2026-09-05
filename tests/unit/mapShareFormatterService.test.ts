@@ -3,9 +3,12 @@ import assert from "node:assert/strict";
 
 import { buildSelectionShareMessage } from "@/src/features/map/services/mapShareFormatterService";
 
+// mapT (used inside the formatter) is fixed to Arabic regardless of the
+// app's active locale (see src/features/map/i18n/mapT.ts), so the labels
+// below must match src/i18n/locales/ar/map.json, not the German file.
 const SEPARATOR = "━━━━━━━━━━━━━━";
 
-test("share message uses the emoji template: header, numbered customers, totals, footer", () => {
+test("share message: header, then per customer address -> name -> order block, then totals, footer", () => {
   const message = buildSelectionShareMessage(
     [
       {
@@ -37,35 +40,37 @@ test("share message uses the emoji template: header, numbered customers, totals,
     message,
     [
       "📍 Hamburg",
-      "📦 Anzahl Bestellungen: 2",
+      "📦 عدد الطلبات: 2",
       "",
       SEPARATOR,
       "",
-      "1️⃣ Ahmad Ali",
-      "📍 Musterstrasse 12, Hamburg",
+      "Musterstrasse 12, Hamburg",
       "",
-      "📦 Kaese: 2 kg",
-      "📦 Labneh: 1 kg",
-      "",
-      SEPARATOR,
-      "",
-      "2️⃣ Sara Ali",
-      "📍 Hauptstrasse 8, Hamburg",
-      "",
-      "📦 Oliven: 3 kg",
+      "Ahmad Ali",
+      "الطلبية",
+      "Kaese: 2 kg",
+      "Labneh: 1 kg",
       "",
       SEPARATOR,
       "",
-      "📊 Gesamt",
+      "Hauptstrasse 8, Hamburg",
       "",
-      "📦 Kaese: 2 kg",
-      "📦 Labneh: 1 kg",
-      "📦 Oliven: 3 kg",
+      "Sara Ali",
+      "الطلبية",
+      "Oliven: 3 kg",
       "",
       SEPARATOR,
       "",
-      "👥 Anzahl Kunden: 2",
-      "📦 Bestellungen insgesamt: 2",
+      "📊 المجموع",
+      "",
+      "Kaese: 2 kg",
+      "Labneh: 1 kg",
+      "Oliven: 3 kg",
+      "",
+      SEPARATOR,
+      "",
+      "👥 عدد الزبائن: 2",
+      "📦 إجمالي الطلبات: 2",
     ].join("\n"),
   );
 });
@@ -81,7 +86,7 @@ test("shop name appears in the header and footer when set", () => {
   assert.ok(message.endsWith("🧀 Rsho Kaeserei"));
 });
 
-test("per-product emoji is used when a product has one, otherwise a default emoji is used", () => {
+test("per-product emoji is used when a product has one, otherwise no emoji prefix at all", () => {
   const message = buildSelectionShareMessage(
     [
       {
@@ -100,7 +105,10 @@ test("per-product emoji is used when a product has one, otherwise a default emoj
   );
 
   assert.ok(message.includes("🧀 Kaese: 2 kg"));
-  assert.ok(message.includes("📦 Labneh: 1 kg"));
+  // Exactly this line, not just "somewhere in the message" — the header/
+  // footer legitimately use 📦 for the order count, unrelated to items.
+  assert.ok(message.includes("\nLabneh: 1 kg\n"));
+  assert.ok(!message.includes("📦 Labneh"));
 });
 
 test("customer note is appended when present, omitted otherwise", () => {
@@ -115,8 +123,8 @@ test("customer note is appended when present, omitted otherwise", () => {
     { includeTotal: false },
   );
 
-  assert.ok(withNote.includes("📝 Notiz: Nach 17 Uhr"));
-  assert.ok(!withoutNote.includes("📝 Notiz"));
+  assert.ok(withNote.includes("ملاحظة: Nach 17 Uhr"));
+  assert.ok(!withoutNote.includes("ملاحظة"));
 });
 
 test("order count is shown when a customer has more than one order, omitted for exactly one", () => {
@@ -131,8 +139,8 @@ test("order count is shown when a customer has more than one order, omitted for 
     { includeTotal: false },
   );
 
-  assert.ok(multipleOrders.includes("🧾 3 Bestellungen"));
-  assert.ok(!singleOrder.includes("🧾"));
+  assert.ok(multipleOrders.includes("3 طلبات"));
+  assert.ok(!singleOrder.includes("1 طلبات"));
 });
 
 test("order counts in header and footer sum every customer's orders, not just the customer count", () => {
@@ -148,19 +156,20 @@ test("order counts in header and footer sum every customer's orders, not just th
     { includeTotal: false },
   );
 
-  assert.ok(message.includes("📦 Anzahl Bestellungen: 8"));
-  assert.ok(message.includes("👥 Anzahl Kunden: 5"));
-  assert.ok(message.includes("📦 Bestellungen insgesamt: 8"));
+  assert.ok(message.includes("📦 عدد الطلبات: 8"));
+  assert.ok(message.includes("👥 عدد الزبائن: 5"));
+  assert.ok(message.includes("📦 إجمالي الطلبات: 8"));
 });
 
-test("phone is only included when requested", () => {
+test("phone is only included when requested, without an emoji prefix", () => {
   const message = buildSelectionShareMessage(
     [{ fullName: "Ahmad Ali", address: "Musterstrasse 12", phone: "111", city: "Hamburg", items: [] }],
     [],
     { includePhone: true, includeTotal: false },
   );
 
-  assert.ok(message.includes("📞 111"));
+  assert.ok(message.includes("\n111\n"));
+  assert.ok(!message.includes("📞"));
 });
 
 test("multiple cities fall back to a generic header instead of one wrong city", () => {
@@ -173,7 +182,7 @@ test("multiple cities fall back to a generic header instead of one wrong city", 
     { includeTotal: false },
   );
 
-  assert.ok(message.startsWith("📍 Mehrere Staedte"));
+  assert.ok(message.startsWith("📍 عدة مدن"));
 });
 
 test("empty selection returns an empty message and never crashes", () => {
@@ -189,4 +198,28 @@ test("share message omits empty address and phone values without undefined text"
 
   assert.equal(message.includes("undefined"), false);
   assert.equal(message.includes("null"), false);
+});
+
+test("name and order block form one contiguous chunk directly below the address, for easy copying", () => {
+  const message = buildSelectionShareMessage(
+    [
+      {
+        fullName: "Abdullah Sheikho",
+        address: "Osterfelder Str. 28-30",
+        phone: "",
+        city: "Bottrop",
+        items: [{ productName: "Jibne Baladi", quantity: 10, unit: "kg" }],
+      },
+    ],
+    [],
+    { includeTotal: false },
+  );
+
+  const lines = message.split("\n");
+  const nameIndex = lines.indexOf("Abdullah Sheikho");
+  assert.ok(nameIndex > 0, "name line should be present");
+  assert.equal(lines[nameIndex - 1], "", "a blank line separates the address block from the name");
+  assert.equal(lines[nameIndex + 1], "الطلبية");
+  assert.equal(lines[nameIndex + 2], "Jibne Baladi: 10 kg");
+  assert.ok(lines.indexOf("Osterfelder Str. 28-30, Bottrop") < nameIndex, "address comes before the name");
 });

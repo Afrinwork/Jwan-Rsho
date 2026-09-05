@@ -77,7 +77,7 @@ export function AppButton({
           }
           end={{ x: 1, y: 0.9 }}
           start={{ x: 0.1, y: 0 }}
-          style={StyleSheet.absoluteFillObject}
+          style={StyleSheet.absoluteFill}
         />
       ) : null}
       {loading ? (
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.12,
   },
   secondaryFill: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   buttonCompact: {
     borderRadius: radius.md,

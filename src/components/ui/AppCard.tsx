@@ -35,7 +35,7 @@ export function AppCard({
         {frosted ? (
           <BlurView
             intensity={theme === "dark" ? 22 : 28}
-            style={StyleSheet.absoluteFillObject}
+            style={StyleSheet.absoluteFill}
             tint={theme === "dark" ? "dark" : "light"}
           />
         ) : null}
@@ -43,7 +43,7 @@ export function AppCard({
           colors={palette.gradient}
           end={{ x: 1, y: 0.8 }}
           start={{ x: 0, y: 0 }}
-          style={StyleSheet.absoluteFillObject}
+          style={StyleSheet.absoluteFill}
         />
         <View style={[styles.highlight, { backgroundColor: palette.highlight }]} />
         <View style={[padded && styles.content, contentStyle]}>{children}</View>

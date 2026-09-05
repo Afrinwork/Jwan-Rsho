@@ -7,10 +7,6 @@
   "screen": {
     "loading": "جارٍ تجهيز الخريطة..."
   },
-  "markerCallout": {
-    "noOpenOrder": "لا توجد طلبية مفتوحة",
-    "loadError": "تعذر تحميل الطلبية"
-  },
   "toolbar": {
     "title": "الخريطة",
     "subtitle": "الزبائن والفلاتر مباشرة على الخريطة.",
@@ -41,7 +37,10 @@
     "route": "المسار",
     "whatsapp": "واتساب",
     "email": "البريد الإلكتروني",
-    "clear": "حذف"
+    "clear": "حذف",
+    "deleteConfirmTitle": "حذف الزبائن المحددين؟",
+    "deleteConfirmMessage": "سيتم حذف {{count}} من الزبائن نهائيًا مع جميع طلباتهم. لا يمكن التراجع عن هذا الإجراء.",
+    "deleteError": "تعذر حذف بعض الزبائن."
   },
   "selectedList": {
     "emptyTitle": "لا يوجد تحديد",
@@ -77,7 +76,11 @@
     "phoneMissing": "رقم الهاتف غير متوفر",
     "navigation": "الملاحة",
     "shareViaWhatsapp": "مشاركة عبر واتساب",
-    "shareLocation": "مشاركة الموقع"
+    "shareLocation": "مشاركة الموقع",
+    "skipStop": "تخطي هذا التوقف",
+    "skipConfirmTitle": "تخطي التوقف؟",
+    "skipConfirmMessage": "سيتم تخطي هذا التوقف والانتقال إلى التالي. يبقى الزبون وطلبه محفوظين ويمكنك العودة إليه لاحقًا.",
+    "reactivateStop": "تفعيل هذا التوقف مجددًا"
   },
   "navigationSheet": {
     "title": "فتح تطبيق الملاحة",
@@ -101,6 +104,7 @@
     "totalOrders": "إجمالي الطلبات: {{count}}",
     "headerOrderCount": "عدد الطلبات: {{count}}",
     "ordersCountLine": "{{count}} طلبات",
+    "orderLabel": "الطلبية",
     "noOpenOrder": "لا يوجد طلب مفتوح",
     "note": "ملاحظة: {{note}}",
     "defaultSubject": "قائمة الزبائن المحددة"

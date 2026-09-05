@@ -3,8 +3,6 @@ import { StyleSheet, Text, View } from "react-native";
 import { Marker } from "react-native-maps";
 
 import { colors } from "@/src/constants/colors";
-import { CustomerOrderCallout } from "@/src/features/map/components/CustomerOrderCallout";
-import { useLazyOrderItems } from "@/src/features/map/hooks/useLazyOrderItems";
 import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
 
 type RouteStopMarkerProps = {
@@ -14,22 +12,30 @@ type RouteStopMarkerProps = {
   // customers and would show the wrong number on the route map.
   label: string;
   active: boolean;
+  // Already completed/skipped — stays on the map (never removed), just
+  // rendered muted so it visually recedes behind the upcoming stops.
+  inactive?: boolean;
+  onPress: (customerId: string) => void;
 };
 
-function RouteStopMarkerComponent({ marker, label, active }: RouteStopMarkerProps) {
-  const order = useLazyOrderItems(marker.id);
-
+// No native Callout here on purpose — same reasoning as CustomerMarker (map
+// screen): tapping opens the full detail sheet instead, which has everything
+// a callout would (and more: address, note, edit/complete/skip actions). A
+// native Callout was flaky here specifically, since the live screen's
+// camera-follow re-animates the map on every GPS tick, and animating the map
+// is what dismisses an open Callout on both iOS and Android — it kept
+// closing itself right after being tapped open.
+function RouteStopMarkerComponent({ marker, label, active, inactive, onPress }: RouteStopMarkerProps) {
   return (
     <Marker
       coordinate={{ latitude: marker.latitude, longitude: marker.longitude }}
       identifier={marker.id}
-      onPress={order.load}
+      onPress={() => onPress(marker.id)}
       title={marker.title}
     >
-      <View style={[styles.pin, active && styles.pinActive]}>
+      <View style={[styles.pin, inactive && styles.pinInactive, active && styles.pinActive]}>
         <Text style={styles.label}>{label}</Text>
       </View>
-      <CustomerOrderCallout error={order.error} items={order.items} loading={order.loading} title={marker.title} />
     </Marker>
   );
 }
@@ -51,6 +57,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.danger,
     borderColor: colors.dangerBorder,
     transform: [{ scale: 1.15 }],
+  },
+  pinInactive: {
+    backgroundColor: "#6B7280",
+    opacity: 0.6,
   },
   label: {
     color: colors.surface,

@@ -1,8 +1,6 @@
 import { mapT as t } from "@/src/features/map/i18n/mapT";
 
 const SEPARATOR = "━━━━━━━━━━━━━━";
-const DEFAULT_ITEM_EMOJI = "📦";
-const KEYCAP_DIGITS = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"];
 
 export type SelectionShareItem = {
   productName: string;
@@ -47,8 +45,8 @@ export function buildSelectionShareMessage(
   pushHeader(lines, customers, shopName);
   lines.push("", SEPARATOR, "");
 
-  customers.forEach((customer, index) => {
-    pushCustomerBlock(lines, customer, index + 1, { includeAddress, includePhone });
+  customers.forEach((customer) => {
+    pushCustomerBlock(lines, customer, { includeAddress, includePhone });
     lines.push("", SEPARATOR, "");
   });
 
@@ -89,30 +87,32 @@ function totalOrderCount(customers: SelectionShareCustomer[]) {
   return customers.reduce((sum, customer) => sum + (customer.orderCount ?? 1), 0);
 }
 
+// Address first, then name, then the "Bestellung"/order block — so the
+// name+order lines form one contiguous chunk that can be copied out on
+// their own, without the address line above them.
 function pushCustomerBlock(
   lines: string[],
   customer: SelectionShareCustomer,
-  position: number,
   options: { includeAddress: boolean; includePhone: boolean },
 ) {
-  lines.push(`${toKeycapNumber(position)} ${customer.fullName}`);
-
   if (options.includeAddress) {
     const addressLine = [customer.address, customer.city].filter((part) => part.trim()).join(", ");
     if (addressLine) {
-      lines.push(`📍 ${addressLine}`);
+      lines.push(addressLine, "");
     }
   }
 
+  lines.push(customer.fullName);
+
   if (options.includePhone && customer.phone.trim()) {
-    lines.push(`📞 ${customer.phone}`);
+    lines.push(customer.phone);
   }
 
   if (customer.orderCount && customer.orderCount > 1) {
-    lines.push(`🧾 ${t("map:share.ordersCountLine", { count: customer.orderCount })}`);
+    lines.push(t("map:share.ordersCountLine", { count: customer.orderCount }));
   }
 
-  lines.push("");
+  lines.push(t("map:share.orderLabel"));
 
   if (customer.items.length) {
     customer.items.forEach((item) => lines.push(formatItemLine(item)));
@@ -121,17 +121,11 @@ function pushCustomerBlock(
   }
 
   if (customer.note?.trim()) {
-    lines.push("", `📝 ${t("map:share.note", { note: customer.note.trim() })}`);
+    lines.push("", t("map:share.note", { note: customer.note.trim() }));
   }
 }
 
 function formatItemLine(item: SelectionShareItem) {
-  return `${item.emoji?.trim() || DEFAULT_ITEM_EMOJI} ${item.productName}: ${item.quantity} ${item.unit}`;
-}
-
-function toKeycapNumber(value: number) {
-  return String(value)
-    .split("")
-    .map((digit) => KEYCAP_DIGITS[Number(digit)])
-    .join("");
+  const emoji = item.emoji?.trim();
+  return emoji ? `${emoji} ${item.productName}: ${item.quantity} ${item.unit}` : `${item.productName}: ${item.quantity} ${item.unit}`;
 }

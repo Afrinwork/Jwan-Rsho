@@ -20,12 +20,20 @@ type MapCustomerSheetProps = {
   onClose: () => void;
   onRetry: () => void;
   onEdit: () => void;
-  onComplete: () => void;
+  onComplete?: () => void;
   completing?: boolean;
   onCall: () => void;
   onNavigate: () => void;
   onShare: () => void;
   onShareOrder: () => void;
+  // Route-live context only: lets the driver skip the current stop right
+  // from this sheet instead of only via the bottom action bar. Omitted (and
+  // hidden) for the plain map screen, which has no stop sequence to skip.
+  onSkip?: () => void;
+  // Route-live context only: undoes a previous skip/complete for this stop,
+  // making it pending again. Omitted for a stop that isn't currently
+  // skipped/completed, and for the plain map screen.
+  onReactivate?: () => void;
 };
 
 export function MapCustomerSheet({
@@ -44,6 +52,8 @@ export function MapCustomerSheet({
   onNavigate,
   onShare,
   onShareOrder,
+  onSkip,
+  onReactivate,
 }: MapCustomerSheetProps) {
   const colors = useThemeColors();
   const { t } = useTranslation("map");
@@ -70,7 +80,10 @@ export function MapCustomerSheet({
               {actionSuccess ? <SuccessState message={actionSuccess} /> : null}
               <View style={styles.actions}>
                 <AppButton label={t("common.edit")} onPress={onEdit} />
-                {details.openOrders.length ? (
+                {onReactivate ? (
+                  <AppButton label={t("sheet.reactivateStop")} onPress={onReactivate} variant="secondary" />
+                ) : null}
+                {details.openOrders.length && onComplete ? (
                   <AppButton
                     label={
                       details.openOrders.length > 1
@@ -89,6 +102,7 @@ export function MapCustomerSheet({
                 <AppButton label={t("sheet.navigation")} onPress={onNavigate} variant="secondary" />
                 <AppButton label={t("sheet.shareViaWhatsapp")} onPress={onShareOrder} variant="secondary" />
                 <AppButton label={t("sheet.shareLocation")} onPress={onShare} variant="secondary" />
+                {onSkip ? <AppButton label={t("sheet.skipStop")} onPress={onSkip} variant="secondary" /> : null}
               </View>
             </ScrollView>
           ) : null}

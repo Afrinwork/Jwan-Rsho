@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -22,6 +22,9 @@ import { useOrderedMarkers } from "@/src/features/route/hooks/useOrderedMarkers"
 import { useRouteLiveNavigation } from "@/src/features/route/hooks/useRouteLiveNavigation";
 import { useRoutePolyline } from "@/src/features/route/hooks/useRoutePolyline";
 import { formatDistanceKm, formatDurationHM, formatEtaTime } from "@/src/features/route/utils/routeFormat";
+import { MapCustomerSheet } from "@/src/features/map/components/MapCustomerSheet";
+import { useMapActions } from "@/src/features/map/hooks/useMapActions";
+import { useMapCustomerDetails } from "@/src/features/map/hooks/useMapCustomerDetails";
 import { distanceKm } from "@/src/features/map/utils/circleMath";
 import { navigationService } from "@/src/services/navigationService";
 import { formatArrivalTime } from "@/src/utils/time/formatArrivalTime";
@@ -98,6 +101,39 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
     if (customerId) delivery.markStopHandled(customerId, "skipped");
   }
 
+  // Tapping any stop pin opens the same customer detail sheet as the plain
+  // map screen (name/address/note/open order + edit/call/navigate/share),
+  // instead of the old native map Callout — see RouteStopMarker for why that
+  // was flaky here specifically. Loaded independently of the route's own
+  // sequencing state, so it works for any tapped stop, not just the active
+  // one.
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const [sheetCompleteConfirmVisible, setSheetCompleteConfirmVisible] = useState(false);
+  const [sheetSkipConfirmVisible, setSheetSkipConfirmVisible] = useState(false);
+  const selectedMarker = markers.find((marker) => marker.id === selectedCustomerId) ?? null;
+  // Completing/skipping an out-of-sequence stop from here would fight with
+  // the leg-by-leg polyline/navigation, which always targets currentMarker —
+  // so those two actions stay limited to whichever stop is actually active,
+  // same as the bottom action bar. Every other action (edit/call/navigate/
+  // share) works for any tapped stop regardless of sequence.
+  const isSelectedCurrentStop = selectedMarker !== null && selectedMarker.id === navigation.currentMarker?.id;
+  // Reactivating (undoing a skip/complete) is only offered while live
+  // turn-by-turn navigation is off — while it's on, the separate delivery
+  // reducer (useDeliveryNavigation) has already advanced its own stop index
+  // past this one, and it has no matching "go back" action; reintroducing
+  // the stop here without updating that reducer too would leave the two
+  // out of sync (active pin vs. actual GPS-routed target).
+  const isSelectedInactive = selectedMarker !== null && navigation.handledIds.has(selectedMarker.id);
+  const canReactivateSelected = isSelectedInactive && !isLiveNavigating;
+  const sheetDetails = useMapCustomerDetails(selectedCustomerId);
+  const sheetActions = useMapActions(sheetDetails.details, selectedMarker);
+
+  function closeSheet() {
+    setSelectedCustomerId(null);
+    setSheetCompleteConfirmVisible(false);
+    setSheetSkipConfirmVisible(false);
+  }
+
   // The camera fits the planned route (chosen origin + stops) once and then
   // stays there — it must never auto-pan to the device's live GPS position,
   // which can be far off (simulator, stale/no fix, ...) and drag the view
@@ -122,9 +158,7 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
   //
   // Gated by a minimum-movement distance, not just "position changed": every
   // GPS tick (even a stationary, jittery one) was re-animating the camera,
-  // which made it feel jumpy and — since moving/animating the map is what
-  // closes an open native Callout on both iOS and Android — kept dismissing
-  // the customer callout the moment someone tapped a pin to read it.
+  // which made it feel jumpy.
   const lastCameraCenterRef = useRef<{ latitude: number; longitude: number } | null>(null);
   const CAMERA_FOLLOW_MIN_DISTANCE_METERS = 20;
 
@@ -214,7 +248,7 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
         ref={mapRef}
         showsCompass
         showsUserLocation
-        style={StyleSheet.absoluteFillObject}
+        style={StyleSheet.absoluteFill}
       >
         {polyline.coordinates.length >= 2 ? (
           <Polyline coordinates={polyline.coordinates} strokeColor={routeStroke} strokeWidth={4} />
@@ -227,7 +261,14 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
           </Marker>
         ) : null}
         {markers.map((marker, index) => (
-          <RouteStopMarker active={marker.id === navigation.currentMarker?.id} key={marker.id} label={String(index + 1)} marker={marker} />
+          <RouteStopMarker
+            active={marker.id === navigation.currentMarker?.id}
+            inactive={navigation.handledIds.has(marker.id)}
+            key={marker.id}
+            label={String(index + 1)}
+            marker={marker}
+            onPress={setSelectedCustomerId}
+          />
         ))}
       </MapView>
 
@@ -339,6 +380,62 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
         onConfirm={() => void handleMarkComplete()}
         title={t("live.arrivalTitle")}
         visible={navigation.arrivalPromptVisible}
+      />
+
+      <MapCustomerSheet
+        actionError={sheetActions.actionError}
+        actionSuccess={sheetActions.actionSuccess}
+        completing={navigation.completingArrival}
+        details={sheetDetails.details}
+        error={sheetDetails.error}
+        loading={sheetDetails.isLoading}
+        onCall={() => void sheetActions.callCustomer()}
+        onClose={closeSheet}
+        onComplete={isSelectedCurrentStop ? () => setSheetCompleteConfirmVisible(true) : undefined}
+        onEdit={() => {
+          if (selectedCustomerId) router.push(`/customer/edit/${selectedCustomerId}`);
+        }}
+        onNavigate={() => void sheetActions.openNavigationMenu()}
+        onReactivate={
+          canReactivateSelected && selectedCustomerId
+            ? () => {
+                navigation.reactivateStop(selectedCustomerId);
+                closeSheet();
+              }
+            : undefined
+        }
+        onRetry={() => void sheetDetails.reload()}
+        onShare={() => void sheetActions.shareLocation()}
+        onShareOrder={() => void sheetActions.shareOrder()}
+        onSkip={isSelectedCurrentStop ? () => setSheetSkipConfirmVisible(true) : undefined}
+        visible={
+          selectedCustomerId !== null &&
+          !sheetCompleteConfirmVisible &&
+          !sheetSkipConfirmVisible &&
+          !navigation.arrivalPromptVisible
+        }
+      />
+      <ConfirmDialog
+        message={t("map:sheet.completeConfirmMessage")}
+        onCancel={() => setSheetCompleteConfirmVisible(false)}
+        onConfirm={() => {
+          setSheetCompleteConfirmVisible(false);
+          closeSheet();
+          void handleMarkComplete();
+        }}
+        title={t("map:sheet.completeConfirmTitle")}
+        visible={sheetCompleteConfirmVisible}
+      />
+      <ConfirmDialog
+        message={t("map:sheet.skipConfirmMessage")}
+        onCancel={() => setSheetSkipConfirmVisible(false)}
+        onConfirm={() => {
+          setSheetSkipConfirmVisible(false);
+          closeSheet();
+          handleSkip();
+        }}
+        title={t("map:sheet.skipConfirmTitle")}
+        visible={sheetSkipConfirmVisible}
       />
     </View>
     </AppErrorBoundary>

@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect } from "expo-router";
 
 import { countryRepository } from "@/src/repositories/countryRepository";
 import { customerRepository } from "@/src/repositories/customerRepository";

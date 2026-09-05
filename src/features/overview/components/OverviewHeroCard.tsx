@@ -33,7 +33,7 @@ export function OverviewHeroCard(props: OverviewHeroCardProps) {
         colors={[colors.primaryStrong, colors.primary, colors.secondary]}
         end={{ x: 1, y: 1 }}
         start={{ x: 0, y: 0 }}
-        style={StyleSheet.absoluteFillObject}
+        style={StyleSheet.absoluteFill}
       />
       <View style={styles.glow} />
       <AppText color={colors.primaryContrast} style={styles.kicker} variant="label">

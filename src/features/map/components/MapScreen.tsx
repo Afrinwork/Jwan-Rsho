@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "expo-router";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useRouter } from "expo-router";
 import { StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -39,6 +38,7 @@ export function MapScreen() {
   const t = mapT;
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [completeConfirmVisible, setCompleteConfirmVisible] = useState(false);
+  const [deleteSelectedConfirmVisible, setDeleteSelectedConfirmVisible] = useState(false);
   const { error, hasPermission, isLoading, region, reload } = useUserLocation();
   const { error: customersError, isLoading: customersLoading, markers, reload: reloadCustomers } = useMapCustomers();
   const { filters, filteredMarkers, countryOptions, cityOptions, resetFilters, selectCity, selectCountry } = useMapFilters(markers);
@@ -98,6 +98,13 @@ export function MapScreen() {
     await reloadCustomers();
   }
 
+  async function handleConfirmDeleteSelected() {
+    setDeleteSelectedConfirmVisible(false);
+    const deleted = await customerSelection.deleteSelectedCustomers();
+    if (!deleted) return;
+    await reloadCustomers();
+  }
+
   if (isLoading) return <LoadingView label={t("screen.loading")} />;
 
   return (
@@ -117,7 +124,7 @@ export function MapScreen() {
         scrollEnabled={mapGesturesEnabled}
         showsCompass
         showsUserLocation={hasPermission}
-        style={StyleSheet.absoluteFillObject}
+        style={StyleSheet.absoluteFill}
         zoomEnabled={mapGesturesEnabled}
       >
         {clusterItems.map((item) => {
@@ -179,12 +186,14 @@ export function MapScreen() {
           {!drawingSelection ? (
             <AnimatedEntrance delay={80}>
               <SelectedCustomersBar
+                deleteError={customerSelection.deleteError}
+                deleting={customerSelection.deleting}
                 emailing={customerSelection.emailing}
                 inline
+                onDeleteSelected={() => setDeleteSelectedConfirmVisible(true)}
                 onOpenRoute={() =>
                   router.push({ pathname: "/map/route", params: { ids: customerSelection.selection.selectedIds.join(",") } })
                 }
-                onResetSelection={customerSelection.resetSelection}
                 onShare={() => void customerSelection.share()}
                 onShareByEmail={() => void customerSelection.shareByEmail()}
                 onViewSelection={customerSelection.openList}
@@ -249,6 +258,14 @@ export function MapScreen() {
         onConfirm={() => void handleConfirmComplete()}
         title={actionT("sheet.completeConfirmTitle")}
         visible={completeConfirmVisible}
+      />
+      <ConfirmDialog
+        destructive
+        message={actionT("selectedBar.deleteConfirmMessage", { count: customerSelection.selectedMarkers.length })}
+        onCancel={() => setDeleteSelectedConfirmVisible(false)}
+        onConfirm={() => void handleConfirmDeleteSelected()}
+        title={actionT("selectedBar.deleteConfirmTitle")}
+        visible={deleteSelectedConfirmVisible}
       />
       </View>
     </AppErrorBoundary>

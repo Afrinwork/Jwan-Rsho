@@ -7,10 +7,6 @@
   "screen": {
     "loading": "Karte wird vorbereitet..."
   },
-  "markerCallout": {
-    "noOpenOrder": "Keine offene Bestellung",
-    "loadError": "Bestellung konnte nicht geladen werden"
-  },
   "toolbar": {
     "title": "Karte",
     "subtitle": "Kunden und Filter direkt auf der Karte.",
@@ -41,7 +37,10 @@
     "route": "Route",
     "whatsapp": "WhatsApp",
     "email": "E-Mail",
-    "clear": "Loeschen"
+    "clear": "Loeschen",
+    "deleteConfirmTitle": "Ausgewaehlte Kunden loeschen?",
+    "deleteConfirmMessage": "{{count}} Kunden werden endgueltig geloescht, inklusive aller ihrer Bestellungen. Das kann nicht rueckgaengig gemacht werden.",
+    "deleteError": "Einige Kunden konnten nicht geloescht werden."
   },
   "selectedList": {
     "emptyTitle": "Keine Auswahl",
@@ -77,7 +76,11 @@
     "phoneMissing": "Telefonnummer fehlt",
     "navigation": "Navigation",
     "shareViaWhatsapp": "Per WhatsApp teilen",
-    "shareLocation": "Standort teilen"
+    "shareLocation": "Standort teilen",
+    "skipStop": "Diesen Stopp ueberspringen",
+    "skipConfirmTitle": "Stopp ueberspringen?",
+    "skipConfirmMessage": "Dieser Stopp wird uebersprungen und es geht mit dem naechsten weiter. Der Kunde und seine Bestellung bleiben erhalten, du kannst spaeter erneut vorbeifahren.",
+    "reactivateStop": "Diesen Stopp wieder aktivieren"
   },
   "navigationSheet": {
     "title": "Navigation oeffnen",
@@ -101,6 +104,7 @@
     "totalOrders": "Bestellungen insgesamt: {{count}}",
     "headerOrderCount": "Anzahl Bestellungen: {{count}}",
     "ordersCountLine": "{{count}} Bestellungen",
+    "orderLabel": "Bestellung",
     "noOpenOrder": "Keine offene Bestellung",
     "note": "Notiz: {{note}}",
     "defaultSubject": "Kundenauswahl"

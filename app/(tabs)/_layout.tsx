@@ -8,14 +8,14 @@ import {
 } from "@fluentui/react-native-icons";
 import { Tabs } from "expo-router";
 import { ComponentType } from "react";
-import { StyleSheet } from "react-native";
+import { ColorValue, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { typography } from "@/src/theme/typography";
 
 type TabIconProps = {
-  color: string;
+  color: ColorValue;
   size: number;
 };
 
@@ -59,7 +59,7 @@ export default function TabsLayout() {
             marginBottom: 4,
             paddingVertical: 2,
           },
-          tabBarIcon: ({ color, size }: TabIconProps) => {
+          tabBarIcon: ({ color }: TabIconProps) => {
             const Icon = route.name === "cities" ? Building20Regular : tabIcons[route.name] ?? AppsList20Regular;
             return <Icon color={color} size={17} />;
           },

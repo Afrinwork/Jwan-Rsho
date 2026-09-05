@@ -50,7 +50,7 @@ export function StartupSplash() {
         colors={SPLASH_GRADIENT}
         end={{ x: 1, y: 1 }}
         start={{ x: 0, y: 0 }}
-        style={StyleSheet.absoluteFillObject}
+        style={StyleSheet.absoluteFill}
       />
       <Animated.View style={[styles.glow, { backgroundColor: SPLASH_GLOW_COLOR, transform: [{ scale }] }]} />
       <Animated.Image
@@ -64,7 +64,7 @@ export function StartupSplash() {
 
 const styles = StyleSheet.create({
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: "center",
     justifyContent: "center",
     zIndex: 999,

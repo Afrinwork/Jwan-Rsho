@@ -5,6 +5,7 @@ import { buildSelectionShareMessage, SelectionShareCustomer, SelectionShareItem 
 import { useMapSelection } from "@/src/features/map/hooks/useMapSelection";
 import { useSelectionSummary } from "@/src/features/map/hooks/useSelectionSummary";
 import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
+import { customerRepository } from "@/src/repositories/customerRepository";
 import { emailService } from "@/src/services/emailService";
 import { sharingService } from "@/src/services/sharingService";
 import { useAppStore } from "@/src/store/appStore";
@@ -28,7 +29,9 @@ export function useMapCustomerSelection(
   const [listVisible, setListVisible] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [emailing, setEmailing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [shareError, setShareError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const selectedMarkers = useMemo(() => {
     const selectedIdSet = new Set(selection.selectedIds);
@@ -46,6 +49,26 @@ export function useMapCustomerSelection(
     selection.resetSelection();
     setShareError(null);
   }, [selection]);
+
+  // Permanently removes every selected customer (and, via
+  // customerRepository.deleteCustomer, their orders) — irreversible, so the
+  // caller must confirm before invoking this. Returns whether it succeeded
+  // so the caller knows whether to reload the customer/marker list.
+  const deleteSelectedCustomers = useCallback(async () => {
+    setDeleteError(null);
+    setDeleting(true);
+
+    try {
+      await Promise.all(selection.selectedIds.map((id) => customerRepository.deleteCustomer(id)));
+      resetSelection();
+      return true;
+    } catch (error) {
+      setDeleteError(formatError(error).message);
+      return false;
+    } finally {
+      setDeleting(false);
+    }
+  }, [resetSelection, selection.selectedIds]);
 
   const share = useCallback(async () => {
     setShareError(null);
@@ -111,10 +134,13 @@ export function useMapCustomerSelection(
     listVisible,
     sharing,
     emailing,
+    deleting,
     shareError,
+    deleteError,
     openList,
     closeList,
     resetSelection,
+    deleteSelectedCustomers,
     share,
     shareByEmail,
   };

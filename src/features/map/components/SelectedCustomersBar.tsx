@@ -15,12 +15,14 @@ type SelectedCustomersBarProps = {
   selectedCount: number;
   sharing: boolean;
   emailing: boolean;
+  deleting: boolean;
   shareError: string | null;
+  deleteError: string | null;
   onViewSelection: () => void;
   onOpenRoute: () => void;
   onShare: () => void;
   onShareByEmail: () => void;
-  onResetSelection: () => void;
+  onDeleteSelected: () => void;
   inline?: boolean;
 };
 
@@ -61,6 +63,7 @@ export function SelectedCustomersBar(props: SelectedCustomersBarProps) {
         </Pressable>
       </View>
       {props.shareError ? <ErrorState message={props.shareError} /> : null}
+      {props.deleteError ? <ErrorState message={props.deleteError} /> : null}
       {open ? (
         <AppCard contentStyle={styles.menu} frosted style={props.inline ? styles.inlineMenu : undefined}>
           <AppText variant="label">{t("selectedBar.count", { count: props.selectedCount })}</AppText>
@@ -81,7 +84,13 @@ export function SelectedCustomersBar(props: SelectedCustomersBarProps) {
               />
             </View>
             <View style={styles.actionButton}>
-              <AppButton label={t("selectedBar.clear")} onPress={props.onResetSelection} size="compact" variant="secondary" />
+              <AppButton
+                label={t("selectedBar.clear")}
+                loading={props.deleting}
+                onPress={props.onDeleteSelected}
+                size="compact"
+                variant="danger"
+              />
             </View>
           </View>
         </AppCard>
