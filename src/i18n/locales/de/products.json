@@ -1,0 +1,56 @@
+{
+  "loadingProducts": "Produkte werden geladen...",
+  "form": {
+    "nameLabel": "Produktname",
+    "namePlaceholder": "Produktname",
+    "nameArPlaceholder": "Name auf Arabisch (optional)",
+    "unitLabel": "Einheit",
+    "unitPlaceholder": "z. B. Stueck, kg",
+    "emojiLabel": "Emoji (optional, fuer den Sammeltext)",
+    "emojiPlaceholder": "z. B. 🧀",
+    "sortOrderLabel": "Reihenfolge",
+    "submitting": "Wird gespeichert..."
+  },
+  "list": {
+    "sortOrder": "Reihenfolge {{order}}"
+  },
+  "management": {
+    "createLabel": "Produkt hinzufuegen",
+    "listLabel": "Produkte anzeigen",
+    "createTabLabel": "Produkt hinzufuegen",
+    "listTabLabel": "Produkte anzeigen",
+    "subtitle": "Produkte sicher erstellen, sortieren, bearbeiten, deaktivieren und loeschen.",
+    "title": "Produkte",
+    "addSubmitLabel": "Produkt speichern",
+    "editSubmitLabel": "Aenderungen speichern",
+    "emptyTitle": "Keine Produkte",
+    "emptyMessage": "Fuege hier mindestens ein Produkt hinzu. Ohne Produkte kann keine Bestellung gespeichert werden.",
+    "addSuccess": "Das Produkt wurde erfolgreich hinzugefuegt.",
+    "updateSuccess": "Das Produkt wurde erfolgreich aktualisiert.",
+    "activateSuccess": "Das Produkt wurde wieder aktiviert.",
+    "updateError": "Das Produkt konnte nicht aktualisiert werden.",
+    "deactivateButton": "Deaktivieren",
+    "deactivateTitle": "Produkt deaktivieren?",
+    "deactivateMessage": "Dieses Produkt erscheint danach nicht mehr in der Produktauswahl.",
+    "deactivateError": "Das Produkt konnte nicht deaktiviert werden.",
+    "deactivateSuccess": "Das Produkt wurde deaktiviert.",
+    "deleteTitle": "Produkt wirklich loeschen?",
+    "deleteMessage": "Dieses Produkt wird nur geloescht, wenn es noch in keiner Bestellung verwendet wurde.",
+    "deleteError": "Das Produkt konnte nicht geloescht werden.",
+    "deleteSuccess": "Das Produkt wurde geloescht.",
+    "reorderError": "Die Reihenfolge konnte nicht geaendert werden.",
+    "statsTotal": "Gesamt",
+    "statsActive": "Aktiv",
+    "statsInactive": "Deaktiviert"
+  },
+  "picker": {
+    "title": "Produkt auswaehlen",
+    "searchPlaceholder": "Produkt suchen",
+    "emptyTitle": "Keine Ergebnisse",
+    "emptyMessage": "Es wurde kein passendes Produkt gefunden."
+  },
+  "validation": {
+    "nameRequired": "Name ist erforderlich",
+    "defaultUnitRequired": "Standardeinheit ist erforderlich"
+  }
+}

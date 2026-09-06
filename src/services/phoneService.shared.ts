@@ -11,3 +11,13 @@ export function buildPhoneUrl(phoneNumber: string) {
 
   return `tel:${normalized}`;
 }
+
+export function buildWhatsappUrl(phoneNumber: string) {
+  const digitsOnly = normalizePhoneNumber(phoneNumber).replace(/^\+/, "");
+
+  if (!digitsOnly || digitsOnly.length < 3) {
+    throw new Error("Keine gueltige Telefonnummer vorhanden.");
+  }
+
+  return `https://wa.me/${digitsOnly}`;
+}

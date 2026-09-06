@@ -71,6 +71,12 @@ export function useRouteStops(selectedIds: string[], origin: RouteOrigin | null,
   const [error, setError] = useState<string | null>(null);
   const requestIdRef = useRef(0);
 
+  // Genuine fetch-on-dependency-change effect (React's own documented
+  // data-fetching pattern) — the state resets below are the correct,
+  // synchronous first step for each branch, not state that could be
+  // computed during render instead (the debounced, multi-provider route
+  // computation itself must stay in an effect).
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!origin || !selectedMarkers.length) {
       setStops([]);
@@ -139,6 +145,7 @@ export function useRouteStops(selectedIds: string[], origin: RouteOrigin | null,
 
     return () => clearTimeout(timeoutId);
   }, [origin, departureDate, selectedMarkers, markerById, lastStopId]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   return {
     stops,

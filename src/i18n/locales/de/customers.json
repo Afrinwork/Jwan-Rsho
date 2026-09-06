@@ -1,0 +1,71 @@
+{
+  "form": {
+    "nameLabel": "Vollstaendiger Name",
+    "namePlaceholder": "Vollstaendiger Name",
+    "phoneLabel": "Telefonnummer",
+    "phonePlaceholder": "Telefonnummer",
+    "noteLabel": "Notiz (optional)",
+    "notePlaceholder": "Notiz",
+    "addressLabel": "Adresse",
+    "addressPlaceholder": "z. B. Musterstrasse 12, 10115 Berlin",
+    "cityLabel": "Stadt",
+    "cityPlaceholder": "z. B. Berlin"
+  },
+  "city": {
+    "loadingHint": "Vorhandene Staedte werden geladen...",
+    "addNew": "Neue Stadt hinzufuegen: {{city}}",
+    "apply": "Uebernehmen"
+  },
+  "validation": {
+    "nameRequired": "Name ist erforderlich",
+    "phoneRequired": "Telefonnummer ist erforderlich",
+    "addressRequired": "Adresse ist erforderlich",
+    "cityRequired": "Stadt ist erforderlich",
+    "countryRequired": "Land ist erforderlich",
+    "customerRequired": "Bitte waehle einen Kunden aus",
+    "itemsRequired": "Fuege mindestens ein Produkt hinzu"
+  },
+  "details": {
+    "loading": "Kundendaten werden geladen...",
+    "notFoundTitle": "Kein Kunde",
+    "notFoundMessage": "Dieser Kunde wurde nicht gefunden.",
+    "orderHistory": "Bestellhistorie",
+    "deleteButton": "Kunde loeschen",
+    "deleteConfirmTitle": "Diesen Kunden endgueltig loeschen?",
+    "deleteConfirmMessage": "Der Kunde und alle seine Bestellungen werden endgueltig aus der Datenbank geloescht. Das kann nicht rueckgaengig gemacht werden."
+  },
+  "edit": {
+    "loading": "Kundendaten werden zur Bearbeitung geladen...",
+    "noCustomerTitle": "Kein Kunde",
+    "noCustomerMessage": "Es wurde kein Kunde ausgewaehlt.",
+    "screenTitle": "Kunde bearbeiten",
+    "screenSubtitle": "Kundendaten und offene Bestellung bearbeiten.",
+    "customerOnlySubtitle": "Kundendaten bearbeiten und direkt speichern.",
+    "sectionTitle": "Kunde und Adresse",
+    "sectionSubtitle": "Persoenliche Daten und Zieladresse, uebersichtlich und klar.",
+    "backButton": "Zurueck zur Liste",
+    "noOpenOrder": "Fuer diesen Kunden wurde keine offene Bestellung gefunden.",
+    "saveSuccess": "Kundendaten und offene Bestellung wurden gespeichert.",
+    "saveCustomerSuccess": "Kundendaten wurden gespeichert."
+  },
+  "orderItems": {
+    "sectionTitle": "Produkte",
+    "sectionSubtitle": "Bearbeite die offene Bestellung direkt in dieser Karte.",
+    "addProduct": "Produkt hinzufuegen",
+    "change": "Aendern",
+    "remove": "Entfernen",
+    "quantityPlaceholder": "Menge",
+    "unitPlaceholder": "Einheit",
+    "removeConfirmTitle": "Produkt entfernen?",
+    "removeConfirmMessage": "Dieses Produkt wird aus der Bestellung entfernt."
+  },
+  "search": {
+    "placeholder": "Name, Telefon, Stadt oder Strasse",
+    "selected": "Ausgewaehlt"
+  },
+  "orderStatus": {
+    "open": "Offene Bestellung",
+    "completed": "Erledigte Bestellung",
+    "cancelled": "Stornierte Bestellung"
+  }
+}

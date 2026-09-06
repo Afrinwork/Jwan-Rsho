@@ -14,7 +14,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AppErrorBoundary } from "@/src/components/layout/AppErrorBoundary";
 import { SettingsBootstrap } from "@/src/features/settings/components/SettingsBootstrap";
 import { useAppTheme } from "@/src/hooks/useAppTheme";
-import { ensureArabicRTL } from "@/src/i18n/languageController";
+import { bootstrapLanguage } from "@/src/i18n/languageController";
 import { StartupSplash } from "@/src/components/layout/StartupSplash";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 
@@ -23,7 +23,7 @@ export function AppProviders({ children }: PropsWithChildren) {
   const colors = useThemeColors();
 
   useEffect(() => {
-    void ensureArabicRTL();
+    void bootstrapLanguage();
   }, []);
   const [fontsLoaded] = useFonts({
     Manrope_400Regular,

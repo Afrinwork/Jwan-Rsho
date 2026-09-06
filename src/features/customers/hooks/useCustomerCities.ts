@@ -49,6 +49,10 @@ export function useCustomerCities() {
   }, []);
 
   useEffect(() => {
+    // Genuine fetch-on-mount effect (React's own documented data-fetching
+    // pattern) — load()'s setLoading(true) is the correct, synchronous
+    // first step, not state that could be computed during render instead.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, [load]);
 

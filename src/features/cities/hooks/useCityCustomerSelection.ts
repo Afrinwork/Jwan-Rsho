@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { resetCustomerSelection, selectAllCustomerIds, toggleCustomerSelection } from "@/src/features/cities/services/citySelectionService";
 import { CityCustomerItem } from "@/src/features/cities/types/cityCustomerTypes";
@@ -15,12 +15,20 @@ export function useCityCustomerSelection(customers: CityCustomerItem[]) {
     [visibleCustomerIds],
   );
 
-  useEffect(() => {
+  // Drops selected ids that are no longer visible (e.g. filtered out by
+  // search) whenever the visible set changes — adjusted directly during
+  // render (React's documented pattern for "reset state when a prop
+  // changes") rather than in an effect. `prevVisibleCustomerIdSet` mirrors
+  // the effect's old [visibleCustomerIdSet] dependency, which also compared
+  // by the memoized Set's identity.
+  const [prevVisibleCustomerIdSet, setPrevVisibleCustomerIdSet] = useState(visibleCustomerIdSet);
+  if (visibleCustomerIdSet !== prevVisibleCustomerIdSet) {
+    setPrevVisibleCustomerIdSet(visibleCustomerIdSet);
     setSelectedIds((value) => {
       const nextValue = value.filter((customerId) => visibleCustomerIdSet.has(customerId));
       return nextValue.length === value.length ? value : nextValue;
     });
-  }, [visibleCustomerIdSet]);
+  }
 
   const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
   const selectedCount = selectedIds.length;

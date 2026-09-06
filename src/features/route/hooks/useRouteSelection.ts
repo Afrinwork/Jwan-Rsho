@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { resetStopSelection, selectAllStopIds, toggleStopSelection } from "@/src/features/route/services/routeSelectionService";
 import { RouteStop } from "@/src/features/route/types/routeTypes";
@@ -9,12 +9,19 @@ export function useRouteSelection(stops: RouteStop[]) {
   const stopIds = useMemo(() => stops.map((stop) => stop.marker.id), [stops]);
   const stopIdSet = useMemo(() => new Set(stopIds), [stopIds]);
 
-  useEffect(() => {
+  // Drops selected ids that are no longer among the stops whenever the stop
+  // set changes — adjusted directly during render (React's documented
+  // pattern for "reset state when a prop changes") rather than in an
+  // effect. `prevStopIdSet` mirrors the effect's old [stopIdSet]
+  // dependency, which also compared by the memoized Set's identity.
+  const [prevStopIdSet, setPrevStopIdSet] = useState(stopIdSet);
+  if (stopIdSet !== prevStopIdSet) {
+    setPrevStopIdSet(stopIdSet);
     setSelectedIds((value) => {
       const nextValue = value.filter((id) => stopIdSet.has(id));
       return nextValue.length === value.length ? value : nextValue;
     });
-  }, [stopIdSet]);
+  }
 
   const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
   const selectedCount = selectedIds.length;

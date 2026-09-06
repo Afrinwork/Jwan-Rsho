@@ -87,6 +87,11 @@
     "subtitle": "خرائط Apple هي دائمًا الخيار الافتراضي الآمن.",
     "unavailable": "{{label}} غير متوفر"
   },
+  "contactSheet": {
+    "title": "كيف تريد التواصل؟",
+    "callPhone": "اتصال بالهاتف",
+    "callWhatsapp": "التواصل عبر واتساب"
+  },
   "errors": {
     "noPhone": "لا يوجد رقم هاتف لهذا الزبون.",
     "noNavigationData": "لا تتوفر بيانات ملاحة لهذا الزبون.",

@@ -1,0 +1,33 @@
+{
+  "screen": {
+    "loading": "Uebersicht wird geladen...",
+    "title": "Uebersicht",
+    "subtitle": "Ein schneller Blick auf Bestellungen, Organisation und Fortschritt.",
+    "heroTitle": "Fokus fuer heute",
+    "messageTitle": "Blick auf heute"
+  },
+  "stats": {
+    "openOrders": { "title": "Offene Bestellungen", "caption": "Aktiv in Bearbeitung" },
+    "completedOrders": { "title": "Erledigte Bestellungen", "caption": "Bereits abgeschlossen" },
+    "countries": { "title": "Laender", "caption": "Aktive Struktur" },
+    "cities": { "title": "Staedte", "caption": "Mit Kunden" },
+    "products": { "title": "Produkte", "caption": "Fuer neue Bestellungen" },
+    "customers": { "title": "Kunden", "caption": "Im Bestand" }
+  },
+  "motivation": {
+    "none": "Super. Es gibt aktuell keine offenen Bestellungen.",
+    "one": "Nur noch eine offene Bestellung. Fast geschafft.",
+    "aheadOfSchedule": "Es gibt noch {{openOrders}} offene Bestellungen. Du liegst gut im Plan.",
+    "inProgress": "Du hast aktuell {{openOrders}} offene Bestellungen in Bearbeitung. Schritt fuer Schritt."
+  },
+  "progress": {
+    "empty": "Sobald die ersten Bestellungen erstellt sind, erscheint hier dein Fortschritt.",
+    "allDone": "{{completedOrders}} Bestellungen bereits erledigt. Heute sieht alles aufgeraeumt aus.",
+    "inProgress": "{{completedOrders}} Bestellungen bereits erledigt. Es warten noch {{openOrders}} Bestellungen auf den naechsten Schritt."
+  },
+  "quickActions": {
+    "newOrder": "Neue Bestellung",
+    "openCities": "Staedte oeffnen",
+    "management": "Verwaltung"
+  }
+}

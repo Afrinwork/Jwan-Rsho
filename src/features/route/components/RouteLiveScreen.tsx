@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import MapView, { Marker, Polyline } from "react-native-maps";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AppButton } from "@/src/components/ui/AppButton";
@@ -16,23 +15,26 @@ import { LoadingView } from "@/src/components/ui/LoadingView";
 import { DeliveryNavigationControls } from "@/src/features/delivery-navigation/DeliveryNavigationControls";
 import { useDeliveryNavigation } from "@/src/features/delivery-navigation/useDeliveryNavigation";
 import { routeT } from "@/src/features/route/i18n/routeT";
+import { RouteStartPin } from "@/src/features/route/components/RouteStartPin";
 import { RouteStopMarker } from "@/src/features/route/components/RouteStopMarker";
+import { RoutePolyline } from "@/src/features/route/components/RoutePolyline";
 import { useLiveLocation } from "@/src/features/route/hooks/useLiveLocation";
 import { useOrderedMarkers } from "@/src/features/route/hooks/useOrderedMarkers";
 import { useRouteLiveNavigation } from "@/src/features/route/hooks/useRouteLiveNavigation";
 import { useRoutePolyline } from "@/src/features/route/hooks/useRoutePolyline";
 import { formatDistanceKm, formatDurationHM, formatEtaTime } from "@/src/features/route/utils/routeFormat";
+import { AppMapView } from "@/src/features/map/components/AppMapView";
+import { ContactMethodSheet } from "@/src/features/map/components/ContactMethodSheet";
 import { MapCustomerSheet } from "@/src/features/map/components/MapCustomerSheet";
 import { useMapActions } from "@/src/features/map/hooks/useMapActions";
 import { useMapCustomerDetails } from "@/src/features/map/hooks/useMapCustomerDetails";
+import { AppMapViewHandle } from "@/src/features/map/types/mapViewTypes";
 import { distanceKm } from "@/src/features/map/utils/circleMath";
 import { navigationService } from "@/src/services/navigationService";
 import { formatArrivalTime } from "@/src/utils/time/formatArrivalTime";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { radius } from "@/src/theme/radius";
 import { spacing } from "@/src/theme/spacing";
-
-const routeStroke = "#2563EB";
 
 type RouteLiveScreenProps = {
   orderedIds: string[];
@@ -51,7 +53,7 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
   const t = routeT;
   const router = useRouter();
   const colors = useThemeColors();
-  const mapRef = useRef<MapView | null>(null);
+  const mapRef = useRef<AppMapViewHandle | null>(null);
   const { markers, isLoading, error } = useOrderedMarkers(props.orderedIds);
   const live = useLiveLocation();
   const polylineOrigin = props.initialOrigin ?? live.coordinate;
@@ -238,7 +240,7 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
   return (
     <AppErrorBoundary>
     <View style={styles.screen}>
-      <MapView
+      <AppMapView
         initialRegion={{
           latitude: polylineOrigin?.latitude ?? markers[0].latitude,
           longitude: polylineOrigin?.longitude ?? markers[0].longitude,
@@ -249,17 +251,10 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
         showsCompass
         showsUserLocation
         style={StyleSheet.absoluteFill}
+        userLocationCoordinate={live.coordinate}
       >
-        {polyline.coordinates.length >= 2 ? (
-          <Polyline coordinates={polyline.coordinates} strokeColor={routeStroke} strokeWidth={4} />
-        ) : null}
-        {polylineOrigin ? (
-          <Marker coordinate={polylineOrigin} title={t("live.startMarker")}>
-            <View style={styles.startPin}>
-              <Text style={styles.startPinLabel}>S</Text>
-            </View>
-          </Marker>
-        ) : null}
+        {polyline.coordinates.length >= 2 ? <RoutePolyline coordinates={polyline.coordinates} /> : null}
+        {polylineOrigin ? <RouteStartPin coordinate={polylineOrigin} title={t("live.startMarker")} /> : null}
         {markers.map((marker, index) => (
           <RouteStopMarker
             active={marker.id === navigation.currentMarker?.id}
@@ -270,7 +265,7 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
             onPress={setSelectedCustomerId}
           />
         ))}
-      </MapView>
+      </AppMapView>
 
       <SafeAreaView edges={["top"]} pointerEvents="box-none" style={styles.topOverlayRow}>
         {/* Only shown once the trip is finished — while a stop is active,
@@ -415,6 +410,12 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
           !navigation.arrivalPromptVisible
         }
       />
+      <ContactMethodSheet
+        onCallPhone={() => void sheetActions.callByPhone()}
+        onCallWhatsapp={() => void sheetActions.callByWhatsapp()}
+        onClose={sheetActions.closeContactSheet}
+        visible={sheetActions.contactSheetVisible}
+      />
       <ConfirmDialog
         message={t("map:sheet.completeConfirmMessage")}
         onCancel={() => setSheetCompleteConfirmVisible(false)}
@@ -477,15 +478,4 @@ const styles = StyleSheet.create({
   actionGrid: { gap: spacing.xxs },
   actionRow: { flexDirection: "row", gap: spacing.xxs },
   actionButton: { flex: 1 },
-  startPin: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    borderWidth: 2,
-    borderColor: "#FFFFFF",
-    backgroundColor: "#16A34A",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  startPinLabel: { color: "#FFFFFF", fontSize: 13, fontWeight: "700" },
 });

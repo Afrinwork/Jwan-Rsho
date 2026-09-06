@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { googleDirectionsApiKey } from "@/src/config/googleDirectionsEnv";
 import { routeT } from "@/src/features/route/i18n/routeT";
@@ -35,14 +35,16 @@ export function useRouteOrigin() {
   // location just because the search button was never tapped.
   const [resolvedQuery, setResolvedQuery] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (origin || locationLoading) {
-      return;
-    }
-
+  // Lazily seeds `origin` from GPS once it's available, but only while it's
+  // still unset — searchLocation/useCurrentLocation own it after that.
+  // Adjusted directly during render (React's documented pattern for
+  // initializing state from a value that becomes ready later) rather than
+  // in an effect: setting `origin` here makes the guard false on the next
+  // render, so this naturally runs at most once per "unset" period.
+  if (!origin && !locationLoading) {
     const label = hasPermission ? routeT("startCard.currentLocationLabel") : routeT("startCard.fallbackLocationLabel");
     setOrigin({ latitude: region.latitude, longitude: region.longitude, label });
-  }, [region, hasPermission, locationLoading, origin]);
+  }
 
   const useCurrentLocation = useCallback(async () => {
     setGeocodeError(null);

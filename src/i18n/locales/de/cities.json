@@ -1,0 +1,75 @@
+{
+  "listScreen": {
+    "loading": "Staedte werden geladen...",
+    "emptyTitle": "Keine Staedte",
+    "emptyMessage": "Es sind noch keine Staedte sichtbar. Fuege zuerst ueber den Hinzufuegen-Tab einen Kunden oder eine Bestellung mit einer Stadt hinzu."
+  },
+  "summary": {
+    "defaultTitle": "Staedte",
+    "defaultSubtitle": "Zusammengestellt aus deinen Kundendaten."
+  },
+  "filters": {
+    "searchPlaceholder": "Nach Stadt suchen",
+    "countryKicker": "Nach Land filtern",
+    "allCountries": "Alle"
+  },
+  "card": {
+    "customers": "{{count}} Kunden",
+    "openOrders": "{{count}} offen"
+  },
+  "customerList": {
+    "loading": "Kunden dieser Stadt werden geladen...",
+    "emptyTitle": "Keine Kunden",
+    "emptyMessage": "Es wurden keine Kunden fuer diese Stadt gefunden.",
+    "openSince": "Offen seit {{date}}",
+    "noOpenOrder": "Keine offene Bestellung"
+  },
+  "customerFilters": {
+    "searchPlaceholder": "Nach Name, Telefon oder Strasse suchen"
+  },
+  "customerStatus": {
+    "open": "Status: Offen",
+    "completed": "Status: Erledigt",
+    "noOpenOrder": "Status: Ohne offene Bestellung"
+  },
+  "customerActions": {
+    "select": "Auswaehlen",
+    "deselect": "Abwaehlen",
+    "details": "Details",
+    "complete": "Erledigen"
+  },
+  "selectionBar": {
+    "selectedCount": "{{count}} ausgewaehlt",
+    "selectAll": "Alle auswaehlen",
+    "clearSelection": "Auswahl aufheben"
+  },
+  "selectionActions": {
+    "dropdown": "Teilen",
+    "whatsapp": "WhatsApp",
+    "email": "Gmail",
+    "completeAll": "Alle erledigen",
+    "defaultEmailSubject": "Ausgewaehlte Kundenliste",
+    "noCustomersSelected": "Es sind keine Kunden ausgewaehlt.",
+    "noOpenOrdersSelected": "Es gibt keine offenen Bestellungen in der Auswahl.",
+    "completeSelectedTitle": "Offene Bestellungen der ausgewaehlten Kunden erledigen ({{count}})",
+    "completeSelectedMessage": "Alle offenen Bestellungen der ausgewaehlten Kunden werden danach endgueltig geloescht. Das kann nicht rueckgaengig gemacht werden."
+  },
+  "productTotals": {
+    "title": "Summe der offenen Produkte"
+  },
+  "rename": {
+    "title": "Stadt umbenennen",
+    "save": "Speichern"
+  },
+  "deleteCity": {
+    "confirmTitle": "Diese Stadt loeschen?",
+    "confirmMessage": "Die Stadt wird aus der Liste entfernt. Bestehende Kunden behalten ihre Daten, und die Stadt wird automatisch neu angelegt, sobald sie wieder verwendet wird."
+  },
+  "completeOrder": {
+    "confirmTitle": "Diese Bestellung erledigen?",
+    "confirmMessage": "Diese Bestellung wird danach endgueltig geloescht. Der Kunde und seine Adresse bleiben erhalten. Das kann nicht rueckgaengig gemacht werden."
+  },
+  "validation": {
+    "nameRequired": "Name der Stadt ist erforderlich"
+  }
+}

@@ -4,6 +4,7 @@
   "sections": {
     "profile": "الملف الشخصي",
     "appearance": "المظهر",
+    "language": "اللغة",
     "navigation": "الملاحة",
     "share": "المشاركة",
     "appInfo": "معلومات التطبيق",
@@ -19,6 +20,12 @@
     "system": "النظام",
     "light": "فاتح",
     "dark": "داكن"
+  },
+  "language": {
+    "label": "لغة التطبيق",
+    "arabic": "العربية",
+    "german": "Deutsch",
+    "restartHint": "ستُعاد تشغيل التطبيق لبرهة لتطبيق اللغة والاتجاه بشكل كامل."
   },
   "navigationApp": {
     "label": "التطبيق المفضل",

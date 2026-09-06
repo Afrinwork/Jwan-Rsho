@@ -1,0 +1,92 @@
+{
+  "addScreen": {
+    "subtitle": "Bestellung direkt erfassen."
+  },
+  "customerMode": {
+    "existing": {
+      "label": "Bestehender Kunde",
+      "subtitle": "Schnelle Bestellung"
+    },
+    "new": {
+      "label": "Neuer Kunde",
+      "subtitle": "Neuen Kontakt anlegen"
+    }
+  },
+  "existingCustomer": {
+    "searchTitle": "Kunde suchen",
+    "searchSubtitle": "Suche nach Name, Telefon, Stadt oder Adresse und waehle den Kunden direkt aus.",
+    "searching": "Wird gesucht...",
+    "noResultsTitle": "Keine Ergebnisse",
+    "noResultsMessage": "Es wurde kein Kunde gefunden.",
+    "resultsCount": "{{count}} Ergebnis(se)",
+    "selectedTitle": "Ausgewaehlter Kunde",
+    "selectedSubtitle": "Die ausgewaehlte Adresse wird spaeter praezise fuer Navigation und Karte verwendet."
+  },
+  "details": {
+    "noOrderSelected": "Es wurde keine Bestellung ausgewaehlt.",
+    "loading": "Bestellung wird geladen...",
+    "emptyTitle": "Keine Bestellung",
+    "emptyMessage": "Die Daten dieser Bestellung konnten nicht geladen werden.",
+    "statusLabel": "Status:",
+    "dateLabel": "Datum:",
+    "customerIdLabel": "Kunden-ID:",
+    "noProducts": "Keine gespeicherten Produkte.",
+    "status": {
+      "open": "Offen",
+      "completed": "Erledigt",
+      "cancelled": "Storniert"
+    }
+  },
+  "items": {
+    "sectionTitle": "Produkte",
+    "sectionSubtitle": "Waehle Produkte, Mengen und Einheiten fuer die offene Bestellung.",
+    "addProduct": "Produkte hinzufuegen",
+    "selectProduct": "Produkt auswaehlen",
+    "change": "Aendern",
+    "quantityPlaceholder": "Menge",
+    "unitPlaceholder": "Einheit",
+    "remove": "Entfernen",
+    "removeConfirmTitle": "Produkt entfernen?",
+    "removeConfirmMessage": "Dieses Produkt wird aus der Bestellung entfernt.",
+    "bulkTitle": "Produkte hinzufuegen",
+    "bulkEmptyTitle": "Keine Produkte",
+    "bulkEmptyMessage": "Es gibt keine Produkte, die zu deiner Suche passen.",
+    "searchPlaceholder": "Produkt suchen",
+    "summaryTitle": "Bestelluebersicht",
+    "summaryCount": "Produkte insgesamt: {{count}}",
+    "summaryQuantity": "Menge insgesamt: {{quantity}}",
+    "confirmSelection": "Ausgewaehlte Produkte hinzufuegen"
+  },
+  "save": {
+    "button": "Bestellung speichern",
+    "saving": "Wird gespeichert...",
+    "success": "Die Bestellung wurde gespeichert."
+  },
+  "validation": {
+    "itemsMin": "Fuege mindestens ein Produkt hinzu",
+    "selectCustomer": "Bitte waehle einen Kunden aus",
+    "productRequired": "Produkt ist erforderlich",
+    "productNameRequired": "Produktname ist erforderlich",
+    "quantityPositive": "Die Menge muss groesser als 0 sein",
+    "unitRequired": "Einheit ist erforderlich",
+    "orderItemsMin": "Die Bestellung muss mindestens ein Produkt enthalten"
+  },
+  "openOrders": {
+    "screenTitle": "Offene Bestellungen",
+    "screenSubtitle": "Alle offenen Bestellungen an einem Ort.",
+    "loading": "Offene Bestellungen werden geladen...",
+    "emptyTitle": "Keine offenen Bestellungen",
+    "emptyMessage": "Es gibt aktuell keine offenen Bestellungen.",
+    "filterAll": "Alle",
+    "multipleOrdersBadge": "{{count}} offene Bestellungen",
+    "orderDateLabel": "Bestellung vom {{date}}",
+    "completeButton": "Erledigen",
+    "deleteButton": "Loeschen",
+    "completeSuccess": "Die Bestellung wurde erfolgreich erledigt.",
+    "deleteSuccess": "Die Bestellung wurde erfolgreich geloescht.",
+    "deleteConfirmTitle": "Diese Bestellung endgueltig loeschen?",
+    "deleteConfirmMessage": "Diese Bestellung wird endgueltig aus der Datenbank geloescht. Das kann nicht rueckgaengig gemacht werden.",
+    "completeConfirmTitle": "Diese Bestellung erledigen?",
+    "completeConfirmMessage": "Diese Bestellung wird danach endgueltig geloescht. Der Kunde und seine Adresse bleiben erhalten. Das kann nicht rueckgaengig gemacht werden."
+  }
+}

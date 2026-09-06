@@ -50,6 +50,10 @@ export function useCityCustomers(normalizedCity: string) {
   }, [normalizedCity]);
 
   useEffect(() => {
+    // Genuine fetch-on-dependency-change effect (React's own documented
+    // data-fetching pattern) — setLoading(true) is the correct, synchronous
+    // first step, not state that could be computed during render instead.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     loadCityData()
       .catch((value) => setError(formatError(value).message))

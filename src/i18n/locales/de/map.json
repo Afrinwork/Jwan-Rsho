@@ -87,6 +87,11 @@
     "subtitle": "Apple Maps ist immer die sichere Standardoption.",
     "unavailable": "{{label}} nicht verfuegbar"
   },
+  "contactSheet": {
+    "title": "Wie moechtest du Kontakt aufnehmen?",
+    "callPhone": "Anrufen",
+    "callWhatsapp": "Ueber WhatsApp kontaktieren"
+  },
   "errors": {
     "noPhone": "Keine Telefonnummer fuer diesen Kunden vorhanden.",
     "noNavigationData": "Keine Navigationsdaten fuer diesen Kunden vorhanden.",

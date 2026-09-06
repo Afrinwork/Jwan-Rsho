@@ -1,0 +1,60 @@
+{
+  "loadingLabel": "Einstellungen werden geladen...",
+  "header": { "title": "Einstellungen", "subtitle": "Profil, Teilen und Navigation." },
+  "sections": {
+    "profile": "Profil",
+    "appearance": "Erscheinungsbild",
+    "language": "Sprache",
+    "navigation": "Navigation",
+    "share": "Teilen",
+    "appInfo": "App-Informationen",
+    "account": "Konto"
+  },
+  "fields": {
+    "name": "Name",
+    "email": "E-Mail-Adresse",
+    "newPassword": "Neues Passwort"
+  },
+  "theme": {
+    "label": "Erscheinungsbild",
+    "system": "System",
+    "light": "Hell",
+    "dark": "Dunkel"
+  },
+  "language": {
+    "label": "App-Sprache",
+    "arabic": "العربية",
+    "german": "Deutsch",
+    "restartHint": "Die App wird kurz neu gestartet, um die Sprache und Ausrichtung vollstaendig zu wechseln."
+  },
+  "navigationApp": {
+    "label": "Bevorzugte App",
+    "appleMaps": "Apple Maps",
+    "googleMaps": "Google Maps",
+    "waze": "Waze"
+  },
+  "share": {
+    "shopName": "Ladenname (im Teilen-Text)",
+    "shopNamePlaceholder": "z. B. 🧀 Rsho Kaeserei",
+    "includeAddress": "Adresse im Teilen-Text",
+    "includePhone": "Telefonnummer im Teilen-Text",
+    "includeTotals": "Summen im Teilen-Text"
+  },
+  "info": {
+    "appVersion": "App-Version",
+    "ownCustomers": "Meine Kunden",
+    "totalOrders": "Bestellungen insgesamt",
+    "openOrders": "Offene Bestellungen"
+  },
+  "actions": {
+    "save": "Einstellungen speichern",
+    "saving": "Wird gespeichert...",
+    "loggingOut": "Abmeldung laeuft...",
+    "deleteAccount": "Konto loeschen",
+    "deletingAccount": "Konto wird geloescht...",
+    "deleteAccountTitle": "Konto endgueltig loeschen?",
+    "deleteAccountMessage": "Dein Konto und alle deine Daten (Kunden, Bestellungen und Einstellungen) werden endgueltig geloescht. Das kann nicht rueckgaengig gemacht werden.",
+    "deleteAccountConfirm": "Endgueltig loeschen"
+  },
+  "saveSuccess": "Die Einstellungen wurden gespeichert."
+}

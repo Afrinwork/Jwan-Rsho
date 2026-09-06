@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { FlatList, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { Box20Regular } from "@fluentui/react-native-icons";
@@ -39,16 +39,22 @@ export function ProductQuantityListModal({
   const { products, loading, error } = useProducts();
   const [query, setQuery] = useState("");
   const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [prevVisible, setPrevVisible] = useState(visible);
   const colors = useThemeColors();
   const { t, i18n } = useTranslation("orders");
 
-  useEffect(() => {
+  // Re-seeds the picker every time it opens, intentionally ignoring later
+  // changes to initialQuantities while it stays open (same as the original
+  // effect's deliberately narrow [visible] dependency) — adjusted directly
+  // during render (React's documented pattern for "reset state when a prop
+  // changes") rather than in an effect.
+  if (visible !== prevVisible) {
+    setPrevVisible(visible);
     if (visible) {
       setQuantities(initialQuantities);
       setQuery("");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible]);
+  }
 
   const normalized = query.trim().toLowerCase();
   const activeProducts = products

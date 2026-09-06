@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Controller } from "react-hook-form";
-import { Animated, StyleSheet, View } from "react-native";
+import { Animated, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
@@ -12,7 +12,10 @@ import { PasswordField } from "@/src/features/auth/components/PasswordField";
 export function LoginForm() {
   const { t } = useTranslation("auth");
   const { form, submit, submitError } = useLogin();
-  const shake = useRef(new Animated.Value(0)).current;
+  // Lazy useState (not useRef) so the imperative Animated.Value can be read
+  // during render without tripping the "no ref reads during render" rule —
+  // the initializer still runs once, keeping the same stable instance.
+  const [shake] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     if (!submitError) {

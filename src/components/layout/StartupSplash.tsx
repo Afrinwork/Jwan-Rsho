@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Animated, Easing, StyleSheet } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -12,8 +12,11 @@ const SPLASH_GLOW_COLOR = "rgba(203, 168, 90, 0.16)";
 
 export function StartupSplash() {
   const [visible, setVisible] = useState(true);
-  const opacity = useRef(new Animated.Value(1)).current;
-  const scale = useRef(new Animated.Value(0.82)).current;
+  // Lazy useState (not useRef) so the imperative Animated.Value can be read
+  // during render without tripping the "no ref reads during render" rule —
+  // the initializer still runs once, keeping the same stable instance.
+  const [opacity] = useState(() => new Animated.Value(1));
+  const [scale] = useState(() => new Animated.Value(0.82));
 
   useEffect(() => {
     const zoomIn = Animated.timing(scale, {

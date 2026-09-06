@@ -23,7 +23,6 @@ type ManagementMenuButtonProps = {
 
 export function ManagementMenuButton(props: ManagementMenuButtonProps) {
   const colors = useThemeColors();
-  const Icon = resolveIcon(props.icon);
 
   return (
     <Pressable
@@ -38,7 +37,7 @@ export function ManagementMenuButton(props: ManagementMenuButtonProps) {
     >
       <AppCard contentStyle={styles.card} tone="surface">
         <View style={[styles.leading, { backgroundColor: colors.surfaceMuted, borderColor: colors.border }]}>
-          <Icon color={colors.text} />
+          {renderIcon(props.icon, colors.text)}
         </View>
         <View style={styles.copy}>
           {props.meta ? (
@@ -59,20 +58,23 @@ export function ManagementMenuButton(props: ManagementMenuButtonProps) {
   );
 }
 
-function resolveIcon(icon: ManagementMenuButtonProps["icon"]) {
+// Returns the icon element directly (rather than picking a component
+// reference to render via a dynamic `<Icon />` tag) so the icon choice
+// doesn't look like a component being defined during render.
+function renderIcon(icon: ManagementMenuButtonProps["icon"], color: string) {
   if (icon === "countries") {
-    return Building20Regular;
+    return <Building20Regular color={color} />;
   }
 
   if (icon === "catalog") {
-    return ClipboardBulletList20Regular;
+    return <ClipboardBulletList20Regular color={color} />;
   }
 
   if (icon === "customers") {
-    return Person20Regular;
+    return <Person20Regular color={color} />;
   }
 
-  return Box20Regular;
+  return <Box20Regular color={color} />;
 }
 
 const styles = StyleSheet.create({

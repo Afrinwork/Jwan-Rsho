@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 
 import { authService } from "@/src/features/auth/services/authService";
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
+import { applyLanguage, AppLanguage } from "@/src/i18n/languageController";
+import { i18next } from "@/src/i18n/i18n";
 import { useAuthStore } from "@/src/store/authStore";
 import { useAppStore } from "@/src/store/appStore";
 import { customerRepository } from "@/src/repositories/customerRepository";
@@ -30,12 +32,14 @@ export function useSettings() {
   const updateEmail = useAuthStore((state) => state.updateEmail);
   const {
     themeMode,
+    language,
     preferredNavigationApp,
     shopName,
     shareIncludeAddress,
     shareIncludePhone,
     shareIncludeTotals,
     setThemeMode,
+    setLanguage: setStoreLanguage,
     setPreferredNavigationApp,
     setShopName,
     setShareOptions,
@@ -85,6 +89,18 @@ export function useSettings() {
     return () => clearTimeout(timeoutId);
   }, [user]);
 
+  const setLanguage = useCallback(
+    (value: AppLanguage) => {
+      setStoreLanguage(value);
+      // Live text preview only (i18next re-renders every useTranslation
+      // consumer immediately). The RTL flag and any needed native reload
+      // are applied once the choice is actually persisted via save(), so
+      // an in-progress edit on this screen is never discarded mid-typing.
+      void i18next.changeLanguage(value);
+    },
+    [setStoreLanguage],
+  );
+
   const save = useCallback(async () => {
     if (!user) {
       return;
@@ -110,6 +126,7 @@ export function useSettings() {
       await userPreferencesRepository.savePreferences({
         ownerId: user.uid,
         themeMode,
+        language,
         preferredNavigationApp,
         shopName,
         shareIncludeAddress,
@@ -122,6 +139,11 @@ export function useSettings() {
       }
       setNewPassword("");
       setSuccessMessage(t("saveSuccess"));
+      // Caches the choice locally and flips/reloads for a real RTL <-> LTR
+      // switch — deferred to here (rather than setLanguage) and run last,
+      // since a real reload can cut off any code after it: everything else
+      // this save needs to do must already be done by this point.
+      await applyLanguage(language);
     } catch (value) {
       setError(formatError(value).message);
       setSuccessMessage(null);
@@ -131,6 +153,7 @@ export function useSettings() {
   }, [
     fullName,
     email,
+    language,
     preferredNavigationApp,
     shopName,
     shareIncludeAddress,
@@ -158,12 +181,14 @@ export function useSettings() {
     successMessage,
     stats,
     themeMode,
+    language,
     preferredNavigationApp,
     shopName,
     shareIncludeAddress,
     shareIncludePhone,
     shareIncludeTotals,
     setThemeMode,
+    setLanguage,
     setPreferredNavigationApp,
     setShopName,
     setShareOptions,

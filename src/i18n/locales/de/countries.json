@@ -1,0 +1,49 @@
+{
+  "form": {
+    "nameLabel": "Land",
+    "namePlaceholder": "Name des Landes",
+    "nameArPlaceholder": "Name auf Arabisch (optional)",
+    "isoCodeLabel": "ISO-Code (optional)",
+    "isoCodePlaceholder": "DE",
+    "sortOrderLabel": "Reihenfolge",
+    "sortOrderPlaceholder": "0"
+  },
+  "listItem": {
+    "noIsoCode": "Ohne ISO-Code",
+    "sortOrder": "Reihenfolge {{order}}"
+  },
+  "selectField": {
+    "label": "Land",
+    "loading": "Laender werden geladen...",
+    "empty": "Keine Laender verfuegbar."
+  },
+  "management": {
+    "title": "Laender",
+    "subtitle": "Verwalte Laender als feste Liste fuer Kunden und Kartenfilter, uebersichtlich und ordentlich.",
+    "createLabel": "Land hinzufuegen",
+    "listLabel": "Laender anzeigen",
+    "createTabLabel": "Land hinzufuegen",
+    "listTabLabel": "Laender anzeigen",
+    "loading": "Laender werden geladen...",
+    "emptyTitle": "Keine Laender",
+    "emptyMessage": "Fuege nur die Laender hinzu, die du brauchst, um Kunden einfach zu organisieren und zu filtern.",
+    "saveNewLabel": "Land speichern",
+    "saveChangesLabel": "Aenderungen speichern",
+    "addSuccess": "Das Land wurde erfolgreich hinzugefuegt.",
+    "updateSuccess": "Das Land wurde erfolgreich aktualisiert.",
+    "activatedSuccess": "Das Land wurde wieder aktiviert.",
+    "deactivatedSuccess": "Das Land wurde deaktiviert.",
+    "toggleError": "Das Land konnte nicht aktualisiert werden.",
+    "deleteSuccess": "Das Land wurde geloescht.",
+    "deleteError": "Das Land konnte nicht geloescht werden.",
+    "deleteConfirmTitle": "Dieses Land wirklich loeschen?",
+    "deleteConfirmMessage": "Dieses Land wird nur geloescht, wenn es bei keinem Kunden verwendet wird.",
+    "statsTotal": "Gesamt",
+    "statsActive": "Aktiv",
+    "statsInactive": "Deaktiviert"
+  },
+  "validation": {
+    "nameRequired": "Name des Landes ist erforderlich",
+    "isoCodeTooLong": "Der ISO-Code darf maximal 3 Zeichen lang sein"
+  }
+}

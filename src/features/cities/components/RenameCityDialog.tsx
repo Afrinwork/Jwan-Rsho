@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Modal, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
@@ -19,12 +19,21 @@ type RenameCityDialogProps = {
 export function RenameCityDialog({ visible, currentName, saving, onCancel, onSave }: RenameCityDialogProps) {
   const { t } = useTranslation("cities");
   const [value, setValue] = useState(currentName);
+  const [prevVisible, setPrevVisible] = useState(visible);
+  const [prevCurrentName, setPrevCurrentName] = useState(currentName);
 
-  useEffect(() => {
+  // Re-fills the input with the latest name whenever the dialog opens (or
+  // the target city changes while open), discarding any unsaved edit from
+  // last time — adjusted directly during render (React's documented
+  // pattern for "reset state when a prop changes") rather than in an
+  // effect.
+  if (visible !== prevVisible || currentName !== prevCurrentName) {
+    setPrevVisible(visible);
+    setPrevCurrentName(currentName);
     if (visible) {
       setValue(currentName);
     }
-  }, [visible, currentName]);
+  }
 
   const trimmed = value.trim();
 

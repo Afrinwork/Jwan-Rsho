@@ -1,4 +1,4 @@
-import { PropsWithChildren, useEffect, useRef } from "react";
+import { PropsWithChildren, useEffect, useState } from "react";
 import { Animated, Easing, ViewStyle } from "react-native";
 
 type AnimatedEntranceProps = PropsWithChildren<{
@@ -13,9 +13,12 @@ export function AnimatedEntrance({
   distance = 16,
   style,
 }: AnimatedEntranceProps) {
-  const opacity = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(distance)).current;
-  const scale = useRef(new Animated.Value(0.985)).current;
+  // Lazy useState (not useRef) so the imperative Animated.Value can be read
+  // during render without tripping the "no ref reads during render" rule —
+  // the initializer still runs once, keeping the same stable instance.
+  const [opacity] = useState(() => new Animated.Value(0));
+  const [translateY] = useState(() => new Animated.Value(distance));
+  const [scale] = useState(() => new Animated.Value(0.985));
 
   useEffect(() => {
     opacity.setValue(0);

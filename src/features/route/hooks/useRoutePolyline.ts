@@ -48,6 +48,12 @@ export function useRoutePolyline(origin: RouteLatLng | null, orderedPoints: Rout
   const pointsKey = orderedPoints.map((point) => point.id).join(",");
   const etaAnchorMs = etaAnchor.getTime();
 
+  // Genuine fetch-on-dependency-change effect (React's own documented
+  // data-fetching pattern) — the state resets below are the correct,
+  // synchronous first step for each branch, not state that could be
+  // computed during render instead (the multi-provider fetch itself must
+  // stay in an effect).
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!origin || !orderedPoints.length) {
       setState(origin ? { ...EMPTY_STATE, coordinates: [origin] } : EMPTY_STATE);
@@ -115,6 +121,7 @@ export function useRoutePolyline(origin: RouteLatLng | null, orderedPoints: Rout
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [origin?.latitude, origin?.longitude, pointsKey, etaAnchorMs]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   return state;
 }

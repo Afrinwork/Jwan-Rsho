@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { StyleSheet, View } from "react-native";
@@ -32,6 +32,9 @@ export function CountryForm({ initialValues, submitLabel, onCancel, onSubmit }: 
     resolver: zodResolver(countryFormSchema),
     defaultValues: initialValues ?? { name: "", nameAr: "", isoCode: "", sortOrder: 0 },
   });
+  // useWatch (not form.watch) so this value can be read during render
+  // without opting the whole component out of compiler memoization.
+  const nameValue = useWatch({ control: form.control, name: "name" });
 
   const submit = form.handleSubmit(async (values) => {
     try {
@@ -57,7 +60,7 @@ export function CountryForm({ initialValues, submitLabel, onCancel, onSubmit }: 
             onBlur={() => form.trigger("name")}
             onChangeText={(value) => form.setValue("name", value, { shouldDirty: true, shouldValidate: true })}
             placeholder={t("form.namePlaceholder")}
-            value={form.watch("name")}
+            value={nameValue}
           />
         </FormField>
         {submitError ? <ErrorState message={submitError} /> : null}

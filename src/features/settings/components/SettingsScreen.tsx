@@ -82,6 +82,17 @@ export function SettingsScreen() {
             value={settings.themeMode}
           />
         </SettingsSection></AnimatedEntrance>
+        <AnimatedEntrance delay={165}><SettingsSection subtitle={t("language.restartHint")} title={t("sections.language")}>
+          <SettingsChoiceRow
+            label={t("language.label")}
+            onChange={(value) => settings.setLanguage(value as "ar" | "de")}
+            options={[
+              { label: t("language.arabic"), value: "ar" },
+              { label: t("language.german"), value: "de" },
+            ]}
+            value={settings.language}
+          />
+        </SettingsSection></AnimatedEntrance>
         <AnimatedEntrance delay={180}><SettingsSection subtitle={t("navigationApp.label")} title={t("sections.navigation")}>
           <SettingsChoiceRow
             label={t("navigationApp.label")}

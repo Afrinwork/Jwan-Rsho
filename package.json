@@ -26,6 +26,7 @@
     "@expo/vector-icons": "^15.0.2",
     "@fluentui/react-native-icons": "^2.0.335",
     "@hookform/resolvers": "^5.7.1",
+    "@maplibre/maplibre-react-native": "^11.3.8",
     "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~57.0.20",
     "expo-blur": "~57.0.0",

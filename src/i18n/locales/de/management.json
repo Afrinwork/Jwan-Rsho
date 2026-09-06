@@ -1,0 +1,67 @@
+{
+  "screen": {
+    "title": "Verwaltung",
+    "subtitle": "Waehle einen Bereich.",
+    "adminButton": "Admin"
+  },
+  "menu": {
+    "products": {
+      "title": "Produkte",
+      "subtitle": "Produkte hinzufuegen, anzeigen, bearbeiten und loeschen."
+    },
+    "customers": {
+      "title": "Kunden",
+      "subtitle": "Kundendaten bearbeiten und synchron in Listen und Ansichten speichern."
+    },
+    "countries": {
+      "title": "Laender",
+      "subtitle": "Laender verwalten, aktivieren, deaktivieren und loeschen."
+    },
+    "regions": {
+      "title": "Regionen",
+      "subtitle": "Regionen verwalten, die mit Laendern verknuepft sind."
+    },
+    "catalog": {
+      "title": "Katalog laden",
+      "subtitle": "Beispielkatalog fuer den ersten Start laden."
+    }
+  },
+  "workspaceTabs": {
+    "customers": "Kunden",
+    "products": "Produkte",
+    "countries": "Laender",
+    "regions": "Regionen",
+    "catalog": "Katalog"
+  },
+  "customersScreen": {
+    "title": "Kunden",
+    "subtitle": "Tippe auf einen Kunden, um seine Daten zu bearbeiten, und speichere, um direkt zur Liste zurueckzukehren.",
+    "count": "Kunden",
+    "loading": "Kunden werden geladen...",
+    "emptyTitle": "Keine Kunden",
+    "emptyMessage": "Es wurden keine Kunden fuer diese Liste oder diese Suche gefunden."
+  },
+  "catalogScreen": {
+    "listModeLabel": "Katalog laden",
+    "createModeLabel": "Hinweis",
+    "subtitle": "Einmalige Beispieldaten fuer den ersten Start erstellen.",
+    "title": "Katalog",
+    "infoTitle": "Fuer den ersten Start",
+    "infoBody": "Erstellt Beispielprodukte und -laender. Bereits vorhandene Eintraege werden uebersprungen.",
+    "loadButton": "Beispielkatalog laden"
+  },
+  "seedSection": {
+    "title": "Beispielkatalog",
+    "body": "Erstellt einmalig 12 Beispielprodukte und 6 Beispiellaender. Bereits vorhandene Eintraege werden uebersprungen.",
+    "loadButton": "Beispielkatalog laden"
+  },
+  "seed": {
+    "allPresent": "Alle Beispieldaten sind bereits vorhanden.",
+    "summary": "{{productsCount}} Produkt(e) und {{countriesCount}} Land/Laender wurden hinzugefuegt.",
+    "loadError": "Die Beispieldaten konnten nicht geladen werden.",
+    "resetButton": "Katalog zuruecksetzen",
+    "resetConfirmTitle": "Den gesamten Katalog loeschen?",
+    "resetConfirmMessage": "Alle aktuellen Produkte und Laender werden geloescht, danach wird der Beispielkatalog neu erstellt. Das kann nicht rueckgaengig gemacht werden.",
+    "resetPartialError": "Einige Eintraege konnten nicht geloescht werden: {{names}}"
+  }
+}

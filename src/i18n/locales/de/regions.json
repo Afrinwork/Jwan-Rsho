@@ -1,0 +1,43 @@
+{
+  "form": {
+    "nameLabel": "Region",
+    "namePlaceholder": "Region",
+    "nameArPlaceholder": "Name auf Arabisch (optional)",
+    "countryLabel": "Land",
+    "countryPlaceholder": "Land",
+    "cityLabel": "Stadt (optional)",
+    "cityPlaceholder": "Stadt"
+  },
+  "selectField": {
+    "label": "Region (optional)",
+    "placeholderWithCountry": "Region fuer dieses Land",
+    "placeholderNoCountry": "Zuerst ein Land waehlen",
+    "loading": "Regionen werden geladen...",
+    "emptyWithCountry": "Keine Region verfuegbar.",
+    "emptyNoCountry": "Waehle zuerst das Land."
+  },
+  "management": {
+    "title": "Regionen",
+    "subtitle": "Organisiere Regionen passend zu den Laendern und halte sie fuer Filter aktiv.",
+    "createLabel": "Region hinzufuegen",
+    "listLabel": "Regionen anzeigen",
+    "loading": "Regionen werden geladen...",
+    "emptyTitle": "Keine Regionen",
+    "emptyMessage": "Regionen sind optional. Sie sind hilfreich, wenn du Kunden spaeter nach Regionen auf der Karte und in Filtern organisieren moechtest.",
+    "saveNewLabel": "Region speichern",
+    "saveChangesLabel": "Aenderungen speichern",
+    "addSuccess": "Die Region wurde erfolgreich hinzugefuegt.",
+    "updateSuccess": "Die Region wurde erfolgreich aktualisiert.",
+    "activatedSuccess": "Die Region wurde wieder aktiviert.",
+    "deactivatedSuccess": "Die Region wurde deaktiviert.",
+    "toggleError": "Die Region konnte nicht aktualisiert werden.",
+    "deleteSuccess": "Die Region wurde geloescht.",
+    "deleteError": "Die Region konnte nicht geloescht werden.",
+    "deleteConfirmTitle": "Diese Region wirklich loeschen?",
+    "deleteConfirmMessage": "Diese Region wird nur geloescht, wenn sie noch von keinem Kunden verwendet wird."
+  },
+  "validation": {
+    "nameRequired": "Region ist erforderlich",
+    "countryRequired": "Land ist erforderlich"
+  }
+}

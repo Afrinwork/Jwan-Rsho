@@ -1,9 +1,23 @@
 import { createInstance } from "i18next";
 import { initReactI18next } from "react-i18next";
 
+import deAdmin from "@/src/i18n/locales/de/admin.json";
+import deAuth from "@/src/i18n/locales/de/auth.json";
+import deCities from "@/src/i18n/locales/de/cities.json";
+import deCommon from "@/src/i18n/locales/de/common.json";
+import deCountries from "@/src/i18n/locales/de/countries.json";
+import deCustomers from "@/src/i18n/locales/de/customers.json";
+import deErrors from "@/src/i18n/locales/de/errors.json";
+import deManagement from "@/src/i18n/locales/de/management.json";
 import deMap from "@/src/i18n/locales/de/map.json";
 import deNavigation from "@/src/i18n/locales/de/navigation.json";
+import deOrders from "@/src/i18n/locales/de/orders.json";
+import deOverview from "@/src/i18n/locales/de/overview.json";
+import deProducts from "@/src/i18n/locales/de/products.json";
+import deRegions from "@/src/i18n/locales/de/regions.json";
 import deRoute from "@/src/i18n/locales/de/route.json";
+import deSettings from "@/src/i18n/locales/de/settings.json";
+import deValidation from "@/src/i18n/locales/de/validation.json";
 
 import arAdmin from "@/src/i18n/locales/ar/admin.json";
 import arAuth from "@/src/i18n/locales/ar/auth.json";
@@ -25,8 +39,22 @@ import arValidation from "@/src/i18n/locales/ar/validation.json";
 
 const resources = {
   de: {
-    map: deMap,
+    common: deCommon,
+    errors: deErrors,
     navigation: deNavigation,
+    validation: deValidation,
+    settings: deSettings,
+    admin: deAdmin,
+    auth: deAuth,
+    cities: deCities,
+    countries: deCountries,
+    customers: deCustomers,
+    management: deManagement,
+    map: deMap,
+    orders: deOrders,
+    overview: deOverview,
+    products: deProducts,
+    regions: deRegions,
     route: deRoute,
   },
   ar: {

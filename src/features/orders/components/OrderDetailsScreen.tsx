@@ -22,6 +22,12 @@ export function OrderDetailsScreen({ orderId }: OrderDetailsScreenProps) {
   const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation("orders");
 
+  // Genuine fetch-on-dependency-change effect (React's own documented
+  // data-fetching pattern) — the state resets below are the correct,
+  // synchronous first step for each branch, not state that could be
+  // computed during render instead (the fetch itself must stay in an
+  // effect).
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!orderId) {
       setError(t("details.noOrderSelected"));
@@ -36,6 +42,7 @@ export function OrderDetailsScreen({ orderId }: OrderDetailsScreenProps) {
       .catch((value) => setError(formatError(value).message))
       .finally(() => setLoading(false));
   }, [orderId, t]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   if (loading) return <LoadingView label={t("details.loading")} />;
 

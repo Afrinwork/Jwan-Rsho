@@ -31,7 +31,6 @@ export function buildRouteWhatsappMessages(entries: RouteShareEntry[]): RouteWha
       ...orderLines,
       `موعد الوصول التقريبي: ${formatEtaTime(stop.cumulativeEta)}`,
       "شكراً لثقتكم بنا، ونسعد بخدمتكم في الطلب القادم.",
-      "راشو للأجبان",
     ];
 
     return {

@@ -11,9 +11,9 @@ type NavigationAppSheetProps = {
   apps: MapNavigationApp[];
   onClose: () => void;
   onSelect: (appId: NavigationAppId) => void;
-  // Map screens pass mapT here to keep this sheet pinned to German like the
-  // rest of the map; every other screen omits it and gets the app's normal
-  // (Arabic) language instead — both read the same "map" namespace strings.
+  // Map screens pass mapT here so this sheet reads the "map" namespace the
+  // same way the rest of the map does; every other screen omits it and
+  // falls back to its own reactive translator below.
   t?: (key: string, options?: Record<string, unknown>) => string;
 };
 

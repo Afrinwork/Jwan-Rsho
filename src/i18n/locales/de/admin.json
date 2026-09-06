@@ -1,0 +1,46 @@
+{
+  "dashboard": {
+    "title": "Admin-Dashboard",
+    "subtitle": "Vereinfachte Admin-Uebersicht ohne Benutzerliste und ohne komplexe Statistiken.",
+    "loading": "Admin-Dashboard wird geladen..."
+  },
+  "stats": {
+    "activeUsers": "Aktive Benutzer",
+    "ownCustomers": "Deine Kunden",
+    "ownOpenOrders": "Offene Bestellungen",
+    "ownTotalOrders": "Bestellungen insgesamt"
+  },
+  "actions": {
+    "createUser": "Benutzer anlegen",
+    "deleteUser": "Benutzer endgueltig loeschen"
+  },
+  "createUser": {
+    "title": "Benutzer anlegen",
+    "subtitle": "Nur der Admin kann neue Benutzerkonten anlegen.",
+    "fullNameLabel": "Vollstaendiger Name",
+    "emailLabel": "E-Mail-Adresse",
+    "passwordLabel": "Passwort",
+    "confirmPasswordLabel": "Passwort bestaetigen",
+    "submitting": "Wird gespeichert...",
+    "submitLabel": "Benutzer anlegen",
+    "successMessage": "Der Benutzer wurde erfolgreich angelegt."
+  },
+  "deleteUser": {
+    "title": "Benutzer loeschen",
+    "subtitle": "Loeschen per E-Mail-Adresse mit Bestaetigungsdialog. Dein eigenes Konto bleibt geschuetzt.",
+    "emailLabel": "E-Mail-Adresse des Benutzers",
+    "emailPlaceholder": "user@example.com",
+    "checking": "Wird geprueft...",
+    "submitLabel": "Benutzer endgueltig loeschen",
+    "confirmTitle": "Benutzer wirklich loeschen?",
+    "confirmMessage": "Dieses Konto und alle zugehoerigen Daten werden endgueltig geloescht. Das kann nicht rueckgaengig gemacht werden.",
+    "confirmLabel": "Endgueltig loeschen",
+    "successMessage": "Der Benutzer wurde endgueltig geloescht."
+  },
+  "validation": {
+    "nameRequired": "Name ist erforderlich",
+    "passwordTooShort": "Das Passwort muss mindestens 8 Zeichen lang sein",
+    "confirmPasswordRequired": "Bitte wiederhole das Passwort",
+    "passwordsMustMatch": "Die Passwoerter muessen uebereinstimmen"
+  }
+}

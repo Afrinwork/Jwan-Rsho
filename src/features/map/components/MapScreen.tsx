@@ -3,7 +3,6 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import MapView from "react-native-maps";
 import { mapT } from "@/src/features/map/i18n/mapT";
 
 import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
@@ -11,6 +10,8 @@ import { AppErrorBoundary } from "@/src/components/layout/AppErrorBoundary";
 import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
 import { LoadingView } from "@/src/components/ui/LoadingView";
 import { spacing } from "@/src/constants/spacing";
+import { AppMapView } from "@/src/features/map/components/AppMapView";
+import { ContactMethodSheet } from "@/src/features/map/components/ContactMethodSheet";
 import { CustomerMarker } from "@/src/features/map/components/CustomerMarker";
 import { MapCustomerSheet } from "@/src/features/map/components/MapCustomerSheet";
 import { MapFilters } from "@/src/features/map/components/MapFilters";
@@ -27,12 +28,13 @@ import { useMapCustomerSelection } from "@/src/features/map/hooks/useMapCustomer
 import { useMapFilters } from "@/src/features/map/hooks/useMapFilters";
 import { mapClusteringService } from "@/src/features/map/services/mapClusteringService";
 import { useUserLocation } from "@/src/features/map/hooks/useUserLocation";
+import { AppMapViewHandle } from "@/src/features/map/types/mapViewTypes";
 
 const TAB_BAR_CLEARANCE = 68 + 14 + spacing.sm;
 
 export function MapScreen() {
   const { t: actionT } = useTranslation("map");
-  const mapRef = useRef<MapView | null>(null);
+  const mapRef = useRef<AppMapViewHandle | null>(null);
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const t = mapT;
@@ -43,6 +45,7 @@ export function MapScreen() {
   const { error: customersError, isLoading: customersLoading, markers, reload: reloadCustomers } = useMapCustomers();
   const { filters, filteredMarkers, countryOptions, cityOptions, resetFilters, selectCity, selectCountry } = useMapFilters(markers);
   const [visibleRegion, setVisibleRegion] = useState(region);
+  const [prevRegion, setPrevRegion] = useState(region);
   const { details, error: detailsError, isLoading: detailsLoading, reload: reloadDetails } = useMapCustomerDetails(selectedCustomerId);
   const selectedMarker = useMemo(() => filteredMarkers.find((value) => value.id === selectedCustomerId) ?? null, [filteredMarkers, selectedCustomerId]);
   const mapActions = useMapActions(details, selectedMarker);
@@ -57,9 +60,15 @@ export function MapScreen() {
     [filteredMarkers, visibleRegion],
   );
 
-  useEffect(() => {
+  // Re-syncs the tracked viewport whenever the underlying location region
+  // changes (e.g. once GPS resolves) — adjusted directly during render
+  // (React's documented pattern for "reset state when a prop changes")
+  // rather than in an effect. Panning/zooming updates visibleRegion
+  // separately via onRegionChangeComplete below.
+  if (region !== prevRegion) {
+    setPrevRegion(region);
     setVisibleRegion(region);
-  }, [region]);
+  }
 
   const hasFocusedOnceRef = useRef(false);
 
@@ -110,7 +119,7 @@ export function MapScreen() {
   return (
     <AppErrorBoundary>
       <View style={styles.screen}>
-      <MapView
+      <AppMapView
         initialRegion={region}
         onRegionChangeComplete={setVisibleRegion}
         onPanDrag={(event) => {
@@ -125,6 +134,7 @@ export function MapScreen() {
         showsCompass
         showsUserLocation={hasPermission}
         style={StyleSheet.absoluteFill}
+        userLocationCoordinate={hasPermission ? region : null}
         zoomEnabled={mapGesturesEnabled}
       >
         {clusterItems.map((item) => {
@@ -148,7 +158,7 @@ export function MapScreen() {
           );
         })}
         <PolygonSelectionOverlay confirmedPolygon={customerSelection.selection.polygonConfirmed} draftPoints={customerSelection.selection.polygonPoints} />
-      </MapView>
+      </AppMapView>
 
       <SafeAreaView edges={["top"]} pointerEvents="box-none" style={styles.topOverlay}>
         <View style={styles.topOverlayContent}>
@@ -246,6 +256,12 @@ export function MapScreen() {
         onShare={() => void mapActions.shareLocation()}
         onShareOrder={() => void mapActions.shareOrder()}
         visible={selectedCustomerId !== null && !completeConfirmVisible}
+      />
+      <ContactMethodSheet
+        onCallPhone={() => void mapActions.callByPhone()}
+        onCallWhatsapp={() => void mapActions.callByWhatsapp()}
+        onClose={mapActions.closeContactSheet}
+        visible={mapActions.contactSheetVisible}
       />
       <ConfirmDialog
         destructive

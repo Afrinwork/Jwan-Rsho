@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Animated, Easing, Image, StyleSheet } from "react-native";
 
 import { useThemeColors } from "@/src/hooks/useThemeColors";
@@ -9,8 +9,11 @@ const logo = require("../../../../assets/icon.png");
 
 export function LoginLogoBadge() {
   const colors = useThemeColors();
-  const pulse = useRef(new Animated.Value(0)).current;
-  const spin = useRef(new Animated.Value(0)).current;
+  // Lazy useState (not useRef) so the imperative Animated.Value can be read
+  // during render without tripping the "no ref reads during render" rule —
+  // the initializer still runs once, keeping the same stable instance.
+  const [pulse] = useState(() => new Animated.Value(0));
+  const [spin] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     const pulseLoop = Animated.loop(
