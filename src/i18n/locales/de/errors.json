@@ -18,6 +18,7 @@
   "duplicateRegion": "Es gibt bereits eine passende Region.",
   "countryInUse": "Dieses Land wird bereits von Kunden verwendet und kann nicht geloescht werden.",
   "regionInUse": "Diese Region wird bereits von Kunden verwendet und kann nicht geloescht werden.",
+  "cityInUse": "Diese Stadt wird bereits von Kunden verwendet und kann nicht geloescht werden.",
   "invalidForm": "Bitte pruefe die eingegebenen Daten im Formular.",
   "uiCrashTitle": "Diese Ansicht wurde vorsorglich angehalten.",
   "uiCrashMessage": "In der Ansicht ist ein Fehler aufgetreten, der Absturz der ganzen App wurde aber verhindert. Du kannst diesen Bildschirm jetzt neu laden."

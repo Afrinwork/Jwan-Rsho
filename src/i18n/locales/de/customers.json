@@ -1,13 +1,13 @@
 {
   "form": {
     "nameLabel": "Vollstaendiger Name",
-    "namePlaceholder": "Vollstaendiger Name",
+    "namePlaceholder": "",
     "phoneLabel": "Telefonnummer",
-    "phonePlaceholder": "Telefonnummer",
+    "phonePlaceholder": "",
     "noteLabel": "Notiz (optional)",
-    "notePlaceholder": "Notiz",
+    "notePlaceholder": "",
     "addressLabel": "Adresse",
-    "addressPlaceholder": "z. B. Musterstrasse 12, 10115 Berlin",
+    "addressPlaceholder": "",
     "cityLabel": "Stadt",
     "cityPlaceholder": "z. B. Berlin"
   },
@@ -62,6 +62,11 @@
   "search": {
     "placeholder": "Name, Telefon, Stadt oder Strasse",
     "selected": "Ausgewaehlt"
+  },
+  "duplicateCheck": {
+    "title": "Meinst du einen von diesen?",
+    "subtitle": "Tippe auf einen Kunden, um dessen Daten zu verwenden, statt einen neuen anzulegen.",
+    "useButton": "Diesen Kunden verwenden"
   },
   "orderStatus": {
     "open": "Offene Bestellung",

@@ -1,13 +1,13 @@
 {
   "form": {
     "nameLabel": "الاسم الكامل",
-    "namePlaceholder": "الاسم الكامل",
+    "namePlaceholder": "",
     "phoneLabel": "رقم الهاتف",
-    "phonePlaceholder": "رقم الهاتف",
+    "phonePlaceholder": "",
     "noteLabel": "ملاحظة (اختياري)",
-    "notePlaceholder": "ملاحظة",
+    "notePlaceholder": "",
     "addressLabel": "العنوان",
-    "addressPlaceholder": "مثال: شارع النموذج 12، 10115 برلين",
+    "addressPlaceholder": "",
     "cityLabel": "المدينة",
     "cityPlaceholder": "مثال: برلين"
   },
@@ -62,6 +62,11 @@
   "search": {
     "placeholder": "الاسم، الهاتف، المدينة أو الشارع",
     "selected": "محدد"
+  },
+  "duplicateCheck": {
+    "title": "هل تقصد أحد هؤلاء؟",
+    "subtitle": "اضغط على عميل لاستخدام بياناته بدلاً من إضافة عميل جديد.",
+    "useButton": "استخدام هذا العميل"
   },
   "orderStatus": {
     "open": "طلب مفتوح",

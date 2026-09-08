@@ -36,7 +36,8 @@
     "select": "Auswaehlen",
     "deselect": "Abwaehlen",
     "details": "Details",
-    "complete": "Erledigen"
+    "complete": "Erledigen",
+    "delete": "Loeschen"
   },
   "selectionBar": {
     "selectedCount": "{{count}} ausgewaehlt",
@@ -68,6 +69,10 @@
   "completeOrder": {
     "confirmTitle": "Diese Bestellung erledigen?",
     "confirmMessage": "Diese Bestellung wird danach endgueltig geloescht. Der Kunde und seine Adresse bleiben erhalten. Das kann nicht rueckgaengig gemacht werden."
+  },
+  "deleteCustomer": {
+    "confirmTitle": "Diesen Kunden loeschen?",
+    "confirmMessage": "Dieser Kunde und alle seine Bestellungen werden endgueltig geloescht. Das kann nicht rueckgaengig gemacht werden."
   },
   "validation": {
     "nameRequired": "Name der Stadt ist erforderlich"

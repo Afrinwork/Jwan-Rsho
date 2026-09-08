@@ -9,6 +9,7 @@ export function useManagementCustomers() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -43,6 +44,21 @@ export function useManagementCustomers() {
     );
   }, [customers, query]);
 
+  const deleteCustomer = useCallback(async (customerId: string) => {
+    try {
+      setDeletingId(customerId);
+      setError(null);
+      await customerRepository.deleteCustomer(customerId);
+      await load();
+      return true;
+    } catch (value) {
+      setError(formatError(value).message);
+      return false;
+    } finally {
+      setDeletingId(null);
+    }
+  }, [load]);
+
   return {
     customers: filteredCustomers,
     totalCount: customers.length,
@@ -51,5 +67,7 @@ export function useManagementCustomers() {
     loading,
     error,
     reload: load,
+    deletingId,
+    deleteCustomer,
   };
 }

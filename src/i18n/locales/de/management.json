@@ -39,7 +39,9 @@
     "count": "Kunden",
     "loading": "Kunden werden geladen...",
     "emptyTitle": "Keine Kunden",
-    "emptyMessage": "Es wurden keine Kunden fuer diese Liste oder diese Suche gefunden."
+    "emptyMessage": "Es wurden keine Kunden fuer diese Liste oder diese Suche gefunden.",
+    "deleteConfirmTitle": "Diesen Kunden loeschen?",
+    "deleteConfirmMessage": "Dieser Kunde und alle seine Bestellungen werden endgueltig geloescht. Das kann nicht rueckgaengig gemacht werden."
   },
   "catalogScreen": {
     "listModeLabel": "Katalog laden",

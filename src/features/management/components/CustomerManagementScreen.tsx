@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useRouter } from "expo-router";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
@@ -6,6 +7,7 @@ import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
 import { AppCard } from "@/src/components/ui/AppCard";
 import { AppText } from "@/src/components/ui/AppText";
 import { CompactScreenHeader } from "@/src/components/ui/CompactScreenHeader";
+import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
 import { EmptyState } from "@/src/components/ui/EmptyState";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { LoadingView } from "@/src/components/ui/LoadingView";
@@ -22,7 +24,8 @@ export function CustomerManagementScreen() {
   const router = useRouter();
   const colors = useThemeColors();
   const { t } = useTranslation("management");
-  const { customers, error, loading, query, setQuery, totalCount } = useManagementCustomers();
+  const { customers, error, loading, query, setQuery, totalCount, deletingId, deleteCustomer } = useManagementCustomers();
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   if (loading) {
     return <LoadingView label={t("customersScreen.loading")} />;
@@ -69,13 +72,29 @@ export function CustomerManagementScreen() {
             {customers.map((customer) => (
               <ManagementCustomerCard
                 customer={customer}
+                deleting={deletingId === customer.id}
                 key={customer.id}
+                onDelete={() => setDeleteTarget(customer.id)}
                 onPress={() => router.push(`${routes.customerEditBase}/${customer.id}` as never)}
               />
             ))}
           </AnimatedEntrance>
         )}
       </ScrollView>
+      <ConfirmDialog
+        destructive
+        message={t("customersScreen.deleteConfirmMessage")}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => {
+          const target = deleteTarget;
+          setDeleteTarget(null);
+          if (target) {
+            void deleteCustomer(target);
+          }
+        }}
+        title={t("customersScreen.deleteConfirmTitle")}
+        visible={Boolean(deleteTarget)}
+      />
     </ScreenContainer>
   );
 }

@@ -23,6 +23,7 @@ export function useCityCustomers(normalizedCity: string) {
   const [completingOrderId, setCompletingOrderId] = useState<string | null>(null);
   const [renaming, setRenaming] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deletingCustomerId, setDeletingCustomerId] = useState<string | null>(null);
   const completingOrderIdRef = useRef<string | null>(null);
 
   const loadCityData = useCallback(async () => {
@@ -100,8 +101,11 @@ export function useCityCustomers(normalizedCity: string) {
     }
   }, [normalizedCity]);
 
-  // Deletes only the city entity, not its customers — they simply keep their
-  // city text, and saving any of them again would recreate the entity.
+  // Deletes only the city entity, not its customers. cityRepository blocks
+  // this while any customer is still assigned to the city — otherwise the
+  // very next list refresh would just recreate the entity (see
+  // cityRepository.ensureCityExists), which looked to users like the delete
+  // silently didn't work.
   const deleteCity = useCallback(async () => {
     if (!cityEntity) {
       return false;
@@ -120,6 +124,24 @@ export function useCityCustomers(normalizedCity: string) {
     }
   }, [cityEntity]);
 
+  // Deletes an individual customer (and their orders, per customerRepository)
+  // so a city that's blocked from deletion by having customers assigned can
+  // be cleared out one by one.
+  const deleteCustomer = useCallback(async (customerId: string) => {
+    try {
+      setDeletingCustomerId(customerId);
+      setError(null);
+      await customerRepository.deleteCustomer(customerId);
+      await loadCityData();
+      return true;
+    } catch (value) {
+      setError(formatError(value).message);
+      return false;
+    } finally {
+      setDeletingCustomerId(null);
+    }
+  }, [loadCityData]);
+
   return {
     loading,
     error,
@@ -129,10 +151,13 @@ export function useCityCustomers(normalizedCity: string) {
     completeOrder,
     completingOrderId,
     cityDisplayName: cityEntity?.name ?? "",
+    customerCount: items.length,
     renaming,
     renameCity,
     deleting,
     deleteCity,
+    deletingCustomerId,
+    deleteCustomer,
     reload: loadCityData,
     customers: filterCityCustomerItems(items, searchTerm),
   };

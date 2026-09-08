@@ -2,9 +2,62 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { customerRepository } from "@/src/repositories/customerRepository";
 import { orderRepository } from "@/src/repositories/orderRepository";
-import { buildMapCustomerMarkers } from "@/src/features/map/services/mapCustomerService";
+import { buildMapCustomerMarkers, hasValidCoordinates } from "@/src/features/map/services/mapCustomerService";
 import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
+import { geocodingService } from "@/src/services/geocodingService";
+import { Customer } from "@/src/types/customer";
 import { formatError } from "@/src/utils/formatError";
+
+// Self-heal for customers whose address failed to geocode earlier (a
+// transient network blip, a temporary rate limit, ...) and so have no
+// coordinates — geocoding only ever ran once, at creation/edit time, so a
+// one-off failure otherwise left them permanently invisible on the map even
+// though they have an open order. Retried on every map load; best effort,
+// silent on failure so it never blocks the normal marker list above.
+async function healMissingCoordinates(customers: Customer[]): Promise<Customer[]> {
+  const missing = customers.filter((customer) => !hasValidCoordinates(customer));
+
+  if (!missing.length) {
+    return customers;
+  }
+
+  const resolved = await Promise.all(
+    missing.map(async (customer) => {
+      try {
+        const coordinates = await geocodingService.geocodeCustomerAddressSafely({
+          address: customer.address,
+          city: customer.city,
+          country: customer.country,
+          region: customer.region,
+        });
+
+        if (!coordinates) {
+          return null;
+        }
+
+        await customerRepository.updateCustomer(customer.id, coordinates);
+        return { id: customer.id, coordinates };
+      } catch {
+        return null;
+      }
+    }),
+  );
+
+  const coordinatesById = new Map(
+    resolved
+      .filter((entry): entry is { id: string; coordinates: { latitude: number; longitude: number } } => entry !== null)
+      .map((entry) => [entry.id, entry.coordinates]),
+  );
+
+  if (!coordinatesById.size) {
+    return customers;
+  }
+
+  return customers.map((customer) => {
+    const coordinates = coordinatesById.get(customer.id);
+    return coordinates ? { ...customer, ...coordinates } : customer;
+  });
+}
 
 type MapCustomersState = {
   error: string | null;
@@ -37,7 +90,11 @@ export function useMapCustomers(): MapCustomersState {
 
       if (requestIdRef.current !== requestId) return;
 
-      const nextMarkers = buildMapCustomerMarkers(customers, openOrders);
+      const healedCustomers = await healMissingCoordinates(customers);
+
+      if (requestIdRef.current !== requestId) return;
+
+      const nextMarkers = buildMapCustomerMarkers(healedCustomers, openOrders);
       setMarkers(nextMarkers);
 
       if (isDev) {

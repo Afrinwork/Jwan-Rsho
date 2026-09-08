@@ -20,5 +20,6 @@ export const errorMessages = {
   duplicateRegion: t("errors:duplicateRegion"),
   countryInUse: t("errors:countryInUse"),
   regionInUse: t("errors:regionInUse"),
+  cityInUse: t("errors:cityInUse"),
   invalidForm: t("errors:invalidForm"),
 };

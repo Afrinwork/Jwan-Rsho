@@ -13,6 +13,7 @@ import { NewCustomerSection } from "@/src/features/orders/components/NewCustomer
 import { OrderItemsSection } from "@/src/features/orders/components/OrderItemsSection";
 import { SaveOrderButton } from "@/src/features/orders/components/SaveOrderButton";
 import { useAddOrder } from "@/src/features/orders/hooks/useAddOrder";
+import { Customer } from "@/src/types/customer";
 
 export function AddOrderScreen() {
   const { t } = useTranslation("orders");
@@ -28,6 +29,11 @@ export function AddOrderScreen() {
     successMessage,
   } = useAddOrder();
   const errors = form.formState.errors;
+
+  function selectExistingFromDuplicate(customer: Customer) {
+    setMode("existing");
+    selectCustomer(customer);
+  }
 
   function handleSave() {
     Keyboard.dismiss();
@@ -60,7 +66,7 @@ export function AddOrderScreen() {
                   selectedCustomer={selectedCustomer}
                 />
               ) : (
-                <NewCustomerSection control={form.control} errors={errors.customer} />
+                <NewCustomerSection control={form.control} errors={errors.customer} onSelectExisting={selectExistingFromDuplicate} />
               )}
             </AnimatedEntrance>
             <AnimatedEntrance delay={150}>

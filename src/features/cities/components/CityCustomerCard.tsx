@@ -17,6 +17,8 @@ type CityCustomerCardProps = {
   onComplete: () => void;
   onToggleSelection: () => void;
   onPressDetails: () => void;
+  deleting: boolean;
+  onDelete: () => void;
 };
 
 export function CityCustomerCard(props: CityCustomerCardProps) {
@@ -37,7 +39,7 @@ export function CityCustomerCard(props: CityCustomerCardProps) {
         {props.customer.currentOpenOrderLabel ?? t("customerList.noOpenOrder")}
       </AppText>
       <AppBadge label={labelForStatus(props.customer.status, t)} tone={statusTone(props.customer.status)} />
-      <CityCustomerActions canComplete={Boolean(props.customer.currentOpenOrderId)} completing={props.completing} onComplete={props.onComplete} onPressDetails={props.onPressDetails} onToggleSelection={props.onToggleSelection} selected={props.selected} />
+      <CityCustomerActions canComplete={Boolean(props.customer.currentOpenOrderId)} completing={props.completing} deleting={props.deleting} onComplete={props.onComplete} onDelete={props.onDelete} onPressDetails={props.onPressDetails} onToggleSelection={props.onToggleSelection} selected={props.selected} />
     </AppCard>
   );
 }

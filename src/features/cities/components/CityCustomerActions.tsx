@@ -10,6 +10,8 @@ type CityCustomerActionsProps = {
   canComplete: boolean;
   completing: boolean;
   onComplete: () => void;
+  deleting: boolean;
+  onDelete: () => void;
 };
 
 export function CityCustomerActions(props: CityCustomerActionsProps) {
@@ -22,6 +24,7 @@ export function CityCustomerActions(props: CityCustomerActionsProps) {
       {props.canComplete ? (
         <AppButton disabled={props.completing} label={t("customerActions.complete")} loading={props.completing} onPress={props.onComplete} size="compact" />
       ) : null}
+      <AppButton disabled={props.deleting} label={t("customerActions.delete")} loading={props.deleting} onPress={props.onDelete} size="compact" variant="danger" />
     </View>
   );
 }

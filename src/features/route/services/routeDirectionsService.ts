@@ -409,6 +409,10 @@ export async function fetchRoutePolyline(origin: RouteLatLng, orderedPoints: Rou
 // Fixed order only (no route optimization) — matches exactly what
 // fetchRoutePolyline needs, since the stop order here is already decided.
 const OSRM_ROUTE_ENDPOINT = "https://router.project-osrm.org/route/v1/driving/";
+// Per-request chunk size, not a total cap — the public demo server limits how
+// many coordinates it'll accept in one call, so requests above this are split
+// into multiple chunks and stitched together (see fetchOsrmRoutePolyline /
+// computeOsrmTripLegs) rather than having the tail silently dropped.
 const MAX_OSRM_WAYPOINTS = 50;
 
 type OsrmRouteResponse = {
@@ -423,16 +427,8 @@ function toOsrmCoordinate(point: { latitude: number; longitude: number }) {
   return `${point.longitude},${point.latitude}`;
 }
 
-export async function fetchOsrmRoutePolyline(origin: RouteLatLng, orderedPoints: RoutePoint[]): Promise<RoutePolylineResult> {
-  if (!orderedPoints.length) {
-    return { coordinates: [], legs: [] };
-  }
-
-  // The public demo server caps how many coordinates it'll route at once —
-  // beyond that, just route to the nearest upcoming stops rather than fail
-  // outright (the straight-line fallback still covers the very long tail).
-  const routedPoints = orderedPoints.slice(0, MAX_OSRM_WAYPOINTS);
-  const coordinatesParam = [origin, ...routedPoints].map(toOsrmCoordinate).join(";");
+async function fetchOsrmRoutePolylineChunk(origin: RouteLatLng, orderedPoints: RoutePoint[]): Promise<RoutePolylineResult> {
+  const coordinatesParam = [origin, ...orderedPoints].map(toOsrmCoordinate).join(";");
   const url = `${OSRM_ROUTE_ENDPOINT}${coordinatesParam}?overview=full&geometries=polyline`;
 
   const response = await fetch(url);
@@ -447,12 +443,35 @@ export async function fetchOsrmRoutePolyline(origin: RouteLatLng, orderedPoints:
   }
 
   const legs: RouteLeg[] = route.legs.map((leg, index) => ({
-    point: routedPoints[index],
+    point: orderedPoints[index],
     distanceKm: leg.distance / 1000,
     durationSec: leg.duration,
   }));
 
   return { coordinates: decodePolyline(route.geometry), legs };
+}
+
+// The public demo server caps how many coordinates it'll accept per request —
+// beyond that, split into chunks (same approach as fetchRoutePolyline for
+// Google) and stitch them together so no selected stop is ever dropped.
+export async function fetchOsrmRoutePolyline(origin: RouteLatLng, orderedPoints: RoutePoint[]): Promise<RoutePolylineResult> {
+  if (!orderedPoints.length) {
+    return { coordinates: [], legs: [] };
+  }
+
+  const chunks = chunkPoints(orderedPoints, MAX_OSRM_WAYPOINTS);
+  const coordinates: RouteLatLng[] = [];
+  const legs: RouteLeg[] = [];
+  let chunkOrigin = origin;
+
+  for (const chunk of chunks) {
+    const chunkResult = await fetchOsrmRoutePolylineChunk(chunkOrigin, chunk);
+    coordinates.push(...chunkResult.coordinates);
+    legs.push(...chunkResult.legs);
+    chunkOrigin = chunk.at(-1)!;
+  }
+
+  return { coordinates, legs };
 }
 
 // Same free OSRM server, but its "trip" endpoint — an approximate
@@ -469,19 +488,11 @@ type OsrmTripResponse = {
   waypoints: { waypoint_index: number }[];
 };
 
-export async function computeOsrmTripLegs(origin: RouteOrigin, stops: RoutePoint[], lastStopId?: string): Promise<RouteLeg[]> {
-  if (!stops.length) {
-    return [];
-  }
-
-  const pinnedLast = lastStopId ? stops.find((stop) => stop.id === lastStopId) : undefined;
-  const ordered = pinnedLast ? [...stops.filter((stop) => stop.id !== lastStopId), pinnedLast] : stops;
-  const limited = ordered.slice(0, MAX_OSRM_WAYPOINTS);
-
-  const coordinatesParam = [origin, ...limited].map(toOsrmCoordinate).join(";");
+async function fetchOsrmTripLegsForChunk(origin: RouteOrigin, chunk: RoutePoint[], pinLastInChunk: boolean): Promise<RouteLeg[]> {
+  const coordinatesParam = [origin, ...chunk].map(toOsrmCoordinate).join(";");
   const params = new URLSearchParams({
     source: "first",
-    destination: pinnedLast ? "last" : "any",
+    destination: pinLastInChunk ? "last" : "any",
     roundtrip: "false",
   });
   const url = `${OSRM_TRIP_ENDPOINT}${coordinatesParam}?${params.toString()}`;
@@ -498,11 +509,11 @@ export async function computeOsrmTripLegs(origin: RouteOrigin, stops: RoutePoint
   }
 
   // waypoints[0] is the origin (source=first pins it at trip position 0);
-  // waypoints[1..] line up 1:1 with `limited` in input order, each carrying
+  // waypoints[1..] line up 1:1 with `chunk` in input order, each carrying
   // its actual position in the computed trip via waypoint_index.
   const orderedStops = body.waypoints
     .slice(1)
-    .map((waypoint, inputIndex) => ({ point: limited[inputIndex], order: waypoint.waypoint_index }))
+    .map((waypoint, inputIndex) => ({ point: chunk[inputIndex], order: waypoint.waypoint_index }))
     .sort((left, right) => left.order - right.order)
     .map((entry) => entry.point);
 
@@ -514,4 +525,35 @@ export async function computeOsrmTripLegs(origin: RouteOrigin, stops: RoutePoint
       durationSec: leg.duration,
     };
   });
+}
+
+// >MAX_OSRM_WAYPOINTS stops: same strategy as computeRouteLegs' Google chunking
+// — pre-sort with straight-line nearest-neighbor, then run the real trip
+// solver in chunks so every selected stop makes it into the route instead of
+// being silently dropped past the demo server's per-request limit.
+export async function computeOsrmTripLegs(origin: RouteOrigin, stops: RoutePoint[], lastStopId?: string): Promise<RouteLeg[]> {
+  if (!stops.length) {
+    return [];
+  }
+
+  if (stops.length <= MAX_OSRM_WAYPOINTS) {
+    const pinnedLast = lastStopId ? stops.find((stop) => stop.id === lastStopId) : undefined;
+    const ordered = pinnedLast ? [...stops.filter((stop) => stop.id !== lastStopId), pinnedLast] : stops;
+    return fetchOsrmTripLegsForChunk(origin, ordered, Boolean(pinnedLast));
+  }
+
+  const preOrdered = nearestNeighborOrder(origin, stops, lastStopId);
+  const chunks = chunkPoints(preOrdered, MAX_OSRM_WAYPOINTS);
+  const legs: RouteLeg[] = [];
+  let chunkOrigin: RouteOrigin = origin;
+
+  for (const [chunkIndex, stopsChunk] of chunks.entries()) {
+    const isFinalChunk = chunkIndex === chunks.length - 1;
+    const pinLastInChunk = isFinalChunk && Boolean(lastStopId);
+    const chunkLegs = await fetchOsrmTripLegsForChunk(chunkOrigin, stopsChunk, pinLastInChunk);
+    legs.push(...chunkLegs);
+    chunkOrigin = { ...chunkLegs.at(-1)!.point, label: "" };
+  }
+
+  return legs;
 }

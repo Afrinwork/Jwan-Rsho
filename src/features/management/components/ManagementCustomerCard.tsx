@@ -1,5 +1,5 @@
-import { ArrowRight20Regular, Person20Regular } from "@fluentui/react-native-icons";
-import { Pressable, StyleSheet, View } from "react-native";
+import { ArrowRight20Regular, Delete20Regular, Person20Regular } from "@fluentui/react-native-icons";
+import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
 
 import { AppCard } from "@/src/components/ui/AppCard";
 import { AppText } from "@/src/components/ui/AppText";
@@ -12,6 +12,8 @@ import { formatAddress } from "@/src/utils/formatAddress";
 type ManagementCustomerCardProps = {
   customer: Customer;
   onPress: () => void;
+  deleting: boolean;
+  onDelete: () => void;
 };
 
 export function ManagementCustomerCard(props: ManagementCustomerCardProps) {
@@ -38,6 +40,13 @@ export function ManagementCustomerCard(props: ManagementCustomerCardProps) {
             {formatAddress([props.customer.address, props.customer.city])}
           </AppText>
         </View>
+        <Pressable
+          disabled={props.deleting}
+          onPress={props.onDelete}
+          style={[styles.deleteWrap, { backgroundColor: colors.surfaceElevated, borderColor: "rgba(239, 68, 68, 0.16)", opacity: props.deleting ? 0.5 : 1 }]}
+        >
+          {props.deleting ? <ActivityIndicator color="#DC2626" size="small" /> : <Delete20Regular color="#DC2626" />}
+        </Pressable>
         <View style={[styles.arrowWrap, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
           <ArrowRight20Regular color={colors.primary} />
         </View>
@@ -78,6 +87,14 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   arrowWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  deleteWrap: {
     width: 40,
     height: 40,
     borderRadius: 16,

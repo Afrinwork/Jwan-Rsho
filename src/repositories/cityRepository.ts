@@ -2,6 +2,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getCountFromServer,
   getDoc,
   getDocs,
   query,
@@ -10,6 +11,8 @@ import {
   where,
 } from "firebase/firestore";
 
+import { AppError } from "@/src/errors/AppError";
+import { errorMessages } from "@/src/errors/errorMessages";
 import { buildCityCreateData, buildCityUpdateData, CityWrite } from "@/src/repositories/cityRepositoryData";
 import { mapSnapshot, requireCurrentUserId, requireDb } from "@/src/repositories/repositoryContext";
 import { City } from "@/src/types/city";
@@ -39,6 +42,17 @@ export const cityRepository = {
 
   async deleteCity(id: string) {
     const snapshot = await getOwnedCity(id);
+    const customerQuery = query(
+      collection(requireDb(), "customers"),
+      where("ownerId", "==", snapshot.data().ownerId),
+      where("normalizedCity", "==", snapshot.data().normalizedName),
+    );
+    const usageCount = (await getCountFromServer(customerQuery)).data().count;
+
+    if (usageCount > 0) {
+      throw new AppError(errorMessages.cityInUse);
+    }
+
     await deleteDoc(snapshot.ref);
   },
 

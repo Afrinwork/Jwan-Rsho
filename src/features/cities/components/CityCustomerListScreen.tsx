@@ -43,6 +43,8 @@ export function CityCustomerListScreen(props: CityCustomerListScreenProps) {
     renameCity,
     deleting,
     deleteCity,
+    deletingCustomerId,
+    deleteCustomer,
     reload,
   } = useCityCustomers(props.normalizedCity);
   const selection = useCityCustomerSelection(customers);
@@ -58,6 +60,7 @@ export function CityCustomerListScreen(props: CityCustomerListScreenProps) {
   const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
   const [completeTarget, setCompleteTarget] = useState<string | null>(null);
   const [completeSelectionVisible, setCompleteSelectionVisible] = useState(false);
+  const [deleteCustomerTarget, setDeleteCustomerTarget] = useState<string | null>(null);
 
   if (loading) {
     return <LoadingView label={t("customerList.loading")} />;
@@ -151,7 +154,9 @@ export function CityCustomerListScreen(props: CityCustomerListScreenProps) {
           <CityCustomerCard
             completing={completingOrderId === item.currentOpenOrderId}
             customer={item}
+            deleting={deletingCustomerId === item.id}
             onComplete={() => item.currentOpenOrderId && setCompleteTarget(item.currentOpenOrderId)}
+            onDelete={() => setDeleteCustomerTarget(item.id)}
             onPressDetails={() => router.push(`/customer/${item.id}`)}
             onToggleSelection={() => selection.toggleSelection(item.id)}
             selected={selection.isSelected(item.id)}
@@ -188,6 +193,20 @@ export function CityCustomerListScreen(props: CityCustomerListScreenProps) {
         }}
         title={t("deleteCity.confirmTitle")}
         visible={deleteConfirmVisible}
+      />
+      <ConfirmDialog
+        destructive
+        message={t("deleteCustomer.confirmMessage")}
+        onCancel={() => setDeleteCustomerTarget(null)}
+        onConfirm={() => {
+          const target = deleteCustomerTarget;
+          setDeleteCustomerTarget(null);
+          if (target) {
+            void deleteCustomer(target);
+          }
+        }}
+        title={t("deleteCustomer.confirmTitle")}
+        visible={Boolean(deleteCustomerTarget)}
       />
       <ConfirmDialog
         destructive

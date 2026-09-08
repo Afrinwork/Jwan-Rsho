@@ -70,7 +70,7 @@ function spreadOutDuplicateCoordinates<T extends { latitude: number; longitude: 
   });
 }
 
-function hasValidCoordinates(
+export function hasValidCoordinates(
   customer: Customer,
 ): customer is Customer & { latitude: number; longitude: number } {
   return Number.isFinite(customer.latitude) && Number.isFinite(customer.longitude);

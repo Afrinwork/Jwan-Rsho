@@ -36,7 +36,8 @@
     "select": "تحديد",
     "deselect": "إلغاء التحديد",
     "details": "التفاصيل",
-    "complete": "إنهاء"
+    "complete": "إنهاء",
+    "delete": "حذف"
   },
   "selectionBar": {
     "selectedCount": "{{count}} محدد",
@@ -68,6 +69,10 @@
   "completeOrder": {
     "confirmTitle": "هل تريد إنهاء هذا الطلب؟",
     "confirmMessage": "سيتم حذف هذا الطلب نهائيًا بعد الإنهاء. سيبقى العميل وعنوانه محفوظين. لا يمكن التراجع عن هذا الإجراء."
+  },
+  "deleteCustomer": {
+    "confirmTitle": "هل تريد حذف هذا العميل؟",
+    "confirmMessage": "سيتم حذف هذا العميل وجميع طلباته نهائيًا. لا يمكن التراجع عن هذا الإجراء."
   },
   "validation": {
     "nameRequired": "اسم المدينة مطلوب"
