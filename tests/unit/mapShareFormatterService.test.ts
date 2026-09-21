@@ -89,15 +89,15 @@ test("empty selection returns an empty message and never crashes", () => {
   assert.equal(buildSelectionShareMessage([], []), "");
 });
 
-test("WhatsApp template replaces customer and order placeholders", () => {
+test("WhatsApp template text is prepended as-is, with no placeholder substitution", () => {
   const message = buildSelectionShareMessage(
     [
       { fullName: "Ahmad Ali", address: "", phone: "", city: "", orderCount: 2, items: [] },
       { fullName: "Sara Ali", address: "", phone: "", city: "", orderCount: 1, items: [] },
     ],
     [],
-    { messageTemplate: "Tour: {{kunden}} Kunden, {{bestellungen}} Bestellungen" },
+    { messageTemplate: "Hallo, hier ist die Auswahl:" },
   );
 
-  assert.ok(message.startsWith("Tour: 2 Kunden, 3 Bestellungen\n\n--------------\n\nName: Ahmad Ali"));
+  assert.ok(message.startsWith("Hallo, hier ist die Auswahl:\n\n--------------\n\nName: Ahmad Ali"));
 });

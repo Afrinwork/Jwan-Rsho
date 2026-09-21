@@ -12,7 +12,7 @@ export const defaultAppPreferences = {
   shareIncludeAddress: true,
   shareIncludePhone: false,
   shareIncludeTotals: true,
-  whatsappSelectionTemplate: "Hallo,\n\nhier ist die Auswahl: {{kunden}} Kunden und {{bestellungen}} offene Bestellungen.",
+  whatsappSelectionTemplate: "Hallo,\n\nhier ist die Auswahl:",
 };
 
 type AppStore = {

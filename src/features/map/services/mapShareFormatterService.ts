@@ -37,7 +37,7 @@ export function buildSelectionShareMessage(
 
   const includeAddress = options.includeAddress ?? true;
   const lines: string[] = [];
-  const template = formatTemplate(options.messageTemplate, customers.length, customers.reduce((sum, customer) => sum + (customer.orderCount ?? 0), 0));
+  const template = options.messageTemplate?.trim() ?? "";
   if (template) {
     lines.push(template, "", SEPARATOR, "");
   }
@@ -50,12 +50,6 @@ export function buildSelectionShareMessage(
   });
 
   return lines.join("\n").trim();
-}
-
-function formatTemplate(template: string | undefined, customerCount: number, orderCount: number) {
-  return template?.trim()
-    .replaceAll("{{kunden}}", String(customerCount))
-    .replaceAll("{{bestellungen}}", String(orderCount)) ?? "";
 }
 
 function pushCustomerBlock(
