@@ -48,5 +48,9 @@ function resolveStatus(orders: Order[]): CityCustomerStatus {
 }
 
 function formatOpenOrderLabel(orderedAt: string) {
-  return t("cities:customerList.openSince", { date: new Date(orderedAt).toLocaleDateString() });
+  const date = new Date(orderedAt);
+  // toLocaleDateString throws a RangeError for an Invalid Date -- a
+  // malformed stored timestamp must not crash the city customer list.
+  const formattedDate = Number.isNaN(date.getTime()) ? "--" : date.toLocaleDateString();
+  return t("cities:customerList.openSince", { date: formattedDate });
 }

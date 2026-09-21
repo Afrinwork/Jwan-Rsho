@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -15,6 +15,7 @@ import { LoadingView } from "@/src/components/ui/LoadingView";
 import { DeliveryNavigationControls } from "@/src/features/delivery-navigation/DeliveryNavigationControls";
 import { useDeliveryNavigation } from "@/src/features/delivery-navigation/useDeliveryNavigation";
 import { routeT } from "@/src/features/route/i18n/routeT";
+import { RouteLastStopDropdown } from "@/src/features/route/components/RouteLastStopDropdown";
 import { RouteStartPin } from "@/src/features/route/components/RouteStartPin";
 import { RouteStopMarker } from "@/src/features/route/components/RouteStopMarker";
 import { RoutePolyline } from "@/src/features/route/components/RoutePolyline";
@@ -22,13 +23,17 @@ import { useLiveLocation } from "@/src/features/route/hooks/useLiveLocation";
 import { useOrderedMarkers } from "@/src/features/route/hooks/useOrderedMarkers";
 import { useRouteLiveNavigation } from "@/src/features/route/hooks/useRouteLiveNavigation";
 import { useRoutePolyline } from "@/src/features/route/hooks/useRoutePolyline";
+import { reorderMarkersLast } from "@/src/features/route/services/routeLiveReorderService";
 import { formatDistanceKm, formatDurationHM, formatEtaTime } from "@/src/features/route/utils/routeFormat";
 import { AppMapView } from "@/src/features/map/components/AppMapView";
 import { ContactMethodSheet } from "@/src/features/map/components/ContactMethodSheet";
 import { MapCustomerSheet } from "@/src/features/map/components/MapCustomerSheet";
 import { useMapActions } from "@/src/features/map/hooks/useMapActions";
 import { useMapCustomerDetails } from "@/src/features/map/hooks/useMapCustomerDetails";
+import { useDriverLiveStatus } from "@/src/features/map/hooks/useDriverLiveStatus";
 import { AppMapViewHandle } from "@/src/features/map/types/mapViewTypes";
+import { isDriver } from "@/src/features/auth/permissions";
+import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 import { distanceKm } from "@/src/features/map/utils/circleMath";
 import { navigationService } from "@/src/services/navigationService";
 import { formatArrivalTime } from "@/src/utils/time/formatArrivalTime";
@@ -53,11 +58,29 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
   const t = routeT;
   const router = useRouter();
   const colors = useThemeColors();
+  const driverLiveStatus = useDriverLiveStatus();
+  const isCurrentUserDriver = isDriver(useCurrentUser());
   const mapRef = useRef<AppMapViewHandle | null>(null);
-  const { markers, isLoading, error } = useOrderedMarkers(props.orderedIds);
+  const { markers: orderedMarkers, isLoading, error } = useOrderedMarkers(props.orderedIds);
+  // Lets the driver change the route's last stop mid-drive, same idea as
+  // RouteLastStopDropdown on the pre-drive planning screen (RouteScreen) —
+  // reordering here is a simple "move to end" (routeLiveReorderService),
+  // not a full nearest-neighbor/Directions re-optimization, since only the
+  // remaining stops' priority needs to change, not the whole route shape.
+  const [lastStopOverrideId, setLastStopOverrideId] = useState<string | null>(null);
+  const markers = useMemo(() => reorderMarkersLast(orderedMarkers, lastStopOverrideId), [orderedMarkers, lastStopOverrideId]);
+  // Derived from `markers` (the current, possibly-reordered sequence), not
+  // the original `orderedMarkers` — must match the pin numbers rendered on
+  // the map below (also indexed off `markers`), or the dropdown's "3. Name"
+  // labels would disagree with what the driver sees on the pins.
+  const stopNumberById = useMemo(() => new Map(markers.map((marker, index) => [marker.id, index + 1])), [markers]);
   const live = useLiveLocation();
   const polylineOrigin = props.initialOrigin ?? live.coordinate;
   const navigation = useRouteLiveNavigation(markers, live.coordinate);
+  const lastStopOptions = useMemo(
+    () => navigation.pendingMarkers.map((marker) => ({ id: marker.id, name: `${stopNumberById.get(marker.id) ?? "?"}. ${marker.title}` })),
+    [navigation.pendingMarkers, stopNumberById],
+  );
   // Once a stop is marked done/skipped, the line for the remaining stops is
   // recalculated starting from that stop instead of the original start point.
   const remainingRouteOrigin = navigation.legOrigin ?? polylineOrigin;
@@ -97,10 +120,30 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
     if (succeeded && customerId) delivery.markStopHandled(customerId, "completed");
   }
 
-  function handleSkip() {
-    const customerId = navigation.currentMarker?.id;
-    navigation.skipStop();
-    if (customerId) delivery.markStopHandled(customerId, "skipped");
+  function handleSkip(customerId = navigation.currentMarker?.id) {
+    if (!customerId) return;
+
+    if (customerId === navigation.currentMarker?.id) {
+      navigation.skipStop();
+      delivery.markStopHandled(customerId, "skipped");
+      return;
+    }
+
+    navigation.skipToMarker(customerId);
+    delivery.skipToStop(customerId);
+  }
+
+  // Reordering `markers` above already reaches useRouteLiveNavigation
+  // reactively (it's a hook argument, recomputed every render). It does NOT
+  // reach useDeliveryNavigation's own state.stops once GPS turn-by-turn
+  // navigation has started, though — that's a one-time snapshot taken in
+  // start() — so the live-navigation layer needs this explicit dispatch to
+  // stay in sync while it's actively running.
+  function handleChangeLastStop(customerId: string | null) {
+    setLastStopOverrideId(customerId);
+    if (customerId && isLiveNavigating) {
+      delivery.reorderLast(customerId);
+    }
   }
 
   // Tapping any stop pin opens the same customer detail sheet as the plain
@@ -119,6 +162,11 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
   // same as the bottom action bar. Every other action (edit/call/navigate/
   // share) works for any tapped stop regardless of sequence.
   const isSelectedCurrentStop = selectedMarker !== null && selectedMarker.id === navigation.currentMarker?.id;
+  const isSelectedPendingFutureStop =
+    selectedMarker !== null &&
+    !isSelectedCurrentStop &&
+    !navigation.handledIds.has(selectedMarker.id) &&
+    navigation.pendingMarkers.some((marker) => marker.id === selectedMarker.id);
   // Reactivating (undoing a skip/complete) is only offered while live
   // turn-by-turn navigation is off — while it's on, the separate delivery
   // reducer (useDeliveryNavigation) has already advanced its own stop index
@@ -144,14 +192,16 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
     if (!mapRef.current) return;
     const coordinates = [
       ...(polylineOrigin ? [polylineOrigin] : []),
-      ...markers.map((marker) => ({ latitude: marker.latitude, longitude: marker.longitude })),
+      ...orderedMarkers.map((marker) => ({ latitude: marker.latitude, longitude: marker.longitude })),
     ];
     if (coordinates.length < 2) return;
     mapRef.current.fitToCoordinates(coordinates, { animated: true, edgePadding: { top: 120, right: 60, bottom: 220, left: 60 } });
     // Only refit once when the stop set / initial origin is known, not on
-    // every GPS tick.
+    // every GPS tick — orderedMarkers (not the possibly-reordered `markers`)
+    // on purpose: changing the last-stop override changes visiting ORDER,
+    // not the geographic bounding box, so it shouldn't re-trigger this.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [markers, props.initialOrigin]);
+  }, [orderedMarkers, props.initialOrigin]);
 
   // Camera follows the live position ONLY while "Route starten" is active —
   // outside of that the camera must stay on the fixed overview above (see
@@ -187,14 +237,14 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
     if (wasLiveNavigatingRef.current && !isLiveNavigating && mapRef.current) {
       const coordinates = [
         ...(polylineOrigin ? [polylineOrigin] : []),
-        ...markers.map((marker) => ({ latitude: marker.latitude, longitude: marker.longitude })),
+        ...orderedMarkers.map((marker) => ({ latitude: marker.latitude, longitude: marker.longitude })),
       ];
       if (coordinates.length >= 2) {
         mapRef.current.fitToCoordinates(coordinates, { animated: true, edgePadding: { top: 120, right: 60, bottom: 220, left: 60 } });
       }
     }
     wasLiveNavigatingRef.current = isLiveNavigating;
-  }, [isLiveNavigating, markers, polylineOrigin]);
+  }, [isLiveNavigating, orderedMarkers, polylineOrigin]);
 
   // Screen has headerShown: false (own map/GPS chrome) — every returned state
   // needs its own way back, or the user is stuck until an OS back gesture.
@@ -263,6 +313,7 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
             label={String(index + 1)}
             marker={marker}
             onPress={setSelectedCustomerId}
+            skipped={navigation.skippedIds.has(marker.id)}
           />
         ))}
       </AppMapView>
@@ -299,6 +350,7 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
       <SafeAreaView edges={["bottom"]} pointerEvents="box-none" style={styles.bottomOverlay}>
         {navigation.actionError ? <ErrorState message={navigation.actionError} /> : null}
         {delivery.state.error ? <ErrorState message={delivery.state.error} /> : null}
+        {driverLiveStatus.error ? <ErrorState message={driverLiveStatus.error} /> : null}
         {navigation.currentMarker && (isLiveNavigating || polyline.currentLegEta || displayDistanceKm !== null) ? (
           <AppCard contentStyle={styles.statsCard}>
             <View style={styles.statColumn}>
@@ -321,6 +373,14 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
             </View>
           </AppCard>
         ) : null}
+        {navigation.currentMarker && navigation.pendingMarkers.length > 1 ? (
+          <AppCard contentStyle={styles.lastStopCard}>
+            <AppText color="muted" variant="label">
+              {t("startCard.lastStopLabel")}
+            </AppText>
+            <RouteLastStopDropdown onChange={handleChangeLastStop} options={lastStopOptions} value={lastStopOverrideId} />
+          </AppCard>
+        ) : null}
         {navigation.currentMarker ? (
           <View style={styles.actionGrid}>
             <View style={styles.actionRow}>
@@ -328,7 +388,7 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
                 <DeliveryNavigationControls isNavigating={isLiveNavigating} onEnd={delivery.end} onStart={delivery.start} />
               </View>
               <View style={styles.actionButton}>
-                <AppButton label={t("live.skip")} onPress={handleSkip} size="compact" variant="secondary" />
+                <AppButton label={t("live.skip")} onPress={() => handleSkip()} size="compact" variant="secondary" />
               </View>
             </View>
             <View style={styles.actionRow}>
@@ -363,6 +423,15 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
                 />
               </View>
             </View>
+            {isCurrentUserDriver ? (
+              <AppButton
+                label={t("map:driverStatus.updateLocation")}
+                loading={driverLiveStatus.updating}
+                onPress={() => void driverLiveStatus.sendLocationUpdate()}
+                size="compact"
+                variant="secondary"
+              />
+            ) : null}
           </View>
         ) : (
           <AppButton label={t("common:close")} onPress={() => router.back()} />
@@ -402,7 +471,8 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
         onRetry={() => void sheetDetails.reload()}
         onShare={() => void sheetActions.shareLocation()}
         onShareOrder={() => void sheetActions.shareOrder()}
-        onSkip={isSelectedCurrentStop ? () => setSheetSkipConfirmVisible(true) : undefined}
+        onSkip={isSelectedCurrentStop || isSelectedPendingFutureStop ? () => setSheetSkipConfirmVisible(true) : undefined}
+        onSkipLabel={isSelectedPendingFutureStop ? t("live.skipToStop") : undefined}
         visible={
           selectedCustomerId !== null &&
           !sheetCompleteConfirmVisible &&
@@ -433,7 +503,7 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
         onConfirm={() => {
           setSheetSkipConfirmVisible(false);
           closeSheet();
-          handleSkip();
+          handleSkip(selectedCustomerId ?? undefined);
         }}
         title={t("map:sheet.skipConfirmTitle")}
         visible={sheetSkipConfirmVisible}
@@ -474,6 +544,13 @@ const styles = StyleSheet.create({
   },
   bottomOverlay: { position: "absolute", left: 0, right: 0, bottom: 0, padding: spacing.xs, gap: spacing.xxs },
   statsCard: { flexDirection: "row", padding: spacing.sm, borderRadius: radius.card },
+  lastStopCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    padding: spacing.sm,
+    borderRadius: radius.card,
+  },
   statColumn: { flex: 1, alignItems: "center", gap: spacing.xxs },
   actionGrid: { gap: spacing.xxs },
   actionRow: { flexDirection: "row", gap: spacing.xxs },

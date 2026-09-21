@@ -30,21 +30,24 @@ export function OverviewStatCard(props: OverviewStatCardProps) {
       ? colors.dangerBackground
       : colors.primaryMuted;
   const content = (
-    <AppCard contentStyle={styles.cardContent}>
+    <AppCard contentStyle={styles.cardContent} style={{ shadowColor: accentColor }}>
+      <View style={[styles.accentBar, { backgroundColor: accentColor }]} />
       <View style={styles.topRow}>
-        <View style={[styles.iconWrap, { backgroundColor: accentBackground }]}>
+        <View style={[styles.iconWrap, { backgroundColor: accentBackground, borderColor: colors.border }]}>
           <props.icon color={accentColor} size={20} />
         </View>
-        <AppText color="muted" style={styles.title} variant="label">
+      </View>
+      <View style={styles.copy}>
+        <AppText style={styles.value} variant="title">
+          {props.value}
+        </AppText>
+        <AppText color="muted" numberOfLines={1} style={styles.title} variant="label">
           {props.title}
         </AppText>
+        <AppText color="muted" numberOfLines={2} style={styles.caption} variant="caption">
+          {props.caption}
+        </AppText>
       </View>
-      <AppText style={styles.value} variant="title">
-        {props.value}
-      </AppText>
-      <AppText color="muted" style={styles.caption} variant="caption">
-        {props.caption}
-      </AppText>
     </AppCard>
   );
 
@@ -65,24 +68,43 @@ const styles = StyleSheet.create({
     minWidth: "47%",
   },
   cardContent: {
+    minHeight: 136,
     padding: spacing.md,
-    gap: spacing.xs,
+    gap: spacing.sm,
+    overflow: "hidden",
+  },
+  accentBar: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    height: 4,
   },
   topRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.sm,
+    justifyContent: "space-between",
   },
   iconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: radius.sm,
+    width: 42,
+    height: 42,
+    borderRadius: radius.md,
+    borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
   },
-  title: {
-    flex: 1,
+  copy: {
+    gap: 2,
   },
-  value: {},
-  caption: {},
+  title: {
+    fontWeight: "700",
+  },
+  value: {
+    fontSize: 40,
+    lineHeight: 46,
+    fontWeight: "800",
+  },
+  caption: {
+    lineHeight: 18,
+  },
 });

@@ -7,10 +7,11 @@ import { AppInput } from "@/src/components/ui/AppInput";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { FormField } from "@/src/components/forms/FormField";
 import { SuccessState } from "@/src/components/ui/SuccessState";
+import { RoleSelectField } from "@/src/features/admin/components/RoleSelectField";
 import { useCreateUser } from "@/src/features/admin/hooks/useCreateUser";
 
 export function CreateUserForm() {
-  const { form, submit, submitError, successMessage } = useCreateUser();
+  const { canCreateAdmins, form, submit, submitError, successMessage } = useCreateUser();
   const { t } = useTranslation("admin");
 
   return (
@@ -18,6 +19,13 @@ export function CreateUserForm() {
       <FormField error={form.formState.errors.fullName?.message} label={t("createUser.fullNameLabel")}>
         <Controller control={form.control} name="fullName" render={({ field }) => <AppInput onBlur={field.onBlur} onChangeText={field.onChange} placeholder={t("createUser.fullNameLabel")} value={field.value} />} />
       </FormField>
+      {canCreateAdmins ? (
+        <Controller
+          control={form.control}
+          name="role"
+          render={({ field }) => <RoleSelectField onChange={field.onChange} value={field.value} />}
+        />
+      ) : null}
       <FormField error={form.formState.errors.email?.message} label={t("createUser.emailLabel")}>
         <Controller control={form.control} name="email" render={({ field }) => <AppInput autoCapitalize="none" keyboardType="email-address" onBlur={field.onBlur} onChangeText={field.onChange} placeholder={t("createUser.emailLabel")} value={field.value} />} />
       </FormField>

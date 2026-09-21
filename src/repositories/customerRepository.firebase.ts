@@ -1,0 +1,174 @@
+import {
+  collection,
+  deleteDoc,
+  deleteField,
+  doc,
+  getCountFromServer,
+  getDoc,
+  getDocs,
+  query,
+  setDoc,
+  updateDoc,
+  where,
+  writeBatch,
+} from "firebase/firestore";
+
+import { buildCustomerCreateData, buildCustomerUpdateData, CustomerWrite } from "@/src/repositories/customerRepositoryData";
+import { cityRepository } from "@/src/repositories/cityRepository.firebase";
+import { mapSnapshot, requireDb, resolveOwnerScope } from "@/src/repositories/repositoryContext.firebase";
+import { Customer } from "@/src/types/customer";
+
+export const customerRepository = {
+  async createCustomer(input: CustomerWrite) {
+    const { ownerId } = resolveOwnerScope();
+    const customerRef = doc(collection(requireDb(), "customers"));
+    await setDoc(customerRef, withCreateTimestamps(buildCustomerCreateData(input, ownerId)));
+    await cityRepository.ensureCityExists(input.city).catch(() => undefined);
+    return customerRef.id;
+  },
+
+  async updateCustomer(id: string, input: Partial<CustomerWrite>) {
+    const snapshot = await getOwnedCustomer(id);
+    await updateDoc(snapshot.ref, { ...clean(buildCustomerUpdateData(input)), updatedAt: new Date().toISOString() });
+
+    if (input.city) {
+      await cityRepository.ensureCityExists(input.city).catch(() => undefined);
+    }
+  },
+
+  // Assigns (or clears, when driverId is null) the customer's driver, and
+  // mirrors the same value onto all of their currently open orders so the
+  // driver-read Firestore rules on the orders collection (a plain field
+  // comparison, not a lookup to the customer) stay in sync.
+  async assignDriver(id: string, driverId: string | null) {
+    const { ownerId } = resolveOwnerScope();
+    const snapshot = await getOwnedCustomer(id);
+    const db = requireDb();
+    const batch = writeBatch(db);
+    const timestamp = new Date().toISOString();
+
+    batch.update(snapshot.ref, {
+      assignedDriverId: driverId ?? deleteField(),
+      updatedAt: timestamp,
+    });
+
+    const openOrdersQuery = query(
+      collection(db, "orders"),
+      where("ownerId", "==", ownerId),
+      where("customerId", "==", id),
+      where("status", "==", "open"),
+    );
+    const openOrdersSnapshot = await getDocs(openOrdersQuery);
+    openOrdersSnapshot.docs.forEach((orderDoc) => {
+      batch.update(orderDoc.ref, {
+        assignedDriverId: driverId ?? deleteField(),
+        updatedAt: timestamp,
+      });
+    });
+
+    await batch.commit();
+  },
+
+  // Deleting a customer also deletes all of their orders (+ items), so no
+  // orphaned orders are left pointing at a customer that no longer exists.
+  async deleteCustomer(id: string) {
+    const snapshot = await getOwnedCustomer(id);
+    const db = requireDb();
+    const { ownerId } = resolveOwnerScope();
+    const ordersQuery = query(collection(db, "orders"), where("ownerId", "==", ownerId), where("customerId", "==", id));
+    const ordersSnapshot = await getDocs(ordersQuery);
+
+    await Promise.all(
+      ordersSnapshot.docs.map(async (orderDoc) => {
+        const itemsSnapshot = await getDocs(collection(orderDoc.ref, "items"));
+        await Promise.all(itemsSnapshot.docs.map((item) => deleteDoc(item.ref)));
+        await deleteDoc(orderDoc.ref);
+      }),
+    );
+
+    await deleteDoc(snapshot.ref);
+  },
+
+  async getCustomerById(id: string) {
+    const snapshot = await getOwnedCustomer(id);
+    return mapSnapshot<Customer>(snapshot);
+  },
+
+  async getCustomers() {
+    const { ownerId, driverId } = resolveOwnerScope();
+    const customerQuery = driverId
+      ? query(collection(requireDb(), "customers"), where("ownerId", "==", ownerId), where("assignedDriverId", "==", driverId))
+      : query(collection(requireDb(), "customers"), where("ownerId", "==", ownerId));
+    return sortCustomers((await getDocs(customerQuery)).docs.map((value) => mapSnapshot<Customer>(value)));
+  },
+
+  // Fetches only the given customer docs. Goes through the owner-scoped
+  // getCustomers() list rather than a `documentId() in [...]` query: if any
+  // id in the list no longer belongs to the current owner (a deleted
+  // customer, a stale reference left over from an account migration, ...),
+  // Firestore's security rules can't prove the whole "in" query is safe and
+  // reject it outright — even though the ownerId filter would have excluded
+  // that id from the result anyway. Filtering client-side avoids the trap.
+  async getCustomersByIds(ids: string[]) {
+    const uniqueIds = new Set(ids);
+
+    if (uniqueIds.size === 0) {
+      return [];
+    }
+
+    const customers = await this.getCustomers();
+    return sortCustomers(customers.filter((value) => uniqueIds.has(value.id)));
+  },
+
+  async getCustomersByNormalizedCity(normalizedCity: string) {
+    const { ownerId, driverId } = resolveOwnerScope();
+    const customerQuery = driverId
+      ? query(
+          collection(requireDb(), "customers"),
+          where("ownerId", "==", ownerId),
+          where("assignedDriverId", "==", driverId),
+          where("normalizedCity", "==", normalizedCity),
+        )
+      : query(
+          collection(requireDb(), "customers"),
+          where("ownerId", "==", ownerId),
+          where("normalizedCity", "==", normalizedCity),
+        );
+    return sortCustomers((await getDocs(customerQuery)).docs.map((value) => mapSnapshot<Customer>(value)));
+  },
+
+  async searchCustomers(searchTerm: string) {
+    const term = searchTerm.trim().toLowerCase();
+    const customers = await this.getCustomers();
+    return customers.filter((value) => [value.fullName, value.phone, value.city, value.address].some((field) => field.toLowerCase().includes(term)));
+  },
+
+  async countCustomersByOwner(ownerId: string) {
+    const customerQuery = query(collection(requireDb(), "customers"), where("ownerId", "==", ownerId));
+    return (await getCountFromServer(customerQuery)).data().count;
+  },
+};
+
+async function getOwnedCustomer(id: string) {
+  const { ownerId } = resolveOwnerScope();
+  const snapshot = await getDoc(doc(requireDb(), "customers", id));
+
+  if (!snapshot.exists() || snapshot.data().ownerId !== ownerId) {
+    throw new Error("Customer not found.");
+  }
+
+  return snapshot;
+}
+
+function clean<T extends object>(value: T) {
+  return Object.fromEntries(Object.entries(value).filter(([, current]) => current !== undefined)) as T;
+}
+
+function withCreateTimestamps<T extends object>(value: T) {
+  const timestamp = new Date().toISOString();
+  return { ...value, createdAt: timestamp, updatedAt: timestamp };
+}
+
+function sortCustomers(customers: Customer[]) {
+  return [...customers].sort((left, right) => left.fullName.localeCompare(right.fullName, "de"));
+}

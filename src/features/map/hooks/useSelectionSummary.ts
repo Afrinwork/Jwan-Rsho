@@ -12,8 +12,10 @@ export function useSelectionSummary(selectedIds: string[]) {
 
   const totals = useMemo(() => buildProductTotals(orders), [orders]);
 
-  const ensureLoaded = useCallback(async () => {
-    if (!selectedIds.length) {
+  const ensureLoaded = useCallback(async (ids = selectedIds) => {
+    const uniqueIds = [...new Set(ids)];
+
+    if (!uniqueIds.length) {
       setOrders([]);
       return [] as OrderWithItems[];
     }
@@ -22,7 +24,7 @@ export function useSelectionSummary(selectedIds: string[]) {
     setError(null);
 
     try {
-      const loadedOrders = await orderDetailsRepository.getOpenOrdersWithItemsByCustomerIds(selectedIds);
+      const loadedOrders = await orderDetailsRepository.getOpenOrdersWithItemsByCustomerIds(uniqueIds);
       setOrders(loadedOrders);
       return loadedOrders;
     } catch (loadError) {

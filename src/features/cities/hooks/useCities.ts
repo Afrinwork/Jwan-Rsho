@@ -17,6 +17,7 @@ export function useCities() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [summaries, setSummaries] = useState<CitySummary[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
 
   const load = useCallback(async () => {
     try {
@@ -29,6 +30,7 @@ export function useCities() {
       const cities = await cityRepository.getCities();
 
       setSummaries(buildCitySummaries(cities, customers, openOrders));
+      setCustomers(customers);
       setError(null);
     } catch (value) {
       setError(formatError(value).message);
@@ -54,7 +56,29 @@ export function useCities() {
     setCountry,
     countryOptions: getCountryOptions(summaries),
     cities: filterCitySummaries(summaries, searchTerm, country),
+    customerSearchResults: filterCustomersByName(customers, searchTerm, country),
   };
+}
+
+function filterCustomersByName(customers: Customer[], searchTerm: string, country: string) {
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+
+  if (!normalizedSearch) {
+    return [];
+  }
+
+  return customers
+    .filter((value) => value.fullName.trim().toLowerCase().includes(normalizedSearch))
+    .filter((value) => !country || value.country === country)
+    .sort((left, right) => {
+      const cityOrder = left.city.localeCompare(right.city, "de");
+
+      if (cityOrder !== 0) {
+        return cityOrder;
+      }
+
+      return left.fullName.localeCompare(right.fullName, "de");
+    });
 }
 
 // Self-heal for customers whose city predates city entities being tracked —

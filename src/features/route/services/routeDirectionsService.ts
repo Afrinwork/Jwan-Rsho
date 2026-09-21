@@ -75,18 +75,33 @@ export function nearestNeighborOrder(origin: RouteOrigin, points: RoutePoint[], 
   return ordered;
 }
 
+// Time spent actually handing over an order at a stop (parking, unloading,
+// a signature, ...) — driving duration alone understated every stop after
+// the first, showing arrival times that assumed the driver teleports away
+// the instant they arrive. Applied between stops, never before the first
+// one (there's no prior stop to have spent time at yet).
+export const STOP_SERVICE_BUFFER_SEC = 10 * 60;
+
 export function buildCumulativeStops(legs: RouteLeg[], departureDate: Date) {
   let cumulativeDistanceKm = 0;
   let cumulativeEta = new Date(departureDate);
 
   return legs.map((leg, index) => {
-    cumulativeDistanceKm += leg.distanceKm;
-    cumulativeEta = new Date(cumulativeEta.getTime() + leg.durationSec * 1000);
+    // A single malformed leg (e.g. a degenerate distance calculation) must
+    // not turn every following stop's ETA into an Invalid Date -- treat a
+    // non-finite distance/duration as "unknown" (0) instead of letting NaN
+    // propagate through the running cumulative total for the rest of the list.
+    const legDistanceKm = Number.isFinite(leg.distanceKm) ? leg.distanceKm : 0;
+    const legDurationSec = Number.isFinite(leg.durationSec) ? leg.durationSec : 0;
+
+    cumulativeDistanceKm += legDistanceKm;
+    const serviceBufferSec = index > 0 ? STOP_SERVICE_BUFFER_SEC : 0;
+    cumulativeEta = new Date(cumulativeEta.getTime() + (serviceBufferSec + legDurationSec) * 1000);
 
     return {
       id: leg.point.id,
       orderIndex: index,
-      distanceFromPreviousKm: leg.distanceKm,
+      distanceFromPreviousKm: legDistanceKm,
       cumulativeDistanceKm,
       cumulativeEta,
     };

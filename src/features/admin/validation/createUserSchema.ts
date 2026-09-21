@@ -9,6 +9,7 @@ export const createUserSchema = z
     email: emailSchema,
     password: z.string().min(8, t("admin:validation.passwordTooShort")),
     confirmPassword: z.string().min(1, t("admin:validation.confirmPasswordRequired")),
+    role: z.enum(["admin", "driver"]),
   })
   .refine((value) => value.password === value.confirmPassword, {
     message: t("admin:validation.passwordsMustMatch"),

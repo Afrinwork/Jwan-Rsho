@@ -18,6 +18,7 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
   const activeToolRef = useRef<MapSelectionTool>("none");
   const polygonPointsRef = useRef<MapSelectionPoint[]>([]);
   const polygonBaseSelectedIdsRef = useRef<string[]>([]);
+  const polygonEditEndRef = useRef<"start" | "end">("end");
   const frameRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingPolygonPointsRef = useRef<MapSelectionPoint[] | null>(null);
   const DRAG_THROTTLE_MS = 50;
@@ -44,6 +45,27 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
     }
   }, []);
 
+  const applyPolygonPoints = useCallback((points: MapSelectionPoint[], baseSelectedIds: string[]) => {
+    polygonPointsRef.current = points;
+    setPolygonPoints(points);
+    setSelectedIds(buildPolygonSelection(points, baseSelectedIds, markers));
+  }, [markers]);
+
+  const commitPendingPolygonPoints = useCallback((baseSelectedIds: string[]) => {
+    if (frameRef.current !== null) {
+      clearTimeout(frameRef.current);
+      frameRef.current = null;
+    }
+
+    const pendingPoints = pendingPolygonPointsRef.current;
+    if (!pendingPoints) {
+      return;
+    }
+
+    pendingPolygonPointsRef.current = null;
+    applyPolygonPoints(pendingPoints, baseSelectedIds);
+  }, [applyPolygonPoints]);
+
   const selectTool = useCallback((tool: MapSelectionTool) => {
     const nextTool = activeToolRef.current === tool ? "none" : tool;
 
@@ -68,6 +90,7 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
     setCircleConfirmed(null);
     setPolygonPoints([]);
     polygonPointsRef.current = [];
+    polygonEditEndRef.current = "end";
     setPolygonConfirmed(null);
     setPolygonPaused(false);
     polygonPausedRef.current = false;
@@ -126,7 +149,9 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
         return;
       }
 
-      pendingPolygonPointsRef.current = [...currentPoints, point];
+      const appendResult = mapSelectionService.appendPolygonPoint(currentPoints, point);
+      pendingPolygonPointsRef.current = appendResult.points;
+      polygonEditEndRef.current = appendResult.editEnd;
 
       if (frameRef.current !== null) {
         return;
@@ -140,15 +165,15 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
           return;
         }
 
-        polygonPointsRef.current = latestPoints;
-        setPolygonPoints(latestPoints);
-        setSelectedIds(buildPolygonSelection(latestPoints, polygonBaseSelectedIdsRef.current, markers));
+        pendingPolygonPointsRef.current = null;
+        applyPolygonPoints(latestPoints, polygonBaseSelectedIdsRef.current);
       }, DRAG_THROTTLE_MS);
     },
-    [markers],
+    [applyPolygonPoints],
   );
 
   const closePolygon = useCallback(() => {
+    commitPendingPolygonPoints(polygonBaseSelectedIdsRef.current);
     const currentPoints = polygonPointsRef.current;
 
     if (currentPoints.length < 3) {
@@ -167,18 +192,18 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
     polygonBaseSelectedIdsRef.current = nextSelection;
     setPolygonPoints([]);
     polygonPointsRef.current = [];
+    polygonEditEndRef.current = "end";
     pendingPolygonPointsRef.current = null;
     setActiveTool("none");
     activeToolRef.current = "none";
-  }, [markers]);
+  }, [commitPendingPolygonPoints, markers]);
 
   const undoPolygonPoint = useCallback(() => {
-    const nextPoints = polygonPointsRef.current.slice(0, -1);
-    polygonPointsRef.current = nextPoints;
+    commitPendingPolygonPoints(polygonBaseSelectedIdsRef.current);
+    const nextPoints = mapSelectionService.undoPolygonPoint(polygonPointsRef.current, polygonEditEndRef.current);
+    applyPolygonPoints(nextPoints, polygonBaseSelectedIdsRef.current);
     pendingPolygonPointsRef.current = nextPoints;
-    setPolygonPoints(nextPoints);
-    setSelectedIds(buildPolygonSelection(nextPoints, polygonBaseSelectedIdsRef.current, markers));
-  }, [markers]);
+  }, [applyPolygonPoints, commitPendingPolygonPoints]);
 
   const resetSelection = useCallback(() => {
     if (frameRef.current !== null) {
@@ -191,6 +216,7 @@ export function useMapSelection(markers: MapCustomerMarker[]) {
     setCircleConfirmed(null);
     setPolygonPoints([]);
     polygonPointsRef.current = [];
+    polygonEditEndRef.current = "end";
     setPolygonConfirmed(null);
     setPolygonBaseSelectedIds([]);
     polygonBaseSelectedIdsRef.current = [];

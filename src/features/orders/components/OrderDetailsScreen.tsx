@@ -10,6 +10,7 @@ import { colors } from "@/src/constants/colors";
 import { spacing } from "@/src/constants/spacing";
 import { orderDetailsRepository } from "@/src/repositories/orderDetailsRepository";
 import { OrderWithItems } from "@/src/types/order";
+import { formatDate } from "@/src/utils/date";
 import { formatError } from "@/src/utils/formatError";
 
 type OrderDetailsScreenProps = {
@@ -62,7 +63,7 @@ export function OrderDetailsScreen({ orderId }: OrderDetailsScreenProps) {
           <Text style={styles.title}>{t("navigation:stack.order")}</Text>
           <View style={styles.card}>
             <Text style={styles.meta}>{t("details.statusLabel")} {statusLabel}</Text>
-            <Text style={styles.meta}>{t("details.dateLabel")} {new Date(order.orderedAt).toLocaleDateString()}</Text>
+            <Text style={styles.meta}>{t("details.dateLabel")} {formatDate(order.orderedAt)}</Text>
             <Text style={styles.meta}>{t("details.customerIdLabel")} {order.customerId}</Text>
           </View>
           <View style={styles.card}>

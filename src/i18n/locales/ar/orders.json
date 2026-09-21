@@ -2,25 +2,8 @@
   "addScreen": {
     "subtitle": "تسجيل الطلب مباشرة."
   },
-  "customerMode": {
-    "existing": {
-      "label": "عميل حالي",
-      "subtitle": "طلب سريع"
-    },
-    "new": {
-      "label": "عميل جديد",
-      "subtitle": "إنشاء جهة اتصال جديدة"
-    }
-  },
-  "existingCustomer": {
-    "searchTitle": "البحث عن عميل",
-    "searchSubtitle": "ابحث بالاسم أو الهاتف أو المدينة أو العنوان واختر العميل مباشرة.",
-    "searching": "جارٍ البحث...",
-    "noResultsTitle": "لا توجد نتائج",
-    "noResultsMessage": "لم يتم العثور على عميل.",
-    "resultsCount": "{{count}} نتيجة",
-    "selectedTitle": "العميل المختار",
-    "selectedSubtitle": "سيُستخدم العنوان المختار لاحقًا بدقة للملاحة والخريطة."
+  "customerSection": {
+    "title": "العميل"
   },
   "details": {
     "noOrderSelected": "لم يتم اختيار طلب.",
@@ -77,16 +60,21 @@
     "loading": "جارٍ تحميل الطلبات المفتوحة...",
     "emptyTitle": "لا توجد طلبات مفتوحة",
     "emptyMessage": "لا توجد حاليًا أي طلبات مفتوحة.",
+    "searchPlaceholder": "ابحث عن عميل أو منتج",
     "filterAll": "الكل",
+    "selectedSummary": "تم تحديد {{count}} طلب",
+    "clearSelection": "إلغاء التحديد",
+    "completeSelected": "إنهاء المحدد",
     "multipleOrdersBadge": "{{count}} طلبات مفتوحة",
     "orderDateLabel": "طلب بتاريخ {{date}}",
     "completeButton": "إنهاء",
     "deleteButton": "حذف",
     "completeSuccess": "تم إنهاء الطلب بنجاح.",
+    "completeManySuccess": "تم إنهاء {{count}} طلب بنجاح.",
     "deleteSuccess": "تم حذف الطلب بنجاح.",
     "deleteConfirmTitle": "هل تريد حذف هذا الطلب نهائيًا؟",
     "deleteConfirmMessage": "سيتم حذف هذا الطلب نهائيًا من قاعدة البيانات. لا يمكن التراجع عن هذا الإجراء.",
     "completeConfirmTitle": "هل تريد إنهاء هذا الطلب؟",
-    "completeConfirmMessage": "سيتم حذف هذا الطلب نهائيًا بعد الإنهاء. سيبقى العميل وعنوانه محفوظين. لا يمكن التراجع عن هذا الإجراء."
+    "completeConfirmMessage": "سيتم وضع علامة \"مُنجز\" على هذا الطلب وسيظهر بعد ذلك ضمن \"أُنجز اليوم\". سيبقى العميل وعنوانه محفوظين."
   }
 }

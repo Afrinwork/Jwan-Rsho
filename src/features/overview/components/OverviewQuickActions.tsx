@@ -13,7 +13,7 @@ export function OverviewQuickActions() {
   return (
     <View style={styles.actions}>
       <AppButton label={t("quickActions.newOrder")} onPress={() => router.push(routes.add)} />
-      <AppButton label={t("quickActions.openCities")} onPress={() => router.push(routes.cities)} variant="secondary" />
+      <AppButton label={t("quickActions.openCities")} onPress={() => router.push(routes.cityList)} variant="secondary" />
       <AppButton label={t("quickActions.management")} onPress={() => router.push(routes.management)} variant="secondary" />
     </View>
   );

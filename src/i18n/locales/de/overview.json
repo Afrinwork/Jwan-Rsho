@@ -4,11 +4,22 @@
     "title": "Uebersicht",
     "subtitle": "Ein schneller Blick auf Bestellungen, Organisation und Fortschritt.",
     "heroTitle": "Fokus fuer heute",
-    "messageTitle": "Blick auf heute"
+    "messageTitle": "Blick auf heute",
+    "live": "Live",
+    "heroOpenOrders": "offene Bestellungen brauchen Aufmerksamkeit",
+    "heroAction": "Offene Bestellungen ansehen"
+  },
+  "sections": {
+    "today": "Heute im Blick",
+    "todayCaption": "Aktuelle Arbeitslage",
+    "workspace": "Arbeitsbereich",
+    "workspaceAction": "Verwalten"
   },
   "stats": {
     "openOrders": { "title": "Offene Bestellungen", "caption": "Aktiv in Bearbeitung" },
+    "openOrderCustomers": { "title": "Kunden mit Bestellungen", "caption": "Offene Bestellungen bearbeiten" },
     "completedOrders": { "title": "Erledigte Bestellungen", "caption": "Bereits abgeschlossen" },
+    "drivers": { "title": "Fahrer", "caption": "Im Team" },
     "countries": { "title": "Laender", "caption": "Aktive Struktur" },
     "cities": { "title": "Staedte", "caption": "Mit Kunden" },
     "products": { "title": "Produkte", "caption": "Fuer neue Bestellungen" },
@@ -29,5 +40,18 @@
     "newOrder": "Neue Bestellung",
     "openCities": "Staedte oeffnen",
     "management": "Verwaltung"
+  },
+  "completedToday": {
+    "title": "Heute erledigt",
+    "count": "{{count}} heute erledigt",
+    "searchPlaceholder": "Kunde suchen",
+    "deleteAll": "Alle loeschen",
+    "deleteEntry": "Loeschen",
+    "itemCount": "{{count}} Positionen",
+    "emptyMessage": "Heute noch keine Bestellung erledigt.",
+    "noSearchResults": "Kein Eintrag passt zu deiner Suche.",
+    "deleteAllConfirmTitle": "Alle heute erledigten Bestellungen loeschen?",
+    "deleteAllConfirmMessage": "Moechtest du wirklich alle heute erledigten Bestellungen loeschen? Die Kunden bleiben gespeichert.",
+    "deleteAllPartialError": "{{failedCount}} von {{totalCount}} Eintraegen konnten nicht geloescht werden. Die Liste wurde aktualisiert."
   }
 }

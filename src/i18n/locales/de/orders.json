@@ -2,25 +2,8 @@
   "addScreen": {
     "subtitle": "Bestellung direkt erfassen."
   },
-  "customerMode": {
-    "existing": {
-      "label": "Bestehender Kunde",
-      "subtitle": "Schnelle Bestellung"
-    },
-    "new": {
-      "label": "Neuer Kunde",
-      "subtitle": "Neuen Kontakt anlegen"
-    }
-  },
-  "existingCustomer": {
-    "searchTitle": "Kunde suchen",
-    "searchSubtitle": "Suche nach Name, Telefon, Stadt oder Adresse und waehle den Kunden direkt aus.",
-    "searching": "Wird gesucht...",
-    "noResultsTitle": "Keine Ergebnisse",
-    "noResultsMessage": "Es wurde kein Kunde gefunden.",
-    "resultsCount": "{{count}} Ergebnis(se)",
-    "selectedTitle": "Ausgewaehlter Kunde",
-    "selectedSubtitle": "Die ausgewaehlte Adresse wird spaeter praezise fuer Navigation und Karte verwendet."
+  "customerSection": {
+    "title": "Kunde"
   },
   "details": {
     "noOrderSelected": "Es wurde keine Bestellung ausgewaehlt.",
@@ -77,16 +60,21 @@
     "loading": "Offene Bestellungen werden geladen...",
     "emptyTitle": "Keine offenen Bestellungen",
     "emptyMessage": "Es gibt aktuell keine offenen Bestellungen.",
+    "searchPlaceholder": "Kunde oder Produkt suchen",
     "filterAll": "Alle",
+    "selectedSummary": "{{count}} Bestellung(en) ausgewaehlt",
+    "clearSelection": "Auswahl leeren",
+    "completeSelected": "Ausgewaehlte erledigen",
     "multipleOrdersBadge": "{{count}} offene Bestellungen",
     "orderDateLabel": "Bestellung vom {{date}}",
     "completeButton": "Erledigen",
     "deleteButton": "Loeschen",
     "completeSuccess": "Die Bestellung wurde erfolgreich erledigt.",
+    "completeManySuccess": "{{count}} Bestellung(en) wurden erfolgreich erledigt.",
     "deleteSuccess": "Die Bestellung wurde erfolgreich geloescht.",
     "deleteConfirmTitle": "Diese Bestellung endgueltig loeschen?",
     "deleteConfirmMessage": "Diese Bestellung wird endgueltig aus der Datenbank geloescht. Das kann nicht rueckgaengig gemacht werden.",
     "completeConfirmTitle": "Diese Bestellung erledigen?",
-    "completeConfirmMessage": "Diese Bestellung wird danach endgueltig geloescht. Der Kunde und seine Adresse bleiben erhalten. Das kann nicht rueckgaengig gemacht werden."
+    "completeConfirmMessage": "Diese Bestellung wird als erledigt markiert und erscheint danach unter \"Heute erledigt\". Der Kunde und seine Adresse bleiben erhalten."
   }
 }

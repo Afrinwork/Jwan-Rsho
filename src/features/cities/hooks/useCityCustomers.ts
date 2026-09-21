@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { cityRepository } from "@/src/repositories/cityRepository";
 import { customerRepository } from "@/src/repositories/customerRepository";
@@ -142,6 +142,11 @@ export function useCityCustomers(normalizedCity: string) {
     }
   }, [loadCityData]);
 
+  const customers = useMemo(
+    () => filterCityCustomerItems(items, searchTerm),
+    [items, searchTerm],
+  );
+
   return {
     loading,
     error,
@@ -159,6 +164,6 @@ export function useCityCustomers(normalizedCity: string) {
     deletingCustomerId,
     deleteCustomer,
     reload: loadCityData,
-    customers: filterCityCustomerItems(items, searchTerm),
+    customers,
   };
 }

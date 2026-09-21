@@ -4,6 +4,7 @@ import { Marker } from "react-native-maps";
 
 import { colors } from "@/src/constants/colors";
 import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
+import { resolveRouteStopMarkerStyle } from "@/src/features/route/services/routeStopMarkerStyleService";
 
 type RouteStopMarkerProps = {
   marker: MapCustomerMarker;
@@ -15,6 +16,9 @@ type RouteStopMarkerProps = {
   // Already completed/skipped — stays on the map (never removed), just
   // rendered muted so it visually recedes behind the upcoming stops.
   inactive?: boolean;
+  // Only meaningful together with inactive=true — see
+  // routeStopMarkerStyleService for what this changes.
+  skipped?: boolean;
   onPress: (customerId: string) => void;
 };
 
@@ -25,7 +29,9 @@ type RouteStopMarkerProps = {
 // camera-follow re-animates the map on every GPS tick, and animating the map
 // is what dismisses an open Callout on both iOS and Android — it kept
 // closing itself right after being tapped open.
-function RouteStopMarkerComponent({ marker, label, active, inactive, onPress }: RouteStopMarkerProps) {
+function RouteStopMarkerComponent({ marker, label, active, inactive, skipped, onPress }: RouteStopMarkerProps) {
+  const style = resolveRouteStopMarkerStyle({ active, inactive, skipped, hasStreetAddress: marker.hasStreetAddress });
+
   return (
     <Marker
       coordinate={{ latitude: marker.latitude, longitude: marker.longitude }}
@@ -33,7 +39,17 @@ function RouteStopMarkerComponent({ marker, label, active, inactive, onPress }: 
       onPress={() => onPress(marker.id)}
       title={marker.title}
     >
-      <View style={[styles.pin, inactive && styles.pinInactive, active && styles.pinActive]}>
+      <View
+        style={[
+          styles.pin,
+          {
+            backgroundColor: style.backgroundColor,
+            borderColor: style.borderColor,
+            opacity: style.opacity,
+            transform: [{ scale: style.scale }],
+          },
+        ]}
+      >
         <Text style={styles.label}>{label}</Text>
       </View>
     </Marker>
@@ -48,19 +64,8 @@ const styles = StyleSheet.create({
     height: 34,
     borderRadius: 17,
     borderWidth: 2,
-    borderColor: colors.surface,
-    backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
-  },
-  pinActive: {
-    backgroundColor: colors.danger,
-    borderColor: colors.dangerBorder,
-    transform: [{ scale: 1.15 }],
-  },
-  pinInactive: {
-    backgroundColor: "#6B7280",
-    opacity: 0.6,
   },
   label: {
     color: colors.surface,

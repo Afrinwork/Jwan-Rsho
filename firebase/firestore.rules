@@ -25,22 +25,124 @@ service cloud.firestore {
         request.resource.id == request.auth.uid;
     }
 
+    function callerProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // Bridges the legacy 2-role model ("admin" | "user") to the new 3-role
+    // model, identically to normalizeLegacyRole() on the client and
+    // requireCallerRole() in Cloud Functions — see the Stage 1 plan for why a
+    // legacy "admin" needs the managerId check (a real new-model admin,
+    // created by a super_admin, always carries a managerId and must not be
+    // over-granted super_admin rights). Remove once the one-time migration
+    // has been confirmed run in production and no unmigrated docs remain.
+    function normalizedRole(profileData) {
+      return profileData.role == "admin" && !("managerId" in profileData) ? "super_admin"
+        : profileData.role == "user" ? "admin"
+        : profileData.role;
+    }
+
+    function callerRole() {
+      return isSignedIn() ? normalizedRole(callerProfile()) : null;
+    }
+
+    function isSuperAdmin() {
+      return callerRole() == "super_admin";
+    }
+
+    function isAdminRole() {
+      return callerRole() == "admin";
+    }
+
+    function isDriverRole() {
+      return callerRole() == "driver";
+    }
+
+    function isActiveDriver() {
+      return callerProfile().get('isActive', true) != false;
+    }
+
+    function callerManagerId() {
+      return callerProfile().get('managerId', null);
+    }
+
+    function isAssignedDriverFor(ownerId, assignedDriverId) {
+      return isDriverRole() && isActiveDriver() && assignedDriverId == request.auth.uid && ownerId == callerManagerId();
+    }
+
+    function canCreateTargetUser() {
+      let targetRole = request.resource.data.role;
+      let targetManagerId = request.resource.data.get('managerId', null);
+      return (isSuperAdmin() && (targetRole == "admin" || targetRole == "driver") && targetManagerId == request.auth.uid) ||
+        (isAdminRole() && targetRole == "driver" && targetManagerId == request.auth.uid);
+    }
+
+    function selfUpdateIsSafe() {
+      return request.resource.data.get('role', null) == resource.data.get('role', null) &&
+        request.resource.data.get('managerId', null) == resource.data.get('managerId', null) &&
+        request.resource.data.get('isActive', null) == resource.data.get('isActive', null);
+    }
+
+    function canDeleteTargetUser(userId) {
+      // The target's role must be normalized too, not just the caller's -
+      // otherwise a not-yet-migrated legacy "user" doc (which behaves as an
+      // admin everywhere else) would be undeletable by a super_admin until
+      // the migration happens to run first.
+      let targetRole = normalizedRole(resource.data);
+      return userId != request.auth.uid &&
+        ((isSuperAdmin() && (targetRole == "admin" || targetRole == "driver")) ||
+         (isAdminRole() && targetRole == "driver" && resource.data.managerId == request.auth.uid));
+    }
+
     match /users/{userId} {
-      allow read: if isSignedIn() && request.auth.uid == userId;
-      allow create: if isSignedIn() && request.auth.uid == userId && request.resource.data.role == "user";
-      allow update: if isSignedIn() && request.auth.uid == userId &&
-        request.resource.data.role == resource.data.role &&
-        request.resource.data.isActive == resource.data.isActive;
-      allow delete: if false;
+      // A manager can also read the profiles of the admins/drivers they
+      // created (managerId == their own uid) - needed so an admin/super_admin
+      // can list their own drivers to assign one to a customer. Still no
+      // access to anyone else's users.
+      allow read: if isSignedIn() && (
+        request.auth.uid == userId ||
+        ((isSuperAdmin() || isAdminRole()) && resource.data.managerId == request.auth.uid)
+      );
+      allow create: if isSignedIn() && canCreateTargetUser();
+      allow update: if isSignedIn() && request.auth.uid == userId && selfUpdateIsSafe();
+      allow delete: if isSignedIn() && canDeleteTargetUser(userId);
     }
 
     match /orders/{orderId}/items/{itemId} {
       // create/update rely on the item's own ownerId (validOwnerWrite), not a get() of the
       // parent order: the parent order can be created in the very same transaction as its
-      // items, and get() only sees state from before that transaction commits.
-      allow read, delete: if isSignedIn() &&
-        get(/databases/$(database)/documents/orders/$(orderId)).data.ownerId == request.auth.uid;
+      // items, and get() only sees state from before that transaction commits. Drivers never
+      // write items — only super_admin/admin owners do, unchanged from before roles existed.
+      allow read, delete: if isSignedIn() && (
+        get(/databases/$(database)/documents/orders/$(orderId)).data.ownerId == request.auth.uid ||
+        isAssignedDriverFor(
+          get(/databases/$(database)/documents/orders/$(orderId)).data.ownerId,
+          get(/databases/$(database)/documents/orders/$(orderId)).data.get('assignedDriverId', null)
+        )
+      );
       allow create, update: if validOwnerWrite();
+    }
+
+    // A rule scoped to a specific parent path (above) only ever authorizes a
+    // direct query/get under a KNOWN order id — it does NOT extend to a
+    // collectionGroup("items") query, which has no parent path to match
+    // against ahead of time. Firestore requires a separate rule using the
+    // recursive wildcard for that: without this block, EVERY collectionGroup
+    // read on "items" is rejected with "No matching allow statements",
+    // regardless of ownership — this was already silently breaking
+    // productRepository.getProductUsageCount() (every product deletion
+    // failed) before the data-integrity diagnostic's own items scan
+    // surfaced the same gap. Checks the item's OWN ownerId field directly
+    // (every item is written with one — see orderRepositoryData.
+    // buildOrderItemData) rather than get()-ing the parent order: simpler,
+    // and avoids needing to parse the parent id back out of the recursive
+    // wildcard's `path` value. Owner-only, no driver branch: neither current
+    // caller of a collectionGroup items query (this diagnostic, and product
+    // deletion's usage check) ever runs as a driver. Read-only:
+    // create/update/delete always go through a known
+    // /orders/{orderId}/items/{itemId} path, matched above.
+    match /{path=**}/items/{itemId} {
+      allow read: if isOwner(resource.data.ownerId);
     }
 
     match /userPreferences/{preferenceId} {
@@ -53,15 +155,87 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // One doc per driver, keyed by the driver's uid, self-resetting each day
+    // (see driverStatsRepository.recordCompletion) - lets an owner watch a
+    // live "completed today" count per driver without keeping a history of
+    // completed orders (which are hard-deleted by design, see the orders
+    // completeOrder() flow).
+    match /driverCompletionStats/{driverId} {
+      allow read: if isSignedIn() && (resource.data.ownerId == request.auth.uid || driverId == request.auth.uid);
+      allow create, update: if isSignedIn() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.driverId == driverId;
+      allow delete: if false;
+    }
+
+    function isCheckInOwnerWrite() {
+      return isDriverRole() && isActiveDriver() &&
+        request.resource.data.driverId == request.auth.uid &&
+        request.resource.data.ownerId == callerManagerId();
+    }
+
+    function isCheckInManagerFor(ownerId) {
+      return (isSuperAdmin() || isAdminRole()) && ownerId == request.auth.uid;
+    }
+
+    function checkInIdentityUnchanged() {
+      return request.resource.data.driverId == resource.data.driverId &&
+        request.resource.data.ownerId == resource.data.ownerId &&
+        request.resource.data.date == resource.data.date;
+    }
+
+    // Only the admin branch of the update rule below (restricted to
+    // status/blockedReason/updatedAt only) may clear an admin-imposed block -
+    // a driver can freely rewrite every other field on their own doc.
+    function adminBlockUntouched() {
+      return resource.data.get('blockedReason', null) != 'admin_blocked' ||
+        request.resource.data.get('blockedReason', null) == 'admin_blocked';
+    }
+
+    // Doc id is `${driverId}_${date}` (Berlin calendar day) in a top-level
+    // collection - see driverCheckInRepository. "date" itself is trusted from
+    // the client (reimplementing Berlin/DST math in rules would duplicate
+    // src/utils/time/europeBerlin.ts fragilely for marginal benefit) - a
+    // spoofed date doesn't unlock anything, it only affects what the client
+    // and the 3-day cleanup job see as "today's" doc.
+    match /driverCheckIns/{checkInId} {
+      allow read: if isSignedIn() && (
+        resource.data.driverId == request.auth.uid ||
+        isCheckInManagerFor(resource.data.ownerId)
+      );
+
+      allow create: if isSignedIn() &&
+        isCheckInOwnerWrite() &&
+        checkInId == request.auth.uid + '_' + request.resource.data.date;
+
+      allow update: if isSignedIn() && checkInIdentityUnchanged() && (
+        (isCheckInOwnerWrite() && adminBlockUntouched()) ||
+        (isCheckInManagerFor(resource.data.ownerId) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'blockedReason', 'updatedAt']))
+      );
+
+      allow delete: if false; // only the scheduled Cloud Function (Admin SDK) deletes
+    }
+
     match /customers/{docId} {
-      allow read: if isSignedIn() && (resource == null || isOwner(resource.data.ownerId));
+      // Drivers get read-only access to their manager's customers, and only
+      // the ones assigned to them - never create/update/delete.
+      allow read: if isSignedIn() && (
+        resource == null ||
+        isOwner(resource.data.ownerId) ||
+        isAssignedDriverFor(resource.data.ownerId, resource.data.get('assignedDriverId', null))
+      );
       allow create: if validOwnerWrite();
       allow update: if isOwner(resource.data.ownerId) && ownerUnchanged();
       allow delete: if isOwner(resource.data.ownerId);
     }
 
     match /orders/{docId} {
-      allow read: if isSignedIn() && (resource == null || isOwner(resource.data.ownerId));
+      allow read: if isSignedIn() && (
+        resource == null ||
+        isOwner(resource.data.ownerId) ||
+        isAssignedDriverFor(resource.data.ownerId, resource.data.get('assignedDriverId', null))
+      );
       allow create: if validOwnerWrite();
       allow update: if isOwner(resource.data.ownerId) && ownerUnchanged();
       allow delete: if isOwner(resource.data.ownerId);

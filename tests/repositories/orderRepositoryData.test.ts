@@ -13,13 +13,41 @@ test("order create data keeps ownerId on the order", () => {
   assert.equal(order.customerId, "customer_1");
 });
 
-test("order create data never contains an undefined note (Firestore rejects undefined field values)", () => {
+test("order create data never contains an undefined note or assignedDriverId (Firestore rejects undefined field values)", () => {
   const order = buildOrderCreateData({
     customerId: "customer_1",
     items: [{ productId: "p1", productNameSnapshot: "Labneh", quantity: 2, unit: "kg", sortOrder: 0 }],
   }, "uid_1", "customer_1");
 
   assert.equal("note" in order, false);
+  assert.equal("assignedDriverId" in order, false);
+});
+
+test("order create data mirrors assignedDriverId from the customer when provided", () => {
+  const order = buildOrderCreateData({
+    customerId: "customer_1",
+    items: [{ productId: "p1", productNameSnapshot: "Labneh", quantity: 2, unit: "kg", sortOrder: 0 }],
+  }, "uid_1", "customer_1", "driver_1");
+
+  assert.equal(order.assignedDriverId, "driver_1");
+});
+
+test("order create data includes requestId when the caller supplies one (idempotency/duplicate-detection field)", () => {
+  const order = buildOrderCreateData({
+    customerId: "customer_1",
+    items: [{ productId: "p1", productNameSnapshot: "Labneh", quantity: 2, unit: "kg", sortOrder: 0 }],
+  }, "uid_1", "customer_1", undefined, "request_1");
+
+  assert.equal(order.requestId, "request_1");
+});
+
+test("order create data never contains an undefined requestId when the caller doesn't supply one", () => {
+  const order = buildOrderCreateData({
+    customerId: "customer_1",
+    items: [{ productId: "p1", productNameSnapshot: "Labneh", quantity: 2, unit: "kg", sortOrder: 0 }],
+  }, "uid_1", "customer_1");
+
+  assert.equal("requestId" in order, false);
 });
 
 test("customer record stays independent from the order record", () => {

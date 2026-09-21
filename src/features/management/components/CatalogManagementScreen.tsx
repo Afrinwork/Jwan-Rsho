@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
+import { AppText } from "@/src/components/ui/AppText";
 import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
@@ -11,6 +12,7 @@ import { spacing } from "@/src/constants/spacing";
 import { ManagementSectionShell } from "@/src/features/management/components/ManagementSectionShell";
 import { useSeedCatalog } from "@/src/features/management/hooks/useSeedCatalog";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { radius } from "@/src/theme/radius";
 
 export function CatalogManagementScreen() {
   const colors = useThemeColors();
@@ -43,8 +45,8 @@ export function CatalogManagementScreen() {
           </View>
         ) : (
           <View style={[styles.infoCard, { backgroundColor: colors.surfaceMuted, borderColor: colors.border }]}>
-            <Text style={[styles.infoTitle, { color: colors.text }]}>{t("catalogScreen.infoTitle")}</Text>
-            <Text style={[styles.infoBody, { color: colors.mutedText }]}>{t("catalogScreen.infoBody")}</Text>
+            <AppText variant="bodyMedium">{t("catalogScreen.infoTitle")}</AppText>
+            <AppText color="muted" variant="body">{t("catalogScreen.infoBody")}</AppText>
           </View>
         )}
       </ManagementSectionShell>
@@ -65,7 +67,5 @@ export function CatalogManagementScreen() {
 
 const styles = StyleSheet.create({
   actions: { gap: spacing.sm },
-  infoCard: { borderWidth: 1, borderRadius: 18, padding: spacing.md, gap: spacing.xs },
-  infoTitle: { fontSize: 16, fontWeight: "700" },
-  infoBody: { fontSize: 14, lineHeight: 20 },
+  infoCard: { borderWidth: 1, borderRadius: radius.card, padding: spacing.md, gap: spacing.xs },
 });

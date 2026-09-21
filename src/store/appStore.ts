@@ -12,6 +12,7 @@ export const defaultAppPreferences = {
   shareIncludeAddress: true,
   shareIncludePhone: false,
   shareIncludeTotals: true,
+  whatsappSelectionTemplate: "Hallo,\n\nhier ist die Auswahl: {{kunden}} Kunden und {{bestellungen}} offene Bestellungen.",
 };
 
 type AppStore = {
@@ -22,6 +23,7 @@ type AppStore = {
   shareIncludeAddress: boolean;
   shareIncludePhone: boolean;
   shareIncludeTotals: boolean;
+  whatsappSelectionTemplate: string;
   setThemeMode: (value: ThemeMode) => void;
   setLanguage: (value: AppLanguage) => void;
   setPreferredNavigationApp: (value: NavigationAppId) => void;
@@ -32,6 +34,7 @@ type AppStore = {
     shareIncludePhone: boolean;
     shareIncludeTotals: boolean;
   }) => void;
+  setWhatsappSelectionTemplate: (value: string) => void;
   hydratePreferences: (value: {
     themeMode: ThemeMode;
     language: AppLanguage;
@@ -40,6 +43,7 @@ type AppStore = {
     shareIncludeAddress: boolean;
     shareIncludePhone: boolean;
     shareIncludeTotals: boolean;
+    whatsappSelectionTemplate: string;
   }) => void;
 };
 
@@ -51,5 +55,6 @@ export const useAppStore = create<AppStore>((set) => ({
   setShopName: (value) => set({ shopName: value }),
   resetPreferences: () => set(defaultAppPreferences),
   setShareOptions: (value) => set(value),
+  setWhatsappSelectionTemplate: (value) => set({ whatsappSelectionTemplate: value }),
   hydratePreferences: (value) => set(value),
 }));

@@ -35,6 +35,17 @@ export type MapMarkerCoordinate = {
   longitude: number;
 };
 
+// A customer with an open order that couldn't be placed on the map (no valid
+// coordinates) — the other half of MapCustomerMarker's population, so an
+// open order is always visible SOMEWHERE, never silently dropped.
+export type CustomerNeedingAddressCheck = {
+  id: string;
+  fullName: string;
+  address: string;
+  phone: string;
+  openOrderCount: number;
+};
+
 export type MapMarkerClusterItem =
   | {
       type: "marker";

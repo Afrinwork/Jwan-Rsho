@@ -3,7 +3,6 @@ import { StyleSheet, TextInput, TextInputProps } from "react-native";
 
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { radius } from "@/src/theme/radius";
-import { shadows } from "@/src/theme/shadows";
 import { spacing } from "@/src/theme/spacing";
 import { typography } from "@/src/theme/typography";
 
@@ -33,9 +32,7 @@ export const AppInput = forwardRef(function AppInput(
           backgroundColor: colors.surfaceElevated,
           borderColor: focused ? colors.primary : colors.border,
           color: colors.text,
-          shadowColor: focused ? colors.primary : "transparent",
         },
-        focused ? styles.focused : null,
         props.style,
       ]}
     />
@@ -46,12 +43,9 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderRadius: radius.input,
+    minHeight: 48,
     paddingHorizontal: spacing.md,
-    paddingVertical: 15,
+    paddingVertical: spacing.sm,
     ...typography.body,
-    ...shadows.sm,
-  },
-  focused: {
-    shadowOpacity: 0.16,
   },
 });

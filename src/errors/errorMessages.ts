@@ -2,6 +2,7 @@ import { t } from "@/src/i18n/i18n";
 
 export const errorMessages = {
   firebaseNotConfigured: t("errors:firebaseNotConfigured"),
+  backendNotConfigured: t("errors:backendNotConfigured"),
   invalidCredentials: t("errors:invalidCredentials"),
   recentLoginRequired: t("errors:recentLoginRequired"),
   generic: t("errors:generic"),

@@ -1,11 +1,12 @@
-export type UserRole = "admin" | "user";
+export type UserRole = "super_admin" | "admin" | "driver";
 
 export type UserProfile = {
   id: string;
   email: string;
   fullName: string;
   role: UserRole;
-  ownerId?: string;
+  isActive?: boolean;
+  managerId?: string;
 };
 
 export type CurrentUser = {
@@ -13,4 +14,5 @@ export type CurrentUser = {
   email: string | null;
   displayName: string | null;
   role: UserRole;
+  managerId?: string;
 };

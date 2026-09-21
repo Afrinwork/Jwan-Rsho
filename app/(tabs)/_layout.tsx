@@ -1,9 +1,9 @@
 import {
   AddCircle20Regular,
   AppsList20Regular,
-  Building20Regular,
   Home20Regular,
   Map20Regular,
+  People20Regular,
   Settings20Regular,
 } from "@fluentui/react-native-icons";
 import { Tabs } from "expo-router";
@@ -12,6 +12,8 @@ import { ColorValue, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { isDriver } from "@/src/features/auth/permissions";
+import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 import { typography } from "@/src/theme/typography";
 
 type TabIconProps = {
@@ -21,7 +23,7 @@ type TabIconProps = {
 
 const tabIcons: Record<string, ComponentType<TabIconProps>> = {
   overview: Home20Regular,
-  cities: Home20Regular,
+  customers: People20Regular,
   add: AddCircle20Regular,
   map: Map20Regular,
   management: AppsList20Regular,
@@ -31,6 +33,8 @@ const tabIcons: Record<string, ComponentType<TabIconProps>> = {
 export default function TabsLayout() {
   const colors = useThemeColors();
   const { t } = useTranslation("navigation");
+  const currentUser = useCurrentUser();
+  const isCurrentUserDriver = isDriver(currentUser);
 
   return (
     <Tabs
@@ -60,17 +64,17 @@ export default function TabsLayout() {
             paddingVertical: 2,
           },
           tabBarIcon: ({ color }: TabIconProps) => {
-            const Icon = route.name === "cities" ? Building20Regular : tabIcons[route.name] ?? AppsList20Regular;
+            const Icon = tabIcons[route.name] ?? AppsList20Regular;
             return <Icon color={color} size={17} />;
           },
         };
       }}
     >
-      <Tabs.Screen name="overview" options={{ title: t("tabs.overview") }} />
+      <Tabs.Screen name="overview" options={{ href: isCurrentUserDriver ? null : undefined, title: t("tabs.overview") }} />
       <Tabs.Screen name="map" options={{ title: t("tabs.map") }} />
-      <Tabs.Screen name="add" options={{ title: t("tabs.add") }} />
-      <Tabs.Screen name="cities" options={{ title: t("tabs.cities") }} />
-      <Tabs.Screen name="management" options={{ title: t("tabs.management") }} />
+      <Tabs.Screen name="add" options={{ href: isCurrentUserDriver ? null : undefined, title: t("tabs.add") }} />
+      <Tabs.Screen name="customers" options={{ href: isCurrentUserDriver ? null : undefined, title: t("tabs.customers") }} />
+      <Tabs.Screen name="management" options={{ href: isCurrentUserDriver ? null : undefined, title: t("tabs.management") }} />
       <Tabs.Screen name="settings" options={{ title: t("tabs.settings") }} />
     </Tabs>
   );

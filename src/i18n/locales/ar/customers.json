@@ -60,13 +60,11 @@
     "removeConfirmMessage": "سيتم إزالة هذا المنتج من الطلب."
   },
   "search": {
-    "placeholder": "الاسم، الهاتف، المدينة أو الشارع",
     "selected": "محدد"
   },
-  "duplicateCheck": {
+  "suggestions": {
     "title": "هل تقصد أحد هؤلاء؟",
-    "subtitle": "اضغط على عميل لاستخدام بياناته بدلاً من إضافة عميل جديد.",
-    "useButton": "استخدام هذا العميل"
+    "subtitle": "اضغط على عميل لاستخدام بياناته."
   },
   "orderStatus": {
     "open": "طلب مفتوح",

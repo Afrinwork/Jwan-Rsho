@@ -81,6 +81,7 @@ export function useCustomerEdit(customerId: string) {
         ...parsedCustomer,
         latitude: coordinates?.latitude,
         longitude: coordinates?.longitude,
+        locationStatus: coordinates ? ("ok" as const) : ("failed" as const),
       };
 
       if (openOrderId) {

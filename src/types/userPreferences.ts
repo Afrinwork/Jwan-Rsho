@@ -13,6 +13,7 @@ export type UserPreferences = {
   shareIncludeAddress: boolean;
   shareIncludePhone: boolean;
   shareIncludeTotals: boolean;
+  whatsappSelectionTemplate?: string;
   createdAt: string;
   updatedAt: string;
 };

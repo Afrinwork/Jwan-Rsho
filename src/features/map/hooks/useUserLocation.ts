@@ -77,6 +77,38 @@ export function useUserLocation(): UserLocationState {
     return () => clearTimeout(timeoutId);
   }, [loadLocation]);
 
+  useEffect(() => {
+    if (!hasPermission) return;
+
+    let active = true;
+    let subscription: Location.LocationSubscription | null = null;
+
+    // The initial location gets the map on screen quickly. This foreground
+    // watch then keeps the blue dot current while a driver moves between
+    // customers, without requesting background-location permission.
+    void Location.watchPositionAsync(
+      { accuracy: Location.Accuracy.Balanced, distanceInterval: 15, timeInterval: 15_000 },
+      (location) => {
+        if (active) setRegion(toRegion(location));
+      },
+    )
+      .then((nextSubscription) => {
+        if (active) {
+          subscription = nextSubscription;
+        } else {
+          nextSubscription.remove();
+        }
+      })
+      .catch((watchError) => {
+        if (active) setError(formatError(watchError).message);
+      });
+
+    return () => {
+      active = false;
+      subscription?.remove();
+    };
+  }, [hasPermission]);
+
   const reload = useCallback(async () => {
     setIsLoading(true);
     await loadLocation();

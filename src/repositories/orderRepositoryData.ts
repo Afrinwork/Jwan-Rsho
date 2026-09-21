@@ -11,13 +11,21 @@ export const createOrderInputSchema = orderSchema
 
 export type CreateOrderInput = z.input<typeof createOrderInputSchema>;
 
-export function buildOrderCreateData(input: CreateOrderInput, ownerId: string, customerId: string) {
+export function buildOrderCreateData(
+  input: CreateOrderInput,
+  ownerId: string,
+  customerId: string,
+  assignedDriverId?: string,
+  requestId?: string,
+) {
   const parsed = createOrderInputSchema.parse(input);
   return {
     ownerId,
     customerId,
     status: "open" as const,
     ...(parsed.note ? { note: parsed.note.trim() } : {}),
+    ...(assignedDriverId ? { assignedDriverId } : {}),
+    ...(requestId ? { requestId } : {}),
     orderedAt: parsed.orderedAt ?? new Date().toISOString(),
   };
 }

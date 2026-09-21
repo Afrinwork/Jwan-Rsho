@@ -1,5 +1,6 @@
 {
   "firebaseNotConfigured": "Firebase wurde noch nicht eingerichtet.",
+  "backendNotConfigured": "Der Server wurde noch nicht eingerichtet.",
   "invalidCredentials": "E-Mail-Adresse oder Passwort ist falsch.",
   "recentLoginRequired": "Bitte melde dich erneut an, bevor du die E-Mail-Adresse aenderst.",
   "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",

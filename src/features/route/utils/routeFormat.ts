@@ -1,4 +1,5 @@
 import { i18next } from "@/src/i18n/i18n";
+import { buildEuropeBerlinDate } from "@/src/utils/time/europeBerlin";
 
 // "ar-u-nu-latn" keeps Latin digits under the Arabic locale — plain "ar"
 // renders Arabic-Indic numerals, which looks broken next to the rest of the
@@ -14,6 +15,13 @@ function numberLocale() {
 const ROUTE_TIME_ZONE = "Europe/Berlin";
 
 export function formatEtaTime(date: Date) {
+  // toLocaleTimeString throws a RangeError for an Invalid Date (e.g. an ETA
+  // chain poisoned by one NaN leg upstream) -- an uncaught throw here during
+  // render would crash the whole screen instead of just showing a blank time.
+  if (Number.isNaN(date.getTime())) {
+    return "--:--";
+  }
+
   // Always German 24h format ("14:05", never "2:05 PM"/"٢:٠٥ م") regardless
   // of the app's Arabic UI locale — times must stay unambiguous for drivers.
   return date.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: ROUTE_TIME_ZONE });
@@ -33,49 +41,11 @@ export function formatDurationHM(totalMinutes: number) {
 }
 
 export function formatDistanceKm(distanceKm: number) {
+  if (!Number.isFinite(distanceKm)) {
+    return "--";
+  }
+
   return distanceKm.toLocaleString(numberLocale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-}
-
-// Date has no "construct at this wall-clock time in timezone X" API, so this
-// reads `date`'s wall-clock parts as they'd appear in Europe/Berlin. Used to
-// go the other way too (see buildEuropeBerlinDate): the difference between
-// treating those parts as UTC and the real instant is exactly Berlin's UTC
-// offset at that moment, DST included, with no manual offset table needed.
-function getEuropeBerlinParts(date: Date) {
-  const parts: Record<string, string> = {};
-  new Intl.DateTimeFormat("en-US", {
-    timeZone: ROUTE_TIME_ZONE,
-    hourCycle: "h23",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  })
-    .formatToParts(date)
-    .forEach((part) => {
-      if (part.type !== "literal") parts[part.type] = part.value;
-    });
-
-  return {
-    year: Number(parts.year),
-    month: Number(parts.month),
-    day: Number(parts.day),
-    hour: Number(parts.hour),
-    minute: Number(parts.minute),
-    second: Number(parts.second),
-  };
-}
-
-// Builds the instant for `hours:minutes` on referenceDate's Europe/Berlin
-// calendar day — the inverse of getEuropeBerlinParts above.
-function buildEuropeBerlinDate(referenceDate: Date, hours: number, minutes: number): Date {
-  const berlin = getEuropeBerlinParts(referenceDate);
-  const berlinPartsAsUtcMs = Date.UTC(berlin.year, berlin.month - 1, berlin.day, berlin.hour, berlin.minute, berlin.second);
-  const berlinOffsetMinutes = (berlinPartsAsUtcMs - referenceDate.getTime()) / 60_000;
-  const targetPartsAsUtcMs = Date.UTC(berlin.year, berlin.month - 1, berlin.day, hours, minutes, 0, 0);
-  return new Date(targetPartsAsUtcMs - berlinOffsetMinutes * 60_000);
 }
 
 export function parseTimeInput(value: string, referenceDate: Date = new Date()): Date | null {

@@ -4,7 +4,7 @@ import { customerRepository } from "@/src/repositories/customerRepository";
 import { Customer } from "@/src/types/customer";
 
 const DEBOUNCE_MS = 400;
-const MIN_NAME_LENGTH = 3;
+const MIN_NAME_LENGTH = 1;
 const MIN_ADDRESS_LENGTH = 5;
 const MIN_PHONE_DIGITS = 4;
 const MAX_MATCHES = 5;
@@ -83,7 +83,8 @@ export function useDuplicateCustomerCheck(fullName: string, phone: string, addre
 
       if (nameActive) {
         const customerName = normalizeText(customer.fullName);
-        if (customerName.includes(typedName) || typedName.includes(customerName)) {
+        const nameParts = customerName.split(/\s+/).filter(Boolean);
+        if (customerName.startsWith(typedName) || nameParts.some((part) => part.startsWith(typedName))) {
           fields.push("fullName");
         }
       }

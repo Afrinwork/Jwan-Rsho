@@ -32,17 +32,12 @@ export function ProductListItem(props: ProductListItemProps) {
         {
           backgroundColor: colors.surfaceElevated,
           borderColor: colors.border,
-          shadowColor: colors.shadow,
         },
       ]}
     >
       <View style={styles.topRow}>
         <View style={[styles.thumbnail, { backgroundColor: colors.primaryMuted, borderColor: colors.border }]}>
-          {props.product.emoji ? (
-            <Text style={styles.thumbnailEmoji}>{props.product.emoji}</Text>
-          ) : (
-            <Box20Regular color={colors.primary} />
-          )}
+          <Box20Regular color={colors.mutedText} />
         </View>
         <View style={styles.info}>
           <Text
@@ -95,9 +90,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     padding: spacing.md,
     gap: spacing.sm,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.06,
-    shadowRadius: 14,
   },
   topRow: {
     flexDirection: "row",
@@ -107,13 +99,10 @@ const styles = StyleSheet.create({
   thumbnail: {
     width: 48,
     height: 48,
-    borderRadius: 16,
+    borderRadius: radius.md,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
-  },
-  thumbnailEmoji: {
-    fontSize: 20,
   },
   info: {
     flex: 1,
@@ -138,9 +127,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   iconAction: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
+    width: 44,
+    height: 44,
+    borderRadius: 8,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
@@ -150,7 +139,8 @@ const styles = StyleSheet.create({
   },
   textAction: {
     borderWidth: 1,
-    borderRadius: radius.pill,
+    borderRadius: 8,
+    minHeight: 44,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },

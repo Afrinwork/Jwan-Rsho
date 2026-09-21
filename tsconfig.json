@@ -13,6 +13,7 @@
   },
   "exclude": [
     "functions",
+    "supabase/functions",
     "scaffold-temp",
     "__sdk54ref",
     "__sdk54router"

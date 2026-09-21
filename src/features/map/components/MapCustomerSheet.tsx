@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
@@ -26,10 +27,14 @@ type MapCustomerSheetProps = {
   onNavigate: () => void;
   onShare: () => void;
   onShareOrder: () => void;
+  // Only provided for admin/super_admin on the plain map screen — a driver
+  // has no one to assign, and route-live has no need for it either.
+  onAssignDriver?: () => void;
   // Route-live context only: lets the driver skip the current stop right
   // from this sheet instead of only via the bottom action bar. Omitted (and
   // hidden) for the plain map screen, which has no stop sequence to skip.
   onSkip?: () => void;
+  onSkipLabel?: string;
   // Route-live context only: undoes a previous skip/complete for this stop,
   // making it pending again. Omitted for a stop that isn't currently
   // skipped/completed, and for the plain map screen.
@@ -52,11 +57,14 @@ export function MapCustomerSheet({
   onNavigate,
   onShare,
   onShareOrder,
+  onAssignDriver,
   onSkip,
+  onSkipLabel,
   onReactivate,
 }: MapCustomerSheetProps) {
   const colors = useThemeColors();
   const { t } = useTranslation("map");
+  const [showMore, setShowMore] = useState(false);
 
   return (
     <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
@@ -79,10 +87,7 @@ export function MapCustomerSheet({
               {actionError ? <ErrorState message={actionError} /> : null}
               {actionSuccess ? <SuccessState message={actionSuccess} /> : null}
               <View style={styles.actions}>
-                <AppButton label={t("common.edit")} onPress={onEdit} />
-                {onReactivate ? (
-                  <AppButton label={t("sheet.reactivateStop")} onPress={onReactivate} variant="secondary" />
-                ) : null}
+                <AppButton label={t("sheet.navigation")} onPress={onNavigate} />
                 {details.openOrders.length && onComplete ? (
                   <AppButton
                     label={
@@ -92,17 +97,26 @@ export function MapCustomerSheet({
                     }
                     loading={completing}
                     onPress={onComplete}
+                    variant="secondary"
                   />
                 ) : null}
                 <AppButton
-                  label={details.customer.phone ? t("sheet.callPhone") : t("sheet.phoneMissing")}
-                  onPress={onCall}
+                  label={t(showMore ? "sheet.fewerActions" : "sheet.moreActions")}
+                  onPress={() => setShowMore((current) => !current)}
+                  size="compact"
                   variant="secondary"
                 />
-                <AppButton label={t("sheet.navigation")} onPress={onNavigate} variant="secondary" />
-                <AppButton label={t("sheet.shareViaWhatsapp")} onPress={onShareOrder} variant="secondary" />
-                <AppButton label={t("sheet.shareLocation")} onPress={onShare} variant="secondary" />
-                {onSkip ? <AppButton label={t("sheet.skipStop")} onPress={onSkip} variant="secondary" /> : null}
+                {showMore ? (
+                  <View style={styles.moreActions}>
+                    <AppButton label={t("common.edit")} onPress={onEdit} size="compact" variant="secondary" />
+                    <AppButton label={details.customer.phone ? t("sheet.callPhone") : t("sheet.phoneMissing")} onPress={onCall} size="compact" variant="secondary" />
+                    <AppButton label={t("sheet.shareViaWhatsapp")} onPress={onShareOrder} size="compact" variant="secondary" />
+                    <AppButton label={t("sheet.shareLocation")} onPress={onShare} size="compact" variant="secondary" />
+                    {onAssignDriver ? <AppButton label={t("sheet.assignDriver")} onPress={onAssignDriver} size="compact" variant="secondary" /> : null}
+                    {onReactivate ? <AppButton label={t("sheet.reactivateStop")} onPress={onReactivate} size="compact" variant="secondary" /> : null}
+                    {onSkip ? <AppButton label={onSkipLabel ?? t("sheet.skipStop")} onPress={onSkip} size="compact" variant="secondary" /> : null}
+                  </View>
+                ) : null}
               </View>
             </ScrollView>
           ) : null}
@@ -146,6 +160,9 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   actions: {
+    gap: spacing.sm,
+  },
+  moreActions: {
     gap: spacing.sm,
   },
 });

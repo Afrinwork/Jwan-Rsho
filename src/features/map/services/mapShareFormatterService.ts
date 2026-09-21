@@ -1,6 +1,5 @@
-import { mapT as t } from "@/src/features/map/i18n/mapT";
-
-const SEPARATOR = "━━━━━━━━━━━━━━";
+const SEPARATOR = "--------------";
+const THANK_YOU_MESSAGE = "Danke fuer Ihre Bestellung.";
 
 export type SelectionShareItem = {
   productName: string;
@@ -24,11 +23,12 @@ export type SelectionShareOptions = {
   includePhone?: boolean;
   includeTotal?: boolean;
   shopName?: string;
+  messageTemplate?: string;
 };
 
 export function buildSelectionShareMessage(
   customers: SelectionShareCustomer[],
-  totals: SelectionShareItem[],
+  _totals: SelectionShareItem[],
   options: SelectionShareOptions = {},
 ) {
   if (!customers.length) {
@@ -36,93 +36,51 @@ export function buildSelectionShareMessage(
   }
 
   const includeAddress = options.includeAddress ?? true;
-  const includePhone = options.includePhone ?? false;
-  const includeTotal = options.includeTotal ?? true;
-  const shopName = options.shopName?.trim();
-
   const lines: string[] = [];
+  const template = formatTemplate(options.messageTemplate, customers.length, customers.reduce((sum, customer) => sum + (customer.orderCount ?? 0), 0));
+  if (template) {
+    lines.push(template, "", SEPARATOR, "");
+  }
 
-  pushHeader(lines, customers, shopName);
-  lines.push("", SEPARATOR, "");
-
-  customers.forEach((customer) => {
-    pushCustomerBlock(lines, customer, { includeAddress, includePhone });
-    lines.push("", SEPARATOR, "");
+  customers.forEach((customer, index) => {
+    pushCustomerBlock(lines, customer, { includeAddress });
+    if (index < customers.length - 1) {
+      lines.push("", SEPARATOR, "");
+    }
   });
-
-  if (includeTotal && totals.length) {
-    lines.push(`📊 ${t("map:share.total")}`, "");
-    totals.forEach((total) => lines.push(formatItemLine(total)));
-    lines.push("", SEPARATOR, "");
-  }
-
-  lines.push(
-    `👥 ${t("map:share.customerCount", { count: customers.length })}`,
-    `📦 ${t("map:share.totalOrders", { count: totalOrderCount(customers) })}`,
-  );
-
-  if (shopName) {
-    lines.push("", shopName);
-  }
 
   return lines.join("\n").trim();
 }
 
-function pushHeader(lines: string[], customers: SelectionShareCustomer[], shopName: string | undefined) {
-  if (shopName) {
-    lines.push(shopName);
-  }
-
-  const cities = [...new Set(customers.map((customer) => customer.city.trim()).filter(Boolean))];
-  if (cities.length === 1) {
-    lines.push(`📍 ${cities[0]}`);
-  } else if (cities.length > 1) {
-    lines.push(`📍 ${t("map:share.multipleCities")}`);
-  }
-
-  lines.push(`📦 ${t("map:share.headerOrderCount", { count: totalOrderCount(customers) })}`);
+function formatTemplate(template: string | undefined, customerCount: number, orderCount: number) {
+  return template?.trim()
+    .replaceAll("{{kunden}}", String(customerCount))
+    .replaceAll("{{bestellungen}}", String(orderCount)) ?? "";
 }
 
-function totalOrderCount(customers: SelectionShareCustomer[]) {
-  return customers.reduce((sum, customer) => sum + (customer.orderCount ?? 1), 0);
-}
-
-// Address first, then name, then the "Bestellung"/order block — so the
-// name+order lines form one contiguous chunk that can be copied out on
-// their own, without the address line above them.
 function pushCustomerBlock(
   lines: string[],
   customer: SelectionShareCustomer,
-  options: { includeAddress: boolean; includePhone: boolean },
+  options: { includeAddress: boolean },
 ) {
+  lines.push(`Name: ${customer.fullName}`);
+
   if (options.includeAddress) {
     const addressLine = [customer.address, customer.city].filter((part) => part.trim()).join(", ");
     if (addressLine) {
-      lines.push(addressLine, "");
+      lines.push(`Adresse: ${addressLine}`);
     }
   }
 
-  lines.push(customer.fullName);
-
-  if (options.includePhone && customer.phone.trim()) {
-    lines.push(customer.phone);
-  }
-
-  if (customer.orderCount && customer.orderCount > 1) {
-    lines.push(t("map:share.ordersCountLine", { count: customer.orderCount }));
-  }
-
-  lines.push(t("map:share.orderLabel"));
+  lines.push("", "Bestellung:");
 
   if (customer.items.length) {
     customer.items.forEach((item) => lines.push(formatItemLine(item)));
   } else {
-    lines.push(t("map:share.noOpenOrder"));
+    lines.push("Keine offene Bestellung");
   }
 
-  if (customer.note?.trim()) {
-    lines.push("", t("map:share.note", { note: customer.note.trim() }));
-  }
+  lines.push("", THANK_YOU_MESSAGE);
 }
 
 function formatItemLine(item: SelectionShareItem) {

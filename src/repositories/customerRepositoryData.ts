@@ -18,7 +18,9 @@ export function buildCustomerCreateData(input: CustomerWrite, ownerId: string) {
     ...(parsed.region ? { region: parsed.region.trim() } : {}),
     ...(parsed.latitude !== undefined ? { latitude: parsed.latitude } : {}),
     ...(parsed.longitude !== undefined ? { longitude: parsed.longitude } : {}),
+    locationStatus: parsed.locationStatus ?? (parsed.latitude !== undefined && parsed.longitude !== undefined ? "ok" : "failed"),
     ...(parsed.note ? { note: parsed.note.trim() } : {}),
+    ...(parsed.assignedDriverId ? { assignedDriverId: parsed.assignedDriverId } : {}),
     isActive: parsed.isActive ?? true,
   };
 }

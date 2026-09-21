@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { colors } from "@/src/constants/colors";
 import { spacing } from "@/src/constants/spacing";
 import { OrderWithItems } from "@/src/types/order";
+import { formatDate } from "@/src/utils/date";
 
 type CustomerOrderCardProps = {
   order: OrderWithItems;
@@ -15,7 +16,7 @@ export function CustomerOrderCard({ order }: CustomerOrderCardProps) {
   return (
     <View style={styles.card}>
       <Text style={styles.title}>{labelForStatus(order.status, t)}</Text>
-      <Text style={styles.meta}>{new Date(order.orderedAt).toLocaleDateString()}</Text>
+      <Text style={styles.meta}>{formatDate(order.orderedAt)}</Text>
       {order.items.map((item) => (
         <Text key={item.id} style={styles.meta}>
           {item.productNameSnapshot}: {item.quantity} {item.unit}

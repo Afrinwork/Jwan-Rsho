@@ -7,16 +7,25 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "environment": "development"
+      "environment": "development",
+      "channel": "development"
     },
     "preview": {
       "distribution": "internal",
-      "environment": "preview"
+      "environment": "preview",
+      "channel": "preview"
     },
     "production": {
       "distribution": "store",
       "autoIncrement": true,
-      "environment": "production"
+      "environment": "production",
+      "channel": "production"
+    },
+    "testflight-preview": {
+      "distribution": "store",
+      "autoIncrement": true,
+      "environment": "preview",
+      "channel": "preview"
     }
   },
   "submit": {
@@ -27,6 +36,11 @@
       "android": {
         "serviceAccountKeyPath": "./google-play-service-account.json",
         "track": "internal"
+      }
+    },
+    "testflight-preview": {
+      "ios": {
+        "ascAppId": "6801911690"
       }
     }
   }

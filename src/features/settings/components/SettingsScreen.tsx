@@ -9,24 +9,27 @@ import { AppInput } from "@/src/components/ui/AppInput";
 import { AppText } from "@/src/components/ui/AppText";
 import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
 import { ErrorState } from "@/src/components/ui/ErrorState";
-import { HeroPanel } from "@/src/components/ui/HeroPanel";
 import { LoadingView } from "@/src/components/ui/LoadingView";
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
 import { SuccessState } from "@/src/components/ui/SuccessState";
 import { appConfig } from "@/src/constants/app";
 import { spacing } from "@/src/constants/spacing";
+import { isSuperAdmin } from "@/src/features/auth/permissions";
 import { useDeleteAccount } from "@/src/features/settings/hooks/useDeleteAccount";
 import { useLogout } from "@/src/features/settings/hooks/useLogout";
 import { useSettings } from "@/src/features/settings/hooks/useSettings";
 import { SettingsChoiceRow } from "@/src/features/settings/components/SettingsChoiceRow";
 import { SettingsSection } from "@/src/features/settings/components/SettingsSection";
 import { SettingsToggleRow } from "@/src/features/settings/components/SettingsToggleRow";
+import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 
 export function SettingsScreen() {
   const { t } = useTranslation("settings");
   const { logout, loading, error } = useLogout();
   const deleteAccount = useDeleteAccount();
   const settings = useSettings();
+  const currentUser = useCurrentUser();
+  const canEditShareSettings = isSuperAdmin(currentUser);
 
   if (settings.loading) {
     return <LoadingView label={t("loadingLabel")} />;
@@ -35,25 +38,10 @@ export function SettingsScreen() {
   return (
     <ScreenContainer>
       <ScrollView contentContainerStyle={styles.content}>
-        <AnimatedEntrance>
-          <CompactScreenHeader subtitle={t("header.subtitle")} title={t("header.title")} />
-        </AnimatedEntrance>
-        {settings.error ? <AnimatedEntrance delay={60}><ErrorState message={settings.error} /></AnimatedEntrance> : null}
-        {error ? <AnimatedEntrance delay={80}><ErrorState message={error} /></AnimatedEntrance> : null}
-        {settings.successMessage ? <AnimatedEntrance delay={100}><SuccessState message={settings.successMessage} /></AnimatedEntrance> : null}
-        <AnimatedEntrance delay={110}>
-          <HeroPanel
-            eyebrow={t("sections.appInfo")}
-            subtitle={t("header.subtitle")}
-            title={settings.fullName.trim() || t("header.title")}
-          >
-            <View style={styles.statsGrid}>
-              <SettingsStatCard label={t("info.ownCustomers")} value={String(settings.stats.customers)} />
-              <SettingsStatCard label={t("info.totalOrders")} value={String(settings.stats.totalOrders)} />
-              <SettingsStatCard label={t("info.openOrders")} value={String(settings.stats.openOrders)} />
-            </View>
-          </HeroPanel>
-        </AnimatedEntrance>
+        <CompactScreenHeader subtitle={t("header.subtitle")} title={t("header.title")} />
+        {settings.error ? <ErrorState message={settings.error} /> : null}
+        {error ? <ErrorState message={error} /> : null}
+        {settings.successMessage ? <SuccessState message={settings.successMessage} /> : null}
         <AnimatedEntrance delay={120}><SettingsSection subtitle={t("fields.email")} title={t("sections.profile")}>
           <FormField label={t("fields.name")}>
             <AppInput onChangeText={settings.setFullName} value={settings.fullName} />
@@ -105,42 +93,44 @@ export function SettingsScreen() {
             value={settings.preferredNavigationApp}
           />
         </SettingsSection></AnimatedEntrance>
-        <AnimatedEntrance delay={210}><SettingsSection subtitle={t("share.shopName")} title={t("sections.share")}>
-          <FormField label={t("share.shopName")}>
-            <AppInput
-              onChangeText={settings.setShopName}
-              placeholder={t("share.shopNamePlaceholder")}
-              value={settings.shopName}
+        {canEditShareSettings ? (
+          <AnimatedEntrance delay={210}><SettingsSection subtitle={t("share.shopName")} title={t("sections.share")}>
+            <FormField label={t("share.shopName")}>
+              <AppInput
+                onChangeText={settings.setShopName}
+                placeholder={t("share.shopNamePlaceholder")}
+                value={settings.shopName}
+              />
+            </FormField>
+            <SettingsToggleRow
+              label={t("share.includeAddress")}
+              onChange={(value) => settings.setShareOptions({
+                shareIncludeAddress: value,
+                shareIncludePhone: settings.shareIncludePhone,
+                shareIncludeTotals: settings.shareIncludeTotals,
+              })}
+              value={settings.shareIncludeAddress}
             />
-          </FormField>
-          <SettingsToggleRow
-            label={t("share.includeAddress")}
-            onChange={(value) => settings.setShareOptions({
-              shareIncludeAddress: value,
-              shareIncludePhone: settings.shareIncludePhone,
-              shareIncludeTotals: settings.shareIncludeTotals,
-            })}
-            value={settings.shareIncludeAddress}
-          />
-          <SettingsToggleRow
-            label={t("share.includePhone")}
-            onChange={(value) => settings.setShareOptions({
-              shareIncludeAddress: settings.shareIncludeAddress,
-              shareIncludePhone: value,
-              shareIncludeTotals: settings.shareIncludeTotals,
-            })}
-            value={settings.shareIncludePhone}
-          />
-          <SettingsToggleRow
-            label={t("share.includeTotals")}
-            onChange={(value) => settings.setShareOptions({
-              shareIncludeAddress: settings.shareIncludeAddress,
-              shareIncludePhone: settings.shareIncludePhone,
-              shareIncludeTotals: value,
-            })}
-            value={settings.shareIncludeTotals}
-          />
-        </SettingsSection></AnimatedEntrance>
+            <SettingsToggleRow
+              label={t("share.includePhone")}
+              onChange={(value) => settings.setShareOptions({
+                shareIncludeAddress: settings.shareIncludeAddress,
+                shareIncludePhone: value,
+                shareIncludeTotals: settings.shareIncludeTotals,
+              })}
+              value={settings.shareIncludePhone}
+            />
+            <SettingsToggleRow
+              label={t("share.includeTotals")}
+              onChange={(value) => settings.setShareOptions({
+                shareIncludeAddress: settings.shareIncludeAddress,
+                shareIncludePhone: settings.shareIncludePhone,
+                shareIncludeTotals: value,
+              })}
+              value={settings.shareIncludeTotals}
+            />
+          </SettingsSection></AnimatedEntrance>
+        ) : null}
         <AnimatedEntrance delay={240}><SettingsSection subtitle={t("header.subtitle")} title={t("sections.appInfo")}>
           <View style={styles.infoRow}><AppText color="muted" style={styles.infoLabel} variant="body">{t("info.appVersion")}</AppText><AppText style={styles.infoValue} variant="bodyMedium">{appConfig.version}</AppText></View>
           <View style={styles.infoRow}><AppText color="muted" style={styles.infoLabel} variant="body">{t("info.ownCustomers")}</AppText><AppText style={styles.infoValue} variant="bodyMedium">{settings.stats.customers}</AppText></View>
@@ -189,28 +179,4 @@ const styles = StyleSheet.create({
     textAlign: "right",
     flexShrink: 1,
   },
-  statsGrid: {
-    flexDirection: "row",
-    gap: spacing.sm,
-    flexWrap: "wrap",
-  },
-  statCard: {
-    minWidth: 92,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: 18,
-    backgroundColor: "rgba(255,255,255,0.72)",
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.06)",
-    gap: 4,
-  },
 });
-
-function SettingsStatCard({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.statCard}>
-      <AppText color="muted" variant="caption">{label}</AppText>
-      <AppText variant="heading">{value}</AppText>
-    </View>
-  );
-}

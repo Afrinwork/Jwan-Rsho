@@ -13,7 +13,9 @@ export type DeliveryNavigationAction =
   // just surfaces `error` and leaves the last known numbers on screen.
   | { type: "ROUTE_FAILED"; message: string }
   | { type: "STOP_COMPLETED"; stopIndex: number }
-  | { type: "STOP_SKIPPED"; stopIndex: number };
+  | { type: "STOP_SKIPPED"; stopIndex: number }
+  | { type: "SKIP_TO"; stopIndex: number }
+  | { type: "REORDER_LAST"; customerId: string };
 
 function findNextPendingIndex(stops: DeliveryStop[], fromIndex: number): number {
   for (let index = fromIndex + 1; index < stops.length; index += 1) {
@@ -108,6 +110,83 @@ export function deliveryNavigationReducer(
         index === action.stopIndex ? { ...stop, status: "skipped" as const } : stop,
       );
       return advanceToNextStop({ ...state, stops }, action.stopIndex);
+    }
+
+    case "SKIP_TO": {
+      if (action.stopIndex < 0 || action.stopIndex >= state.stops.length) {
+        return state;
+      }
+
+      const stops = state.stops.map((stop, index) => {
+        if (index < action.stopIndex && (stop.status === "active" || stop.status === "pending")) {
+          return { ...stop, status: "skipped" as const };
+        }
+        if (index === action.stopIndex && (stop.status === "active" || stop.status === "pending")) {
+          return { ...stop, status: "active" as const };
+        }
+        if (index !== action.stopIndex && stop.status === "active") {
+          return { ...stop, status: "skipped" as const };
+        }
+        return stop;
+      });
+
+      return {
+        ...state,
+        stops,
+        currentStopIndex: action.stopIndex,
+        isNavigating: true,
+        activeRoute: null,
+        remainingRouteDistanceMeters: null,
+        remainingRouteDurationSeconds: null,
+        estimatedArrival: null,
+        error: null,
+      };
+    }
+
+    // Lets the driver change the route's "last stop" mid-drive, mirroring
+    // useRouteLiveNavigation's reorderMarkersLast for this reducer's own
+    // stop list — moves the target to the end (keeping the other stops'
+    // relative order) instead of re-running the pre-drive nearest-neighbor/
+    // Directions optimization. A no-op for a stop that's already
+    // completed/skipped (nothing sensible to reprioritize).
+    case "REORDER_LAST": {
+      const targetIndex = state.stops.findIndex((stop) => stop.customerId === action.customerId);
+      if (targetIndex === -1) {
+        return state;
+      }
+
+      const target = state.stops[targetIndex];
+      if (target.status !== "pending" && target.status !== "active") {
+        return state;
+      }
+
+      const wasActive = target.status === "active";
+      const rest = state.stops.filter((stop) => stop.customerId !== action.customerId);
+      const stops = [...rest, { ...target, status: "pending" as const }];
+
+      if (!wasActive) {
+        const activeIndex = stops.findIndex((stop) => stop.status === "active");
+        return { ...state, stops, currentStopIndex: activeIndex };
+      }
+
+      // The reprioritized stop WAS the active target — the next pending
+      // stop (now first in line) becomes active instead, same as
+      // advanceToNextStop, and the route/eta for the old target is blanked
+      // since the destination just changed.
+      const nextIndex = stops.findIndex((stop) => stop.status === "pending");
+      const nextStops = stops.map((stop, index) => (index === nextIndex ? { ...stop, status: "active" as const } : stop));
+
+      return {
+        ...state,
+        stops: nextStops,
+        currentStopIndex: nextIndex,
+        isNavigating: nextIndex !== -1,
+        activeRoute: null,
+        remainingRouteDistanceMeters: null,
+        remainingRouteDurationSeconds: null,
+        estimatedArrival: null,
+        error: null,
+      };
     }
 
     default:

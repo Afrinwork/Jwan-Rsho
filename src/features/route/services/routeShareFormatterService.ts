@@ -1,4 +1,5 @@
 import { RouteStop } from "@/src/features/route/types/routeTypes";
+import { routeT } from "@/src/features/route/i18n/routeT";
 import { formatEtaTime } from "@/src/features/route/utils/routeFormat";
 import { OrderWithItems } from "@/src/types/order";
 
@@ -22,21 +23,24 @@ export function buildRouteWhatsappMessages(entries: RouteShareEntry[]): RouteWha
     const items = orders.flatMap((order) => order.items);
     const orderLines = items.length
       ? items.map((item) => `- ${item.productNameSnapshot}: ${item.quantity} ${item.unit}`)
-      : ["- لا توجد طلبية مفتوحة"];
+      : ["- Keine offene Bestellung"];
+    const addressLine = [stop.marker.description, stop.marker.city].filter((part) => part.trim()).join(", ");
 
     const lines = [
-      `الاسم: ${stop.marker.title}`,
-      stop.marker.phone.trim() ? `الهاتف: ${stop.marker.phone.trim()}` : null,
-      "الطلب:",
+      `Name: ${stop.marker.title}`,
+      addressLine ? `Adresse: ${addressLine}` : null,
+      routeT("selectionActions.arrivalMessage", { time: formatEtaTime(stop.cumulativeEta) }),
+      "",
+      "Bestellung:",
       ...orderLines,
-      `موعد الوصول التقريبي: ${formatEtaTime(stop.cumulativeEta)}`,
-      "شكراً لثقتكم بنا، ونسعد بخدمتكم في الطلب القادم.",
+      "",
+      "Danke fuer Ihre Bestellung.",
     ];
 
     return {
       name: stop.marker.title,
       phone: stop.marker.phone.trim(),
-      message: lines.filter(Boolean).join("\n"),
+      message: lines.filter((line) => line !== null).join("\n"),
     };
   });
 }

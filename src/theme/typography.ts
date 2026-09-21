@@ -10,28 +10,28 @@ export const fontFamilies = {
 
 export const typography = {
   display: {
-    fontFamily: fontFamilies.serif,
-    fontSize: 42,
-    lineHeight: 50,
-    letterSpacing: -0.9,
+    fontFamily: fontFamilies.bold,
+    fontSize: 32,
+    lineHeight: 38,
+    letterSpacing: 0,
   },
   title: {
-    fontFamily: fontFamilies.serif,
-    fontSize: 31,
-    lineHeight: 39,
-    letterSpacing: -0.45,
+    fontFamily: fontFamilies.bold,
+    fontSize: 28,
+    lineHeight: 34,
+    letterSpacing: 0,
   },
   heading: {
     fontFamily: fontFamilies.semibold,
-    fontSize: 23,
-    lineHeight: 29,
-    letterSpacing: -0.35,
+    fontSize: 20,
+    lineHeight: 26,
+    letterSpacing: 0,
   },
   subheading: {
     fontFamily: fontFamilies.medium,
     fontSize: 18,
     lineHeight: 24,
-    letterSpacing: -0.15,
+    letterSpacing: 0,
   },
   body: {
     fontFamily: fontFamilies.regular,
@@ -47,13 +47,13 @@ export const typography = {
     fontFamily: fontFamilies.semibold,
     fontSize: 13,
     lineHeight: 18,
-    letterSpacing: 0.35,
+    letterSpacing: 0,
   },
   caption: {
     fontFamily: fontFamilies.medium,
     fontSize: 12,
     lineHeight: 16,
-    letterSpacing: 0.3,
+    letterSpacing: 0,
   },
 } satisfies Record<string, TextStyle>;
 

@@ -1,0 +1,40 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Path: driverCheckIns/{ownerId}/{driverId}/{fileName} — the odometer
+    // photo for a driver's Morgen-Check submission.
+    //
+    // The write rule was originally going to confirm ownerId matches the
+    // caller's real managerId via a Firestore cross-service read
+    // (firestore.get(...)), the same check callerManagerId() does in
+    // firestore.rules. That was tried and empirically verified NOT to work
+    // against the local Storage emulator (cloud-storage-rules-runtime
+    // v1.1.3): every firestore.get() call here evaluated to a "Null value
+    // error" even though the referenced users/{uid} doc genuinely existed
+    // and the identical query works fine from firestore.rules itself. With
+    // no way to test the production behavior from this environment either,
+    // shipping a rule that couldn't be verified anywhere was rejected in
+    // favor of this simpler, provably-correct check.
+    //
+    // Residual risk (accepted, same category as the trusted `date` field in
+    // firestore.rules): a driver's client could in principle write under an
+    // ownerId segment that isn't their real manager. This never happens via
+    // the app's own code path (driverCheckInRepository always derives the
+    // path from resolveOwnerScope(), the same source of truth Firestore
+    // itself uses), only via a hand-crafted direct Storage SDK call, and the
+    // photo itself carries no sensitive data beyond an odometer reading — a
+    // low-probability, low-impact gap, not a privacy exposure.
+    match /driverCheckIns/{ownerId}/{driverId}/{fileName} {
+      allow read: if request.auth != null &&
+        (request.auth.uid == driverId || request.auth.uid == ownerId);
+
+      allow write: if request.auth != null &&
+        request.auth.uid == driverId &&
+        request.resource.size < 8 * 1024 * 1024 &&
+        request.resource.contentType.matches('image/.*');
+
+      allow delete: if false; // only the scheduled Cloud Function (Admin SDK) deletes
+    }
+  }
+}

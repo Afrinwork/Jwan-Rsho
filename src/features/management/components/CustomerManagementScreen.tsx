@@ -4,8 +4,6 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
-import { AppCard } from "@/src/components/ui/AppCard";
-import { AppText } from "@/src/components/ui/AppText";
 import { CompactScreenHeader } from "@/src/components/ui/CompactScreenHeader";
 import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
 import { EmptyState } from "@/src/components/ui/EmptyState";
@@ -16,15 +14,25 @@ import { SearchInput } from "@/src/components/ui/SearchInput";
 import { spacing } from "@/src/constants/spacing";
 import { routes } from "@/src/constants/routes";
 import { ManagementCustomerCard } from "@/src/features/management/components/ManagementCustomerCard";
+import { CustomerListTabs } from "@/src/features/management/components/CustomerListTabs";
 import { useManagementCustomers } from "@/src/features/management/hooks/useManagementCustomers";
-import { useThemeColors } from "@/src/hooks/useThemeColors";
-import { radius } from "@/src/theme/radius";
 
 export function CustomerManagementScreen() {
   const router = useRouter();
-  const colors = useThemeColors();
   const { t } = useTranslation("management");
-  const { customers, error, loading, query, setQuery, totalCount, deletingId, deleteCustomer } = useManagementCustomers();
+  const {
+    customers,
+    error,
+    loading,
+    query,
+    setQuery,
+    totalCount,
+    openOrdersCustomerCount,
+    mode,
+    setMode,
+    deletingId,
+    deleteCustomer,
+  } = useManagementCustomers();
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   if (loading) {
@@ -35,25 +43,12 @@ export function CustomerManagementScreen() {
     <ScreenContainer>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <AnimatedEntrance>
-          <CompactScreenHeader
-            subtitle={t("customersScreen.subtitle")}
-            title={t("customersScreen.title")}
-            chips={
-              <AppCard
-                contentStyle={styles.countChip}
-                style={[styles.countFrame, { backgroundColor: "#F8E0CF", borderColor: colors.primaryStrong, shadowColor: colors.primary }]}
-              >
-                <AppText color="primary" variant="label">
-                  {totalCount}
-                </AppText>
-                <AppText color="muted" variant="caption">
-                  {t("customersScreen.count")}
-                </AppText>
-              </AppCard>
-            }
-          />
+          <CompactScreenHeader subtitle={t("customersScreen.subtitle")} title={t("customersScreen.title")} />
         </AnimatedEntrance>
         <AnimatedEntrance delay={40}>
+          <CustomerListTabs mode={mode} onChange={setMode} openOrdersCustomerCount={openOrdersCustomerCount} totalCount={totalCount} />
+        </AnimatedEntrance>
+        <AnimatedEntrance delay={50}>
           <View style={styles.searchWrap}>
             <SearchInput onChangeText={setQuery} value={query} />
           </View>
@@ -65,7 +60,10 @@ export function CustomerManagementScreen() {
         ) : null}
         {!customers.length ? (
           <AnimatedEntrance delay={90}>
-            <EmptyState message={t("customersScreen.emptyMessage")} title={t("customersScreen.emptyTitle")} />
+            <EmptyState
+              message={t(mode === "openOrders" ? "customersScreen.emptyOpenOrdersMessage" : "customersScreen.emptyMessage")}
+              title={t(mode === "openOrders" ? "customersScreen.emptyOpenOrdersTitle" : "customersScreen.emptyTitle")}
+            />
           </AnimatedEntrance>
         ) : (
           <AnimatedEntrance delay={100} style={styles.list}>
@@ -103,18 +101,6 @@ const styles = StyleSheet.create({
   content: {
     gap: spacing.md,
     paddingBottom: spacing.xl,
-  },
-  countFrame: {
-    borderRadius: radius.pill,
-    padding: 2,
-    borderWidth: 1,
-  },
-  countChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 6,
   },
   searchWrap: {
     marginTop: -spacing.sm,

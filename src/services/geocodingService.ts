@@ -27,6 +27,10 @@ function isGeocodableText(value: string | undefined) {
   return Boolean(value?.trim()) && !ARABIC_SCRIPT_PATTERN.test(value!);
 }
 
+function isSamePlace(first: string, second: string) {
+  return first.trim().toLocaleLowerCase("de-DE") === second.trim().toLocaleLowerCase("de-DE");
+}
+
 export const geocodingService = {
   composeAddress(input: AddressInput) {
     return [input.address.trim(), input.city.trim(), input.region?.trim(), input.country.trim()]
@@ -38,7 +42,11 @@ export const geocodingService = {
   // city only, plus region/country but ONLY when they're actually in Latin
   // script (see ARABIC_SCRIPT_PATTERN above).
   composeGeocodingQuery(input: AddressInput) {
-    return [input.address, input.city, input.region, input.country]
+    const addressIsOnlyCity = isSamePlace(input.address, input.city);
+
+    // A repeated city is an imprecise stop, not a street address. Query the
+    // city plus country once so geocoders resolve the intended city centre.
+    return [addressIsOnlyCity ? "" : input.address, input.city, input.region, input.country]
       .filter(isGeocodableText)
       .map((value) => value!.trim())
       .join(", ");

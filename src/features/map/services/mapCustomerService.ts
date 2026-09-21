@@ -1,13 +1,18 @@
 import { Customer } from "@/src/types/customer";
 import { Order } from "@/src/types/order";
 
-export function buildMapCustomerMarkers(customers: Customer[], orders: Order[]) {
+export function countOpenOrdersByCustomerId(orders: Order[]) {
   const openOrderCountByCustomerId = new Map<string, number>();
   orders
     .filter((value) => value.status === "open")
     .forEach((value) => {
       openOrderCountByCustomerId.set(value.customerId, (openOrderCountByCustomerId.get(value.customerId) ?? 0) + 1);
     });
+  return openOrderCountByCustomerId;
+}
+
+export function buildMapCustomerMarkers(customers: Customer[], orders: Order[]) {
+  const openOrderCountByCustomerId = countOpenOrdersByCustomerId(orders);
 
   const markers = customers
     .filter((value) => openOrderCountByCustomerId.has(value.id))
@@ -26,7 +31,7 @@ export function buildMapCustomerMarkers(customers: Customer[], orders: Order[]) 
       country: value.country,
       city: value.city,
       region: value.region ?? "",
-      hasStreetAddress: Boolean(value.address.trim()),
+      hasStreetAddress: hasStreetAddress(value),
     }));
 
   return spreadOutDuplicateCoordinates(markers);
@@ -76,6 +81,42 @@ export function hasValidCoordinates(
   return Number.isFinite(customer.latitude) && Number.isFinite(customer.longitude);
 }
 
+// The other half of buildMapCustomerMarkers()'s coordinate filter: every
+// customer with an open order that DIDN'T make it onto the map goes here
+// instead, so "no marker" never silently means "gone" — see the "Adresse
+// pruefen" list on the map screen. Together with buildMapCustomerMarkers,
+// every customer with an open order ends up in exactly one of the two lists.
+export function getCustomersNeedingAddressCheck(customers: Customer[], orders: Order[]) {
+  const openOrderCountByCustomerId = countOpenOrdersByCustomerId(orders);
+
+  return customers
+    .filter((value) => openOrderCountByCustomerId.has(value.id))
+    .filter((value) => !hasValidCoordinates(value))
+    .sort((left, right) => left.fullName.localeCompare(right.fullName))
+    .map((value) => ({
+      id: value.id,
+      fullName: value.fullName,
+      address: formatCustomerAddress(value),
+      phone: value.phone,
+      openOrderCount: openOrderCountByCustomerId.get(value.id) ?? 0,
+    }));
+}
+
 function formatCustomerAddress(customer: Customer) {
   return [customer.address, customer.city].filter((part) => part.trim()).join(", ");
+}
+
+function hasStreetAddress(customer: Customer) {
+  const address = normalizeAddressPart(customer.address);
+  const city = normalizeAddressPart(customer.city);
+
+  // A frequent data-entry shortcut is entering the city again in the street
+  // field. Geocoders then return the city centre, not the customer's address.
+  // Treat it exactly like an empty street: keep the customer visible, but use
+  // the warning marker so a dispatcher knows the stop needs a real address.
+  return Boolean(address) && address !== city;
+}
+
+function normalizeAddressPart(value: string) {
+  return value.trim().toLocaleLowerCase("de-DE").replace(/\s+/g, " ");
 }

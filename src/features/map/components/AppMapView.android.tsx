@@ -142,7 +142,7 @@ export const AppMapView = forwardRef<AppMapViewHandle, AppMapViewProps>(function
       </Map>
       {captureDragGestures ? (
         <GestureDetector gesture={dragGesture}>
-          <View style={StyleSheet.absoluteFill} />
+          <View collapsable={false} style={StyleSheet.absoluteFill} />
         </GestureDetector>
       ) : null}
     </View>

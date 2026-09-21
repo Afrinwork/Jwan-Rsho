@@ -5,6 +5,10 @@ export function isPointInsidePolygon(point: MapSelectionPoint, polygon: MapSelec
     return false;
   }
 
+  if (polygon.some((vertex, index) => isPointOnSegment(point, vertex, polygon[(index + 1) % polygon.length]))) {
+    return true;
+  }
+
   let inside = false;
 
   for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i, i += 1) {
@@ -27,4 +31,21 @@ export function isPointInsidePolygon(point: MapSelectionPoint, polygon: MapSelec
   }
 
   return inside;
+}
+
+function isPointOnSegment(point: MapSelectionPoint, start: MapSelectionPoint, end: MapSelectionPoint) {
+  const cross =
+    (point.longitude - start.longitude) * (end.latitude - start.latitude) -
+    (point.latitude - start.latitude) * (end.longitude - start.longitude);
+
+  if (Math.abs(cross) > 1e-10) {
+    return false;
+  }
+
+  return (
+    point.longitude >= Math.min(start.longitude, end.longitude) - 1e-10 &&
+    point.longitude <= Math.max(start.longitude, end.longitude) + 1e-10 &&
+    point.latitude >= Math.min(start.latitude, end.latitude) - 1e-10 &&
+    point.latitude <= Math.max(start.latitude, end.latitude) + 1e-10
+  );
 }

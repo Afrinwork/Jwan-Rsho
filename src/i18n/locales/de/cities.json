@@ -2,14 +2,16 @@
   "listScreen": {
     "loading": "Staedte werden geladen...",
     "emptyTitle": "Keine Staedte",
-    "emptyMessage": "Es sind noch keine Staedte sichtbar. Fuege zuerst ueber den Hinzufuegen-Tab einen Kunden oder eine Bestellung mit einer Stadt hinzu."
+    "emptyMessage": "Es sind noch keine Staedte sichtbar. Fuege zuerst ueber den Hinzufuegen-Tab einen Kunden oder eine Bestellung mit einer Stadt hinzu.",
+    "emptyCustomerSearchTitle": "Keine Kunden gefunden",
+    "emptyCustomerSearchMessage": "Es wurde kein Kunde mit diesem Namen gefunden."
   },
   "summary": {
     "defaultTitle": "Staedte",
     "defaultSubtitle": "Zusammengestellt aus deinen Kundendaten."
   },
   "filters": {
-    "searchPlaceholder": "Nach Stadt suchen",
+    "searchPlaceholder": "Nach Kundenname suchen",
     "countryKicker": "Nach Land filtern",
     "allCountries": "Alle"
   },
@@ -53,7 +55,7 @@
     "noCustomersSelected": "Es sind keine Kunden ausgewaehlt.",
     "noOpenOrdersSelected": "Es gibt keine offenen Bestellungen in der Auswahl.",
     "completeSelectedTitle": "Offene Bestellungen der ausgewaehlten Kunden erledigen ({{count}})",
-    "completeSelectedMessage": "Alle offenen Bestellungen der ausgewaehlten Kunden werden danach endgueltig geloescht. Das kann nicht rueckgaengig gemacht werden."
+    "completeSelectedMessage": "Alle offenen Bestellungen der ausgewaehlten Kunden werden als erledigt markiert und erscheinen danach unter \"Heute erledigt\"."
   },
   "productTotals": {
     "title": "Summe der offenen Produkte"
@@ -68,7 +70,7 @@
   },
   "completeOrder": {
     "confirmTitle": "Diese Bestellung erledigen?",
-    "confirmMessage": "Diese Bestellung wird danach endgueltig geloescht. Der Kunde und seine Adresse bleiben erhalten. Das kann nicht rueckgaengig gemacht werden."
+    "confirmMessage": "Diese Bestellung wird als erledigt markiert und erscheint danach unter \"Heute erledigt\". Der Kunde und seine Adresse bleiben erhalten."
   },
   "deleteCustomer": {
     "confirmTitle": "Diesen Kunden loeschen?",

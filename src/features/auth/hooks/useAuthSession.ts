@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 
+import { canAccessFullApp, isDriver, isSuperAdmin, normalizeLegacyRole } from "@/src/features/auth/permissions";
 import { authRepository } from "@/src/repositories/authRepository";
 import { userRepository } from "@/src/repositories/userRepository";
 import { useAuthStore } from "@/src/store/authStore";
@@ -10,7 +11,6 @@ export function useAuthSession() {
     currentUser,
     authLoading,
     authError,
-    isAdmin,
     setUser,
     clearUser,
     setAuthLoading,
@@ -19,28 +19,26 @@ export function useAuthSession() {
 
   useEffect(() => {
     setAuthLoading(true);
-    const unsubscribe = authRepository.observeAuth(async (firebaseUser) => {
+    // observeAuth's callback is already a backend-agnostic AuthUser --
+    // any backend-specific race (e.g. Firebase's ID-token-attachment
+    // race) is handled inside that backend's own authRepository, not
+    // here, so this hook doesn't need to know which backend is active.
+    const unsubscribe = authRepository.observeAuth(async (authUser) => {
       try {
-        if (!firebaseUser) {
+        if (!authUser) {
           clearUser();
           setAuthError(null);
           setAuthLoading(false);
           return;
         }
 
-        // Screens mount as soon as authLoading flips false and immediately fire
-        // several parallel Firestore reads (overview stats, map customers). Right
-        // after a cold start those can race the ID token still being attached to
-        // the SDK's credential provider and come back "permission-denied" even
-        // though the user is genuinely signed in — waiting for the token here
-        // first guarantees it's already resolved by the time anything else reads.
-        await firebaseUser.getIdToken();
-        const profile = await userRepository.getUserProfile(firebaseUser.uid);
+        const profile = await userRepository.getUserProfile(authUser.uid);
         setUser({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          displayName: profile?.fullName ?? firebaseUser.displayName,
-          role: profile?.role ?? "user",
+          uid: authUser.uid,
+          email: authUser.email,
+          displayName: profile?.fullName ?? authUser.displayName,
+          role: normalizeLegacyRole(profile?.role, profile?.managerId),
+          managerId: profile?.managerId,
         });
         setAuthError(null);
       } catch (error) {
@@ -58,7 +56,9 @@ export function useAuthSession() {
     currentUser,
     authLoading,
     authError,
-    isAdmin,
     isAuthenticated: Boolean(currentUser),
+    isSuperAdmin: isSuperAdmin(currentUser),
+    isDriver: isDriver(currentUser),
+    canAccessFullApp: canAccessFullApp(currentUser),
   };
 }

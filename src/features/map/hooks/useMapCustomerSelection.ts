@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { mapT } from "@/src/features/map/i18n/mapT";
 
-import { buildSelectionShareMessage, SelectionShareCustomer, SelectionShareItem } from "@/src/features/map/services/mapShareFormatterService";
+import { buildEmailExport, canStartSelectionExport, SelectionExportSnapshot } from "@/src/features/map/services/mapSelectionExportService";
 import { useMapSelection } from "@/src/features/map/hooks/useMapSelection";
 import { useSelectionSummary } from "@/src/features/map/hooks/useSelectionSummary";
 import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
@@ -9,9 +9,6 @@ import { customerRepository } from "@/src/repositories/customerRepository";
 import { emailService } from "@/src/services/emailService";
 import { sharingService } from "@/src/services/sharingService";
 import { useAppStore } from "@/src/store/appStore";
-import { buildProductTotals } from "@/src/utils/orderItemTotals";
-import { OrderWithItems } from "@/src/types/order";
-import { ProductTotal } from "@/src/types/productTotal";
 import { formatError } from "@/src/utils/formatError";
 
 export function useMapCustomerSelection(
@@ -24,12 +21,14 @@ export function useMapCustomerSelection(
   const shareIncludeAddress = useAppStore((state) => state.shareIncludeAddress);
   const shareIncludePhone = useAppStore((state) => state.shareIncludePhone);
   const shareIncludeTotals = useAppStore((state) => state.shareIncludeTotals);
+  const whatsappSelectionTemplate = useAppStore((state) => state.whatsappSelectionTemplate);
   const selection = useMapSelection(visibleMarkers);
   const summary = useSelectionSummary(selection.selectedIds);
   const [listVisible, setListVisible] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [emailing, setEmailing] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [exportPreview, setExportPreview] = useState<SelectionExportSnapshot | null>(null);
   const [shareError, setShareError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -71,66 +70,76 @@ export function useMapCustomerSelection(
   }, [resetSelection, selection.selectedIds]);
 
   const share = useCallback(async () => {
+    if (!canStartSelectionExport({ sharing, emailing })) return;
+
     setShareError(null);
     setSharing(true);
 
     try {
-      const message = await buildSelectionMessage({
+      const exportSnapshot = await buildSelectionExport({
+        allMarkers,
         productEmojiById,
-        selectedMarkers,
+        selectedIds: selection.selectedIds,
         shareIncludeAddress,
         shareIncludePhone,
         shareIncludeTotals,
         shopName,
+        messageTemplate: whatsappSelectionTemplate,
         summary,
       });
+      setExportPreview(exportSnapshot);
 
-      if (!message) {
+      if (!exportSnapshot.message) {
         setShareError(t("errors.noCustomersSelected"));
         return;
       }
 
-      await sharingService.shareText(message);
+      await sharingService.shareText(exportSnapshot.message);
     } catch (error) {
       setShareError(formatError(error).message);
     } finally {
       setSharing(false);
     }
-  }, [productEmojiById, selectedMarkers, shareIncludeAddress, shareIncludePhone, shareIncludeTotals, shopName, summary, t]);
+  }, [allMarkers, emailing, productEmojiById, selection.selectedIds, shareIncludeAddress, shareIncludePhone, shareIncludeTotals, sharing, shopName, summary, t, whatsappSelectionTemplate]);
 
   const shareByEmail = useCallback(async () => {
+    if (!canStartSelectionExport({ sharing, emailing })) return;
+
     setShareError(null);
     setEmailing(true);
 
     try {
-      const message = await buildSelectionMessage({
+      const exportSnapshot = await buildSelectionExport({
+        allMarkers,
         productEmojiById,
-        selectedMarkers,
+        selectedIds: selection.selectedIds,
         shareIncludeAddress,
         shareIncludePhone,
         shareIncludeTotals,
         shopName,
         summary,
       });
+      setExportPreview(exportSnapshot);
 
-      if (!message) {
+      if (!exportSnapshot.message) {
         setShareError(t("errors.noCustomersSelected"));
         return;
       }
 
-      await emailService.compose(shopName?.trim() || t("share.defaultSubject"), message);
+      await emailService.compose(shopName?.trim() || t("share.defaultSubject"), exportSnapshot.message);
     } catch (error) {
       setShareError(formatError(error).message);
     } finally {
       setEmailing(false);
     }
-  }, [productEmojiById, selectedMarkers, shareIncludeAddress, shareIncludePhone, shareIncludeTotals, shopName, summary, t]);
+  }, [allMarkers, emailing, productEmojiById, selection.selectedIds, shareIncludeAddress, shareIncludePhone, shareIncludeTotals, sharing, shopName, summary, t]);
 
   return {
     selection,
     selectedMarkers,
     totals: summary.totals,
     totalsLoading: summary.isLoading,
+    exportPreview,
     listVisible,
     sharing,
     emailing,
@@ -146,79 +155,41 @@ export function useMapCustomerSelection(
   };
 }
 
-async function buildSelectionMessage({
+async function buildSelectionExport({
+  allMarkers,
   productEmojiById,
-  selectedMarkers,
+  selectedIds,
   shareIncludeAddress,
   shareIncludePhone,
   shareIncludeTotals,
   shopName,
+  messageTemplate,
   summary,
 }: {
+  allMarkers: MapCustomerMarker[];
   productEmojiById: Map<string, string | undefined>;
-  selectedMarkers: MapCustomerMarker[];
+  selectedIds: string[];
   shareIncludeAddress: boolean;
   shareIncludePhone: boolean;
   shareIncludeTotals: boolean;
   shopName: string;
-  summary: { ensureLoaded: () => Promise<OrderWithItems[]> };
+  messageTemplate?: string;
+  summary: { ensureLoaded: (ids?: string[]) => Promise<import("@/src/types/order").OrderWithItems[]>; totals: import("@/src/types/productTotal").ProductTotal[] };
 }) {
-  const orders = await summary.ensureLoaded();
+  const customerIds = [...new Set(selectedIds)];
+  const orders = await summary.ensureLoaded(customerIds);
 
-  return buildSelectionShareMessage(
-    buildShareCustomers(selectedMarkers, orders, productEmojiById),
-    enrichTotalsWithEmoji(buildProductTotals(orders), productEmojiById),
-    {
+  return buildEmailExport({
+    customerIds,
+    markers: allMarkers,
+    orders,
+    productEmojiById,
+    options: {
       includeAddress: shareIncludeAddress,
       includePhone: shareIncludePhone,
       includeTotal: shareIncludeTotals,
       shopName,
+      messageTemplate,
     },
-  );
-}
-
-function buildShareCustomers(
-  markers: MapCustomerMarker[],
-  orders: OrderWithItems[],
-  productEmojiById: Map<string, string | undefined>,
-): SelectionShareCustomer[] {
-  const ordersByCustomerId = new Map<string, OrderWithItems[]>();
-  orders.forEach((order) => {
-    ordersByCustomerId.set(order.customerId, [...(ordersByCustomerId.get(order.customerId) ?? []), order]);
   });
-
-  return markers.map((marker) => {
-    const customerOrders = ordersByCustomerId.get(marker.id) ?? [];
-
-    return {
-      fullName: marker.title,
-      address: marker.description,
-      phone: marker.phone,
-      city: marker.city,
-      note: marker.note,
-      orderCount: customerOrders.length,
-      items: customerOrders.flatMap((order) =>
-        order.items.map((item) => ({
-          productName: item.productNameSnapshot,
-          quantity: item.quantity,
-          unit: item.unit,
-          emoji: productEmojiById.get(item.productId),
-        })),
-      ),
-    };
-  });
-}
-
-// ProductTotal.productKey is built as `${productId}:${unit}` (see src/utils/orderItemTotals.ts),
-// so the productId can be recovered from it to look up that product's current emoji.
-function enrichTotalsWithEmoji(
-  totals: ProductTotal[],
-  productEmojiById: Map<string, string | undefined>,
-): SelectionShareItem[] {
-  return totals.map((total) => ({
-    productName: total.productName,
-    quantity: total.quantity,
-    unit: total.unit,
-    emoji: productEmojiById.get(total.productKey.split(":")[0]),
-  }));
 }

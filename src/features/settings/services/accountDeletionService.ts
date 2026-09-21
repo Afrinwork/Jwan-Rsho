@@ -1,19 +1,5 @@
-import { httpsCallable } from "firebase/functions";
+import { backend } from "@/src/config/backendEnv";
+import { accountDeletionService as firebaseImpl } from "@/src/features/settings/services/accountDeletionService.firebase";
+import { accountDeletionService as supabaseImpl } from "@/src/features/settings/services/accountDeletionService.supabase";
 
-import { functionsClient } from "@/src/firebase/functions";
-import { AppError } from "@/src/errors/AppError";
-import { errorMessages } from "@/src/errors/errorMessages";
-
-export const accountDeletionService = {
-  async deleteOwnAccount() {
-    if (!functionsClient) {
-      throw new AppError(errorMessages.firebaseNotConfigured);
-    }
-
-    const callable = httpsCallable<undefined, { success: boolean }>(
-      functionsClient,
-      "deleteOwnAccount",
-    );
-    return callable();
-  },
-};
+export const accountDeletionService = backend === "supabase" ? supabaseImpl : firebaseImpl;

@@ -18,6 +18,9 @@
     "title": "Benutzer anlegen",
     "subtitle": "Nur der Admin kann neue Benutzerkonten anlegen.",
     "fullNameLabel": "Vollstaendiger Name",
+    "roleLabel": "Rolle",
+    "roleAdmin": "Admin",
+    "roleDriver": "Fahrer",
     "emailLabel": "E-Mail-Adresse",
     "passwordLabel": "Passwort",
     "confirmPasswordLabel": "Passwort bestaetigen",
@@ -36,6 +39,73 @@
     "confirmMessage": "Dieses Konto und alle zugehoerigen Daten werden endgueltig geloescht. Das kann nicht rueckgaengig gemacht werden.",
     "confirmLabel": "Endgueltig loeschen",
     "successMessage": "Der Benutzer wurde endgueltig geloescht."
+  },
+  "driverDashboard": {
+    "title": "Fahrer",
+    "subtitle": "Live-Übersicht: Standort, Kilometerstand und Tagesleistung pro Fahrer.",
+    "loading": "Fahrer werden geladen...",
+    "addDriver": "Neuen Fahrer anlegen",
+    "emptyTitle": "Keine Fahrer",
+    "emptyMessage": "Du hast noch keine Fahrer angelegt.",
+    "checkInOk": "Live heute",
+    "checkInMissing": "Noch kein Standort",
+    "openLabel": "Offen",
+    "completedLabel": "Geschafft",
+    "notDoneLabel": "Nicht geschafft",
+    "noAddress": "Keine aktuelle Adresse gesendet",
+    "noOdometer": "Kein Kilometerstand",
+    "noUpdate": "kein Update",
+    "noGpsAccuracy": "Keine GPS-Genauigkeit",
+    "lastReport": "Letzte Fahrermeldung",
+    "addressLabel": "Aktuelle Adresse",
+    "odometerLabel": "Kilometerstand",
+    "reportedAtLabel": "Zuletzt gesendet",
+    "gpsAccuracyLabel": "GPS-Genauigkeit",
+    "assignedCustomersLabel": "Zugewiesene Kunden",
+    "openDriverView": "Fahrer-Ansicht öffnen",
+    "noDriverView": "Keine offenen Stopps",
+    "blockDriver": "Blockieren",
+    "unblockDriver": "Freigeben",
+    "stats": {
+      "activeDrivers": "aktive Fahrer",
+      "checkedIn": "Live-Standorte",
+      "open": "offene Bestellungen",
+      "completed": "heute erledigt",
+      "notDone": "nicht erledigt",
+      "blocked": "blockierte Fahrer"
+    }
+  },
+  "driverMap": {
+    "progress": "{{open}} offen · {{completed}} heute erledigt",
+    "lastUpdate": "Zuletzt gemeldet um {{time}} · {{address}}",
+    "noLocation": "Noch kein Standort vom Fahrer gemeldet"
+  },
+  "adminDashboard": {
+    "title": "Admins",
+    "subtitle": "Deine eigenen Admin-Konten verwalten.",
+    "loading": "Admins werden geladen...",
+    "addAdmin": "Neuen Admin anlegen",
+    "emptyTitle": "Keine Admins",
+    "emptyMessage": "Du hast noch keine weiteren Admins angelegt."
+  },
+  "editUserSheet": {
+    "title": "Nutzer bearbeiten",
+    "save": "Speichern",
+    "saving": "Wird gespeichert..."
+  },
+  "userActions": {
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "deactivate": "Deaktivieren",
+    "reactivate": "Aktivieren",
+    "delete": "Endgueltig loeschen",
+    "inactiveBadge": "Inaktiv",
+    "deactivateConfirmTitle": "Diesen Nutzer deaktivieren?",
+    "deactivateConfirmMessage": "Der Nutzer wird ausgeloggt und kann sich nicht mehr anmelden. Das Konto und alle Daten bleiben erhalten und koennen jederzeit wieder aktiviert werden.",
+    "reactivateConfirmTitle": "Diesen Nutzer wieder aktivieren?",
+    "reactivateConfirmMessage": "Der Nutzer kann sich danach wieder anmelden.",
+    "deleteConfirmTitle": "Diesen Nutzer endgueltig loeschen?",
+    "deleteConfirmMessage": "Dieses Konto und alle zugehoerigen Daten werden endgueltig geloescht. Das kann nicht rueckgaengig gemacht werden."
   },
   "validation": {
     "nameRequired": "Name ist erforderlich",

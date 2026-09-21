@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   RouteDirectionsError,
+  STOP_SERVICE_BUFFER_SEC,
   buildCumulativeStops,
   buildFallbackLegs,
   decodePolyline,
@@ -60,7 +61,7 @@ test("buildFallbackLegs accumulates straight-line distance from the origin", () 
   assert.ok(legs[0].durationSec > 0);
 });
 
-test("buildCumulativeStops sums distance and advances arrival time per leg", () => {
+test("buildCumulativeStops sums distance and advances arrival time per leg, plus a 10-minute service buffer between stops", () => {
   const departureDate = new Date("2026-08-30T08:00:00.000Z");
   const legs = [
     { point: { id: "a", latitude: 0, longitude: 0 }, distanceKm: 10, durationSec: 600 },
@@ -71,10 +72,39 @@ test("buildCumulativeStops sums distance and advances arrival time per leg", () 
 
   assert.equal(stops[0].cumulativeDistanceKm, 10);
   assert.equal(stops[1].cumulativeDistanceKm, 15);
+  // First stop: no prior stop to have spent service time at — pure driving time.
   assert.equal(stops[0].cumulativeEta.toISOString(), "2026-08-30T08:10:00.000Z");
-  assert.equal(stops[1].cumulativeEta.toISOString(), "2026-08-30T08:15:00.000Z");
+  // Second stop: +10min service buffer at stop 1, then 5min driving to stop 2.
+  assert.equal(stops[1].cumulativeEta.toISOString(), "2026-08-30T08:25:00.000Z");
   assert.equal(stops[0].orderIndex, 0);
   assert.equal(stops[1].orderIndex, 1);
+});
+
+test("buildCumulativeStops applies the service buffer once per stop after the first, compounding across a longer route", () => {
+  const departureDate = new Date("2026-08-30T08:00:00.000Z");
+  const legs = [
+    { point: { id: "a", latitude: 0, longitude: 0 }, distanceKm: 1, durationSec: 60 },
+    { point: { id: "b", latitude: 0, longitude: 0 }, distanceKm: 1, durationSec: 60 },
+    { point: { id: "c", latitude: 0, longitude: 0 }, distanceKm: 1, durationSec: 60 },
+  ];
+
+  const stops = buildCumulativeStops(legs, departureDate);
+
+  assert.equal(stops[0].cumulativeEta.getTime() - departureDate.getTime(), 60_000);
+  assert.equal(stops[1].cumulativeEta.getTime() - departureDate.getTime(), 60_000 + STOP_SERVICE_BUFFER_SEC * 1000 + 60_000);
+  assert.equal(
+    stops[2].cumulativeEta.getTime() - departureDate.getTime(),
+    60_000 + STOP_SERVICE_BUFFER_SEC * 1000 + 60_000 + STOP_SERVICE_BUFFER_SEC * 1000 + 60_000,
+  );
+});
+
+test("buildCumulativeStops with a single stop applies no service buffer at all", () => {
+  const departureDate = new Date("2026-08-30T08:00:00.000Z");
+  const legs = [{ point: { id: "a", latitude: 0, longitude: 0 }, distanceKm: 2, durationSec: 120 }];
+
+  const stops = buildCumulativeStops(legs, departureDate);
+
+  assert.equal(stops[0].cumulativeEta.toISOString(), "2026-08-30T08:02:00.000Z");
 });
 
 test("parseDirectionsResponse reorders waypoints using waypoint_order", () => {

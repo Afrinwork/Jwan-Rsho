@@ -18,10 +18,15 @@ type SelectedCustomersBarProps = {
   deleting: boolean;
   shareError: string | null;
   deleteError: string | null;
+  previewCustomerCount?: number;
+  previewOpenOrderCount?: number;
+  loadingSelectionData?: boolean;
   onViewSelection: () => void;
   onOpenRoute: () => void;
   onShare: () => void;
   onShareByEmail: () => void;
+  onAssignDriver?: () => void;
+  assigningDriver?: boolean;
   onDeleteSelected: () => void;
   inline?: boolean;
 };
@@ -30,7 +35,6 @@ export function SelectedCustomersBar(props: SelectedCustomersBarProps) {
   const t = mapT;
   const colors = useThemeColors();
   const [open, setOpen] = useState(false);
-  const shareLabel = "\u0645\u0634\u0627\u0631\u0643\u0629";
 
   if (props.selectedCount === 0) {
     return null;
@@ -51,7 +55,7 @@ export function SelectedCustomersBar(props: SelectedCustomersBarProps) {
           ]}
         >
           <AppText style={styles.dropdownLabel} variant="caption">
-            {shareLabel} {open ? "^" : "v"}
+            {t("selectedBar.count", { count: props.selectedCount })} {open ? "^" : "v"}
           </AppText>
         </Pressable>
         <Pressable
@@ -67,9 +71,21 @@ export function SelectedCustomersBar(props: SelectedCustomersBarProps) {
       {open ? (
         <AppCard contentStyle={styles.menu} frosted style={props.inline ? styles.inlineMenu : undefined}>
           <AppText variant="label">{t("selectedBar.count", { count: props.selectedCount })}</AppText>
+          <AppText variant="caption">
+            {t("selectedBar.summary", {
+              customers: props.previewCustomerCount ?? props.selectedCount,
+              orders: props.previewOpenOrderCount ?? 0,
+            })}
+          </AppText>
           <View style={styles.actions}>
             <View style={styles.actionButton}>
-              <AppButton label={t("selectedBar.whatsapp")} loading={props.sharing} onPress={props.onShare} size="compact" />
+              <AppButton
+                disabled={props.loadingSelectionData || props.emailing}
+                label={t("selectedBar.whatsapp")}
+                loading={props.sharing}
+                onPress={props.onShare}
+                size="compact"
+              />
             </View>
             <View style={styles.actionButton}>
               <AppButton label={t("selectedBar.view")} onPress={props.onViewSelection} size="compact" variant="secondary" />
@@ -77,12 +93,24 @@ export function SelectedCustomersBar(props: SelectedCustomersBarProps) {
             <View style={styles.actionButton}>
               <AppButton
                 label={t("selectedBar.email")}
+                disabled={props.loadingSelectionData || props.sharing}
                 loading={props.emailing}
                 onPress={props.onShareByEmail}
                 size="compact"
                 variant="secondary"
               />
             </View>
+            {props.onAssignDriver ? (
+              <View style={styles.actionButton}>
+                <AppButton
+                  label={t("selectedBar.assignDriver")}
+                  loading={props.assigningDriver}
+                  onPress={props.onAssignDriver}
+                  size="compact"
+                  variant="secondary"
+                />
+              </View>
+            ) : null}
             <View style={styles.actionButton}>
               <AppButton
                 label={t("selectedBar.clear")}

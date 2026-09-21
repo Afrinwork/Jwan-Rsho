@@ -8,7 +8,9 @@ import { EmptyState } from "@/src/components/ui/EmptyState";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { LoadingView } from "@/src/components/ui/LoadingView";
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
+import { SearchInput } from "@/src/components/ui/SearchInput";
 import { SuccessState } from "@/src/components/ui/SuccessState";
+import { AppButton } from "@/src/components/ui/AppButton";
 import { CustomerOpenOrders, useOpenOrdersOverview } from "@/src/features/orders/hooks/useOpenOrdersOverview";
 import { OpenOrdersCustomerCard } from "@/src/features/orders/components/OpenOrdersCustomerCard";
 import { NavigationAppSheet } from "@/src/features/map/components/NavigationAppSheet";
@@ -24,6 +26,7 @@ const ALL_CITIES = "__all__";
 
 export function OpenOrdersScreen() {
   const { t } = useTranslation("orders");
+  const colors = useThemeColors();
   const preferredNavigationApp = useAppStore((state) => state.preferredNavigationApp);
   const {
     groups,
@@ -33,19 +36,63 @@ export function OpenOrdersScreen() {
     actionError,
     actionSuccess,
     completeOrder,
+    completeOrders,
     deleteOrder,
     pendingActionOrderId,
     pendingActionType,
   } = useOpenOrdersOverview();
   const [selectedCity, setSelectedCity] = useState(ALL_CITIES);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCustomerIds, setSelectedCustomerIds] = useState<Set<string>>(new Set());
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [navigationApps, setNavigationApps] = useState<MapNavigationApp[] | null>(null);
   const [navigationTargetAddress, setNavigationTargetAddress] = useState<string | null>(null);
 
-  const filteredGroups = useMemo(
-    () => (selectedCity === ALL_CITIES ? groups : groups.filter((group) => group.customer.city.trim() === selectedCity)),
-    [groups, selectedCity],
+  const filteredGroups = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    const cityGroups = selectedCity === ALL_CITIES ? groups : groups.filter((group) => group.customer.city.trim() === selectedCity);
+
+    if (!term) {
+      return cityGroups;
+    }
+
+    return cityGroups.filter((group) =>
+      [
+        group.customer.fullName,
+        group.customer.phone,
+        group.customer.address,
+        group.customer.city,
+        ...group.orders.flatMap((order) => order.items.map((item) => item.productNameSnapshot)),
+      ].some((value) => value.toLowerCase().includes(term)),
+    );
+  }, [groups, searchTerm, selectedCity]);
+
+  const selectedGroups = useMemo(
+    () => groups.filter((group) => selectedCustomerIds.has(group.customer.id)),
+    [groups, selectedCustomerIds],
   );
+  const selectedOrderIds = useMemo(
+    () => selectedGroups.flatMap((group) => group.orders.map((order) => order.id)),
+    [selectedGroups],
+  );
+  const isCompletingMany = pendingActionType === "completeMany";
+
+  function toggleCustomerSelection(customerId: string) {
+    setSelectedCustomerIds((current) => {
+      const next = new Set(current);
+      if (next.has(customerId)) {
+        next.delete(customerId);
+      } else {
+        next.add(customerId);
+      }
+      return next;
+    });
+  }
+
+  async function handleCompleteSelected() {
+    await completeOrders(selectedOrderIds);
+    setSelectedCustomerIds(new Set());
+  }
 
   async function handleNavigate(group: CustomerOpenOrders) {
     const address = geocodingService.composeAddress({
@@ -77,6 +124,18 @@ export function OpenOrdersScreen() {
         {error ? <ErrorState message={error} /> : null}
         {actionError ? <ErrorState message={actionError} /> : null}
         {actionSuccess ? <SuccessState message={actionSuccess} /> : null}
+        <SearchInput onChangeText={setSearchTerm} placeholder={t("openOrders.searchPlaceholder")} value={searchTerm} />
+        {selectedOrderIds.length ? (
+          <View style={[styles.selectionBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <AppText color="muted" style={styles.selectionText} variant="bodyMedium">
+              {t("openOrders.selectedSummary", { count: selectedOrderIds.length })}
+            </AppText>
+            <View style={styles.selectionActions}>
+              <AppButton label={t("openOrders.clearSelection")} onPress={() => setSelectedCustomerIds(new Set())} size="compact" variant="secondary" />
+              <AppButton label={t("openOrders.completeSelected")} loading={isCompletingMany} onPress={() => void handleCompleteSelected()} size="compact" />
+            </View>
+          </View>
+        ) : null}
         {cities.length > 0 ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.filterRow}>
@@ -100,6 +159,8 @@ export function OpenOrdersScreen() {
                 onComplete={(orderId) => void completeOrder(orderId)}
                 onDelete={(orderId) => setDeleteTarget(orderId)}
                 onNavigate={() => void handleNavigate(group)}
+                onToggleSelected={() => toggleCustomerSelection(group.customer.id)}
+                selected={selectedCustomerIds.has(group.customer.id)}
               />
             ))}
           </View>
@@ -176,6 +237,19 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     paddingHorizontal: spacing.sm,
     paddingVertical: 8,
+  },
+  selectionBar: {
+    borderWidth: 1,
+    borderRadius: radius.md,
+    padding: spacing.sm,
+    gap: spacing.xs,
+  },
+  selectionText: {
+    textAlign: "center",
+  },
+  selectionActions: {
+    flexDirection: "row",
+    gap: spacing.xs,
   },
   list: {
     gap: spacing.sm,

@@ -7,33 +7,15 @@ import { ErrorState } from "@/src/components/ui/ErrorState";
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
 import { SuccessState } from "@/src/components/ui/SuccessState";
 import { spacing } from "@/src/constants/spacing";
-import { CustomerModeSelector } from "@/src/features/orders/components/CustomerModeSelector";
-import { ExistingCustomerSection } from "@/src/features/orders/components/ExistingCustomerSection";
-import { NewCustomerSection } from "@/src/features/orders/components/NewCustomerSection";
+import { CustomerSection } from "@/src/features/orders/components/CustomerSection";
 import { OrderItemsSection } from "@/src/features/orders/components/OrderItemsSection";
 import { SaveOrderButton } from "@/src/features/orders/components/SaveOrderButton";
 import { useAddOrder } from "@/src/features/orders/hooks/useAddOrder";
-import { Customer } from "@/src/types/customer";
 
 export function AddOrderScreen() {
   const { t } = useTranslation("orders");
-  const {
-    form,
-    items,
-    customerMode,
-    setMode,
-    selectedCustomer,
-    selectCustomer,
-    submit,
-    submitError,
-    successMessage,
-  } = useAddOrder();
+  const { form, items, selectedCustomer, selectCustomer, clearCustomer, submit, submitError, successMessage } = useAddOrder();
   const errors = form.formState.errors;
-
-  function selectExistingFromDuplicate(customer: Customer) {
-    setMode("existing");
-    selectCustomer(customer);
-  }
 
   function handleSave() {
     Keyboard.dismiss();
@@ -56,18 +38,14 @@ export function AddOrderScreen() {
               <CompactScreenHeader title={t("common:add")} />
             </AnimatedEntrance>
             <AnimatedEntrance delay={60}>
-              <CustomerModeSelector mode={customerMode} onChange={setMode} />
-            </AnimatedEntrance>
-            <AnimatedEntrance delay={110}>
-              {customerMode === "existing" ? (
-                <ExistingCustomerSection
-                  error={errors.customerId?.message}
-                  onSelect={selectCustomer}
-                  selectedCustomer={selectedCustomer}
-                />
-              ) : (
-                <NewCustomerSection control={form.control} errors={errors.customer} onSelectExisting={selectExistingFromDuplicate} />
-              )}
+              <CustomerSection
+                control={form.control}
+                customerIdError={errors.customerId?.message}
+                errors={errors.customer}
+                onClearCustomer={clearCustomer}
+                onSelectCustomer={selectCustomer}
+                selectedCustomer={selectedCustomer}
+              />
             </AnimatedEntrance>
             <AnimatedEntrance delay={150}>
               <OrderItemsSection

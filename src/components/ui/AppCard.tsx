@@ -1,12 +1,8 @@
 import { PropsWithChildren } from "react";
 import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
-import { BlurView } from "expo-blur";
-import { LinearGradient } from "expo-linear-gradient";
 
-import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { radius } from "@/src/theme/radius";
-import { shadows } from "@/src/theme/shadows";
 import { spacing } from "@/src/theme/spacing";
 
 type AppCardProps = PropsWithChildren<{
@@ -26,79 +22,44 @@ export function AppCard({
   frosted = false,
 }: AppCardProps) {
   const colors = useThemeColors();
-  const theme = useAppTheme();
   const palette = resolveTone(tone, colors);
 
   return (
-    <View style={[styles.outer, { shadowColor: colors.shadow }, style]}>
-      <View style={[styles.inner, { backgroundColor: palette.background, borderColor: palette.border }]}>
-        {frosted ? (
-          <BlurView
-            intensity={theme === "dark" ? 22 : 28}
-            style={StyleSheet.absoluteFill}
-            tint={theme === "dark" ? "dark" : "light"}
-          />
-        ) : null}
-        <LinearGradient
-          colors={palette.gradient}
-          end={{ x: 1, y: 0.8 }}
-          start={{ x: 0, y: 0 }}
-          style={StyleSheet.absoluteFill}
-        />
-        <View style={[styles.highlight, { backgroundColor: palette.highlight }]} />
-        <View style={[padded && styles.content, contentStyle]}>{children}</View>
-      </View>
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: frosted ? colors.surfaceMuted : palette.background,
+          borderColor: palette.border,
+        },
+        style,
+      ]}
+    >
+      <View style={[padded && styles.content, contentStyle]}>{children}</View>
     </View>
   );
 }
 
 function resolveTone(tone: AppCardProps["tone"], colors: ReturnType<typeof useThemeColors>) {
   if (tone === "primary") {
-    return {
-      background: colors.primaryMuted,
-      border: colors.border,
-      gradient: ["rgba(255,248,242,0.64)", "rgba(255,248,242,0.08)"] as const,
-      highlight: "rgba(255,250,245,0.46)",
-    };
+    return { background: colors.primaryMuted, border: colors.border };
   }
 
   if (tone === "secondary") {
-    return {
-      background: colors.secondaryMuted,
-      border: colors.border,
-      gradient: ["rgba(247,255,252,0.42)", "rgba(247,255,252,0.04)"] as const,
-      highlight: "rgba(247,255,252,0.24)",
-    };
+    return { background: colors.secondaryMuted, border: colors.border };
   }
 
-  return {
-    background: colors.surfaceElevated,
-    border: colors.border,
-    gradient: ["rgba(255,255,255,0.7)", "rgba(255,248,242,0.08)"] as const,
-    highlight: "rgba(255,255,255,0.52)",
-  };
+  return { background: colors.surfaceElevated, border: colors.border };
 }
 
 const styles = StyleSheet.create({
-  outer: {
-    borderRadius: radius.card,
-    ...shadows.md,
-  },
-  inner: {
-    overflow: "hidden",
+  card: {
     borderRadius: radius.card,
     borderWidth: 1,
-  },
-  highlight: {
-    position: "absolute",
-    top: -28,
-    right: -20,
-    width: 126,
-    height: 126,
-    borderRadius: radius.pill,
+    overflow: "hidden",
   },
   content: {
     padding: spacing.md,
-    gap: spacing.md,
+    gap: spacing.sm,
   },
 });

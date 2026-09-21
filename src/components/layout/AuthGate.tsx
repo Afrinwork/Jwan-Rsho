@@ -8,7 +8,7 @@ import { useAuthSession } from "@/src/features/auth/hooks/useAuthSession";
 
 export function AuthGate({ children }: PropsWithChildren) {
   const { t } = useTranslation("common");
-  const { authLoading, isAdmin, isAuthenticated } = useAuthSession();
+  const { authLoading, canAccessFullApp, isAuthenticated, isDriver } = useAuthSession();
   const router = useRouter();
   const segments = useSegments();
 
@@ -17,12 +17,18 @@ export function AuthGate({ children }: PropsWithChildren) {
       return;
     }
 
-    const redirectTo = resolveAuthRedirect({ isAuthenticated, isAdmin, firstSegment: segments[0] });
+    const redirectTo = resolveAuthRedirect({
+      isAuthenticated,
+      canAccessAdminArea: canAccessFullApp,
+      firstSegment: segments[0],
+      secondSegment: segments[1],
+      isDriver,
+    });
 
     if (redirectTo) {
       router.replace(redirectTo);
     }
-  }, [authLoading, isAdmin, isAuthenticated, router, segments]);
+  }, [authLoading, canAccessFullApp, isAuthenticated, isDriver, router, segments]);
 
   if (authLoading) {
     return <LoadingView label={t("checkingSession")} />;

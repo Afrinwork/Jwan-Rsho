@@ -65,6 +65,31 @@ test("STOP_SKIPPED marks the stop skipped (not completed) and advances the same 
   assert.equal(advanced.stops[1].status, "active");
 });
 
+test("SKIP_TO can jump from the current stop to a later stop and skips everything before it", () => {
+  const started = deliveryNavigationReducer(initialDeliveryNavigationState, {
+    type: "START",
+    stops: [makeStop("c1"), makeStop("c2"), makeStop("c3"), makeStop("c4"), makeStop("c5"), makeStop("c6"), makeStop("c7")],
+    currentLocation: null,
+  });
+  const withRoute = deliveryNavigationReducer(started, { type: "ROUTE_LOADED", leg: makeLeg() });
+  const jumped = deliveryNavigationReducer(withRoute, { type: "SKIP_TO", stopIndex: 6 });
+
+  assert.equal(jumped.currentStopIndex, 6);
+  assert.equal(jumped.isNavigating, true);
+  assert.deepEqual(jumped.stops.map((stop) => stop.status), [
+    "skipped",
+    "skipped",
+    "skipped",
+    "skipped",
+    "skipped",
+    "skipped",
+    "active",
+  ]);
+  assert.equal(jumped.activeRoute, null);
+  assert.equal(jumped.remainingRouteDistanceMeters, null);
+  assert.equal(jumped.estimatedArrival, null);
+});
+
 test("completing the last stop ends navigation", () => {
   const started = deliveryNavigationReducer(initialDeliveryNavigationState, {
     type: "START",
@@ -112,6 +137,61 @@ test("END stops navigating but keeps the stop list around for a summary", () => 
 
   assert.equal(ended.isNavigating, false);
   assert.equal(ended.stops.length, 2);
+});
+
+test("REORDER_LAST moves a not-yet-active pending stop to the end, keeping the active stop unchanged", () => {
+  const started = deliveryNavigationReducer(initialDeliveryNavigationState, {
+    type: "START",
+    stops: [makeStop("c1"), makeStop("c2"), makeStop("c3")],
+    currentLocation: null,
+  });
+  const reordered = deliveryNavigationReducer(started, { type: "REORDER_LAST", customerId: "c2" });
+
+  assert.deepEqual(reordered.stops.map((stop) => stop.customerId), ["c1", "c3", "c2"]);
+  assert.equal(reordered.stops[0].status, "active");
+  assert.equal(reordered.stops[2].status, "pending");
+  assert.equal(reordered.currentStopIndex, 0);
+});
+
+test("REORDER_LAST on the currently active stop hands 'active' to the next pending stop and blanks the stale route", () => {
+  const started = deliveryNavigationReducer(initialDeliveryNavigationState, {
+    type: "START",
+    stops: [makeStop("c1"), makeStop("c2"), makeStop("c3")],
+    currentLocation: null,
+  });
+  const withRoute = deliveryNavigationReducer(started, { type: "ROUTE_LOADED", leg: makeLeg() });
+  const reordered = deliveryNavigationReducer(withRoute, { type: "REORDER_LAST", customerId: "c1" });
+
+  assert.deepEqual(reordered.stops.map((stop) => stop.customerId), ["c2", "c3", "c1"]);
+  assert.equal(reordered.stops[0].status, "active");
+  assert.equal(reordered.stops[2].status, "pending");
+  assert.equal(reordered.currentStopIndex, 0);
+  assert.equal(reordered.activeRoute, null);
+  assert.equal(reordered.remainingRouteDistanceMeters, null);
+  assert.equal(reordered.estimatedArrival, null);
+});
+
+test("REORDER_LAST is a no-op for an already completed or skipped stop", () => {
+  const started = deliveryNavigationReducer(initialDeliveryNavigationState, {
+    type: "START",
+    stops: [makeStop("c1"), makeStop("c2")],
+    currentLocation: null,
+  });
+  const completed = deliveryNavigationReducer(started, { type: "STOP_COMPLETED", stopIndex: 0 });
+  const reordered = deliveryNavigationReducer(completed, { type: "REORDER_LAST", customerId: "c1" });
+
+  assert.deepEqual(reordered, completed);
+});
+
+test("REORDER_LAST is a no-op for an unknown customerId", () => {
+  const started = deliveryNavigationReducer(initialDeliveryNavigationState, {
+    type: "START",
+    stops: [makeStop("c1"), makeStop("c2")],
+    currentLocation: null,
+  });
+  const reordered = deliveryNavigationReducer(started, { type: "REORDER_LAST", customerId: "ghost" });
+
+  assert.deepEqual(reordered, started);
 });
 
 test("GPS_UPDATE updates currentLocation without touching anything else", () => {

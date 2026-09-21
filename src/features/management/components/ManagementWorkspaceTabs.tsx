@@ -30,12 +30,12 @@ export function ManagementWorkspaceTabs(props: ManagementWorkspaceTabsProps) {
           <Pressable
             key={item.id}
             onPress={() => props.onChange(item.id)}
-            style={[
+            style={({ pressed }) => [
               styles.tile,
               {
                 backgroundColor: active ? colors.primary : colors.surfaceElevated,
                 borderColor: active ? colors.primaryStrong : colors.border,
-                shadowColor: colors.shadow,
+                opacity: pressed ? 0.72 : 1,
               },
             ]}
           >
@@ -51,23 +51,22 @@ export function ManagementWorkspaceTabs(props: ManagementWorkspaceTabsProps) {
 
 const styles = StyleSheet.create({
   grid: {
+    backgroundColor: "transparent",
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
+    gap: 4,
   },
   tile: {
-    minWidth: 120,
-    borderRadius: 18,
+    alignItems: "center",
+    borderRadius: 8,
     borderWidth: 1,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 14,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
+    flex: 1,
+    justifyContent: "center",
+    minHeight: 44,
+    paddingHorizontal: spacing.xs,
   },
   tileLabel: {
     fontSize: 15,
-    fontWeight: "800",
+    fontWeight: "700",
     textAlign: "center",
   },
 });

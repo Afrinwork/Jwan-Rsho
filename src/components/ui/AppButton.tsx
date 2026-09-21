@@ -1,10 +1,8 @@
-import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { ActivityIndicator, Pressable, StyleSheet } from "react-native";
 
 import { AppText } from "@/src/components/ui/AppText";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { radius } from "@/src/theme/radius";
-import { shadows } from "@/src/theme/shadows";
 import { spacing } from "@/src/theme/spacing";
 import { typography } from "@/src/theme/typography";
 
@@ -27,65 +25,37 @@ export function AppButton({
 }: AppButtonProps) {
   const colors = useThemeColors();
   const isDisabled = disabled || loading;
-  const compact = size === "compact";
+  const isSecondary = variant === "secondary";
+  const backgroundColor = isSecondary
+    ? colors.surfaceElevated
+    : variant === "danger"
+      ? colors.danger
+      : variant === "success"
+        ? colors.success
+        : colors.primary;
+  const borderColor = isSecondary ? colors.borderStrong : backgroundColor;
 
   return (
     <Pressable
+      accessibilityRole="button"
       disabled={isDisabled}
       onPress={onPress}
-      style={({ pressed }) => {
-        const backgroundColor =
-          variant === "secondary"
-            ? colors.surfaceElevated
-            : variant === "danger"
-              ? colors.danger
-              : variant === "success"
-                ? colors.success
-                : colors.primary;
-        const borderColor =
-          variant === "secondary"
-            ? colors.borderStrong
-            : variant === "danger"
-              ? colors.danger
-              : variant === "success"
-                ? colors.success
-                : colors.primaryStrong;
-
-        return [
-          styles.button,
-          compact && styles.buttonCompact,
-          {
-            backgroundColor,
-            borderColor,
-            opacity: isDisabled ? 0.55 : 1,
-            transform: [{ scale: pressed && !isDisabled ? 0.988 : 1 }],
-            shadowColor: variant === "primary" || variant === "success" ? backgroundColor : colors.shadow,
-          },
-          pressed && !isDisabled ? styles.buttonPressed : null,
-        ];
-      }}
+      style={({ pressed }) => [
+        styles.button,
+        size === "compact" && styles.compact,
+        {
+          backgroundColor,
+          borderColor,
+          opacity: isDisabled ? 0.55 : pressed ? 0.84 : 1,
+        },
+      ]}
     >
-      {variant === "secondary" ? <View style={[styles.secondaryFill, { backgroundColor: colors.surfaceElevated }]} /> : null}
-      {variant !== "secondary" ? (
-        <LinearGradient
-          colors={
-            variant === "danger"
-              ? [colors.danger, "#D92D20"]
-              : variant === "success"
-                ? [colors.success, "#039855"]
-                : [colors.primary, colors.primaryStrong]
-          }
-          end={{ x: 1, y: 0.9 }}
-          start={{ x: 0.1, y: 0 }}
-          style={StyleSheet.absoluteFill}
-        />
-      ) : null}
       {loading ? (
-        <ActivityIndicator color={variant === "secondary" ? colors.primary : colors.primaryContrast} />
+        <ActivityIndicator color={isSecondary ? colors.primary : colors.primaryContrast} />
       ) : (
         <AppText
-          numberOfLines={compact ? 1 : undefined}
-          style={[styles.label, compact && styles.labelCompact, { color: variant === "secondary" ? colors.text : colors.primaryContrast }]}
+          numberOfLines={1}
+          style={[styles.label, size === "compact" && styles.compactLabel, { color: isSecondary ? colors.text : colors.primaryContrast }]}
           variant="bodyMedium"
         >
           {label}
@@ -97,30 +67,21 @@ export function AppButton({
 
 const styles = StyleSheet.create({
   button: {
-    overflow: "hidden",
+    alignItems: "center",
     borderRadius: radius.button,
     borderWidth: 1,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 15,
-    alignItems: "center",
     justifyContent: "center",
-    ...shadows.md,
+    minHeight: 52,
+    paddingHorizontal: spacing.md,
   },
-  buttonPressed: {
-    shadowOpacity: 0.12,
-  },
-  secondaryFill: {
-    ...StyleSheet.absoluteFill,
-  },
-  buttonCompact: {
-    borderRadius: radius.md,
+  compact: {
+    minHeight: 44,
     paddingHorizontal: spacing.sm,
-    paddingVertical: 9,
   },
   label: {
-    letterSpacing: 0.1,
+    textAlign: "center",
   },
-  labelCompact: {
+  compactLabel: {
     ...typography.label,
   },
 });

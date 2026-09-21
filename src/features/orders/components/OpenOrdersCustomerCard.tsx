@@ -1,4 +1,4 @@
-import { Navigation20Regular } from "@fluentui/react-native-icons";
+import { CheckmarkCircle20Filled, Circle20Regular, Navigation20Regular } from "@fluentui/react-native-icons";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
@@ -19,6 +19,8 @@ type OpenOrdersCustomerCardProps = {
   onComplete: (orderId: string) => void;
   onDelete: (orderId: string) => void;
   onNavigate: () => void;
+  onToggleSelected: () => void;
+  selected: boolean;
 };
 
 export function OpenOrdersCustomerCard({
@@ -28,14 +30,28 @@ export function OpenOrdersCustomerCard({
   onComplete,
   onDelete,
   onNavigate,
+  onToggleSelected,
+  selected,
 }: OpenOrdersCustomerCardProps) {
   const { t } = useTranslation("orders");
   const colors = useThemeColors();
   const { customer, orders } = group;
 
   return (
-    <AppCard contentStyle={styles.card}>
+    <AppCard contentStyle={styles.card} style={selected ? { borderColor: colors.primaryStrong, shadowColor: colors.primary } : undefined}>
       <View style={styles.header}>
+        <Pressable
+          onPress={onToggleSelected}
+          style={[
+            styles.selectButton,
+            {
+              backgroundColor: selected ? colors.primaryMuted : colors.surfaceElevated,
+              borderColor: selected ? colors.primaryStrong : colors.border,
+            },
+          ]}
+        >
+          {selected ? <CheckmarkCircle20Filled color={colors.primary} /> : <Circle20Regular color={colors.mutedText} />}
+        </Pressable>
         <View style={styles.headerText}>
           <AppText variant="subheading">{customer.fullName}</AppText>
           <AppText color="muted" variant="caption">
@@ -116,6 +132,14 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     justifyContent: "space-between",
     gap: spacing.sm,
+  },
+  selectButton: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
   headerText: {
     flex: 1,

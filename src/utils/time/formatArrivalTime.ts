@@ -4,5 +4,11 @@
 // drivers. Unlike that one, the timezone is passed in explicitly (per
 // destination country) instead of being fixed to Europe/Berlin.
 export function formatArrivalTime(date: Date, timeZone: string): string {
+  // toLocaleTimeString throws a RangeError for an Invalid Date instead of
+  // returning a string -- guard so a bad upstream ETA can't crash the screen.
+  if (Number.isNaN(date.getTime())) {
+    return "--:--";
+  }
+
   return date.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone });
 }

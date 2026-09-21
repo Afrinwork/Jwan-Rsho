@@ -21,7 +21,7 @@ export function useOpenOrdersOverview() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [pendingActionOrderId, setPendingActionOrderId] = useState<string | null>(null);
-  const [pendingActionType, setPendingActionType] = useState<"complete" | "delete" | null>(null);
+  const [pendingActionType, setPendingActionType] = useState<"complete" | "completeMany" | "delete" | null>(null);
   const pendingActionOrderIdRef = useRef<string | null>(null);
 
   const load = useCallback(async () => {
@@ -100,6 +100,32 @@ export function useOpenOrdersOverview() {
     }
   }, [load, t]);
 
+  const completeOrders = useCallback(async (orderIds: string[]) => {
+    const uniqueOrderIds = [...new Set(orderIds)];
+
+    if (!uniqueOrderIds.length || pendingActionOrderIdRef.current) {
+      return;
+    }
+
+    try {
+      pendingActionOrderIdRef.current = uniqueOrderIds.join(",");
+      setPendingActionOrderId(null);
+      setPendingActionType("completeMany");
+      setActionError(null);
+      setActionSuccess(null);
+      await Promise.all(uniqueOrderIds.map((orderId) => orderRepository.completeOrder(orderId)));
+      setActionSuccess(t("openOrders.completeManySuccess", { count: uniqueOrderIds.length }));
+      await load();
+    } catch (value) {
+      setActionError(formatError(value).message);
+      setActionSuccess(null);
+    } finally {
+      pendingActionOrderIdRef.current = null;
+      setPendingActionOrderId(null);
+      setPendingActionType(null);
+    }
+  }, [load, t]);
+
   const cities = useMemo(
     () => [...new Set(groups.map((value) => value.customer.city.trim()).filter(Boolean))].sort((left, right) => left.localeCompare(right, "de")),
     [groups],
@@ -113,6 +139,7 @@ export function useOpenOrdersOverview() {
     actionError,
     actionSuccess,
     completeOrder,
+    completeOrders,
     deleteOrder,
     pendingActionOrderId,
     pendingActionType,

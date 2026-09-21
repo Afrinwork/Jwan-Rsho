@@ -10,6 +10,11 @@ const ARRIVAL_THRESHOLD_KM = 0.12;
 
 export function useRouteLiveNavigation(markers: MapCustomerMarker[], liveCoordinate: { latitude: number; longitude: number } | null) {
   const [handledIds, setHandledIds] = useState<Set<string>>(new Set());
+  // Subset of handledIds that were skipped rather than completed — an order
+  // that couldn't be delivered still needs to stay visibly distinct on the
+  // map (see RouteStopMarker/routeStopMarkerStyleService) so the driver
+  // knows which stops still need a revisit vs. which are actually done.
+  const [skippedIds, setSkippedIds] = useState<Set<string>>(new Set());
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const [completingArrival, setCompletingArrival] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -71,13 +76,45 @@ export function useRouteLiveNavigation(markers: MapCustomerMarker[], liveCoordin
   const skipStop = useCallback(() => {
     if (!currentMarker) return;
     setHandledIds((current) => new Set(current).add(currentMarker.id));
+    setSkippedIds((current) => new Set(current).add(currentMarker.id));
   }, [currentMarker]);
+
+  const skipToMarker = useCallback((customerId: string) => {
+    const targetIndex = markers.findIndex((marker) => marker.id === customerId);
+    if (targetIndex === -1) return;
+    const skippedOver = markers.slice(0, targetIndex).map((marker) => marker.id);
+
+    setHandledIds((current) => {
+      const next = new Set(current);
+      skippedOver.forEach((id) => next.add(id));
+      next.delete(customerId);
+      return next;
+    });
+    setSkippedIds((current) => {
+      const next = new Set(current);
+      skippedOver.forEach((id) => next.add(id));
+      next.delete(customerId);
+      return next;
+    });
+    setDismissedIds((current) => {
+      if (!current.has(customerId)) return current;
+      const next = new Set(current);
+      next.delete(customerId);
+      return next;
+    });
+  }, [markers]);
 
   // Undoes a skip/complete — removes the stop from handledIds so it becomes
   // pending again. Non-destructive by design (never touches the underlying
   // order), so no confirmation is required to call it.
   const reactivateStop = useCallback((customerId: string) => {
     setHandledIds((current) => {
+      if (!current.has(customerId)) return current;
+      const next = new Set(current);
+      next.delete(customerId);
+      return next;
+    });
+    setSkippedIds((current) => {
       if (!current.has(customerId)) return current;
       const next = new Set(current);
       next.delete(customerId);
@@ -98,6 +135,9 @@ export function useRouteLiveNavigation(markers: MapCustomerMarker[], liveCoordin
     // (never removed), just rendered muted/inactive instead of the normal
     // upcoming-stop color.
     handledIds,
+    // Subset of handledIds that were skipped, not completed — see
+    // RouteStopMarker's `skipped` prop.
+    skippedIds,
     legOrigin,
     distanceToCurrentKm,
     arrivalPromptVisible,
@@ -109,6 +149,7 @@ export function useRouteLiveNavigation(markers: MapCustomerMarker[], liveCoordin
     confirmArrival,
     dismissArrival,
     skipStop,
+    skipToMarker,
     reactivateStop,
   };
 }

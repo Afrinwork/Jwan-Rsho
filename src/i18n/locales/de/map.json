@@ -5,14 +5,26 @@
     "close": "Schliessen"
   },
   "screen": {
-    "loading": "Karte wird vorbereitet..."
+    "loading": "Karte wird vorbereitet...",
+    "newAssignment": "Dir wurden {{count}} neue Bestellungen zugewiesen"
   },
   "toolbar": {
     "title": "Karte",
     "subtitle": "Kunden und Filter direkt auf der Karte.",
     "retryLocation": "Erneut fragen",
     "retryCustomers": "Kunden neu laden",
-    "loadingCustomers": "Kundenpins werden geladen..."
+    "loadingCustomers": "Kundenpins werden geladen...",
+    "diagnostics": "{{openOrders}} offene Bestellungen · {{customers}} Kunden · {{markers}} Kartenpunkte",
+    "needsAddressCheck": "{{count}} Adressen pruefen"
+  },
+  "addressCheck": {
+    "title": "Adressen pruefen",
+    "subtitle": "Diese Kunden haben eine offene Bestellung, konnten aber nicht auf der Karte platziert werden. Die Bestellung ist nicht verloren.",
+    "emptyTitle": "Alles in Ordnung",
+    "emptyMessage": "Aktuell muss keine Adresse geprueft werden.",
+    "noAddress": "Keine Adresse hinterlegt",
+    "openOrderBadge": "{{count}} offene Bestellung(en)",
+    "editButton": "Adresse bearbeiten"
   },
   "filters": {
     "country": "Land",
@@ -26,20 +38,26 @@
     "clearSelection": "Auswahl loeschen"
   },
   "polygonDraw": {
-    "back": "Zurueck",
+    "back": "Zurück",
     "closeSelection": "Auswahl schliessen",
     "pause": "Pause",
     "resume": "Weiter zeichnen"
   },
   "selectedBar": {
     "count": "{{count}} Kunden ausgewaehlt",
+    "summary": "{{customers}} Kunden ausgewaehlt · {{orders}} offene Bestellungen",
     "view": "Ansehen",
     "route": "Route",
     "whatsapp": "WhatsApp",
     "email": "E-Mail",
+    "assignDriver": "Fahrer zuweisen",
     "clear": "Loeschen",
-    "deleteConfirmTitle": "Ausgewaehlte Kunden loeschen?",
-    "deleteConfirmMessage": "{{count}} Kunden werden endgueltig geloescht, inklusive aller ihrer Bestellungen. Das kann nicht rueckgaengig gemacht werden.",
+    "deleteConfirmTitle": "Sicher loeschen? Schritt {{step}} von 3",
+    "deleteConfirmMessage1": "{{count}} Kunden werden endgueltig geloescht, inklusive aller ihrer Bestellungen. Das kann nicht rueckgaengig gemacht werden.",
+    "deleteConfirmMessage2": "Bitte nochmal bestaetigen: Diese {{count}} Kunden und alle Bestellungen verschwinden dauerhaft.",
+    "deleteConfirmMessage3": "Letzte Warnung: Wenn du jetzt bestaetigst, wird wirklich alles fuer diese {{count}} Kunden geloescht.",
+    "deleteConfirmNextLabel": "Ja, weiter",
+    "deleteConfirmFinalLabel": "Endgueltig loeschen",
     "deleteError": "Einige Kunden konnten nicht geloescht werden."
   },
   "selectedList": {
@@ -68,8 +86,8 @@
     "markCompleted": "Als erledigt markieren",
     "markAllCompleted": "Alle {{count}} Bestellungen als erledigt markieren",
     "completeConfirmTitle": "Bestellung erledigt?",
-    "completeConfirmMessage": "Die Bestellung wird danach endgueltig geloescht. Der Kunde und seine Adresse bleiben erhalten. Das kann nicht rueckgaengig gemacht werden.",
-    "completeAllConfirmMessage": "Alle {{count}} Bestellungen werden danach endgueltig geloescht. Der Kunde und seine Adresse bleiben erhalten. Das kann nicht rueckgaengig gemacht werden.",
+    "completeConfirmMessage": "Die Bestellung wird als erledigt markiert und erscheint danach unter \"Heute erledigt\". Der Kunde und seine Adresse bleiben erhalten.",
+    "completeAllConfirmMessage": "Alle {{count}} Bestellungen werden als erledigt markiert und erscheinen danach unter \"Heute erledigt\". Der Kunde und seine Adresse bleiben erhalten.",
     "completeSuccess": "Die Bestellung wurde erfolgreich erledigt.",
     "completeAllSuccess": "Alle offenen Bestellungen wurden erfolgreich erledigt.",
     "callPhone": "Telefonnummer anrufen",
@@ -77,10 +95,35 @@
     "navigation": "Navigation",
     "shareViaWhatsapp": "Per WhatsApp teilen",
     "shareLocation": "Standort teilen",
+    "moreActions": "Mehr Aktionen",
+    "fewerActions": "Weniger Aktionen",
+    "assignDriver": "Fahrer zuweisen",
     "skipStop": "Diesen Stopp ueberspringen",
     "skipConfirmTitle": "Stopp ueberspringen?",
     "skipConfirmMessage": "Dieser Stopp wird uebersprungen und es geht mit dem naechsten weiter. Der Kunde und seine Bestellung bleiben erhalten, du kannst spaeter erneut vorbeifahren.",
     "reactivateStop": "Diesen Stopp wieder aktivieren"
+  },
+  "driverAssignSheet": {
+    "title": "Fahrer zuweisen",
+    "subtitle": "Waehle einen Fahrer fuer diesen Kunden, oder entferne die Zuweisung.",
+    "subtitleMultiple": "Waehle einen Fahrer fuer {{count}} Kunden. Offene Bestellungen werden sofort zugewiesen.",
+    "noneOption": "Keine Zuweisung",
+    "loading": "Fahrer werden geladen...",
+    "emptyMessage": "Du hast noch keine Fahrer angelegt."
+  },
+  "driverStatus": {
+    "open": "Tagesmeldung senden",
+    "title": "Tagesmeldung fuer die Verwaltung",
+    "subtitle": "Sende vor 10:00 Uhr deine aktuelle Adresse und deinen Kilometerstand. Der Kilometerstand wird als Zahl gespeichert, kein Bild ist erforderlich.",
+    "addressAuto": "Deine aktuelle Adresse wird automatisch aus deinem Standort ermittelt.",
+    "managementNote": "Adresse und Kilometerstand werden sofort an deine Verwaltung uebermittelt.",
+    "odometerPlaceholder": "Kilometerstand",
+    "send": "Adresse und Kilometerstand senden",
+    "updateLocation": "Standort aktualisieren",
+    "invalidOdometer": "Bitte gib einen gueltigen Kilometerstand ein.",
+    "locationRequired": "Bitte erlaube den Standortzugriff, damit deine aktuelle Adresse uebermittelt werden kann.",
+    "sentSuccess": "Tagesmeldung gesendet. Aktuelle Adresse und {{odometer}} wurden an die Verwaltung uebermittelt.",
+    "locationSentSuccess": "Deine aktuelle Adresse wurde an die Verwaltung uebermittelt."
   },
   "navigationSheet": {
     "title": "Navigation oeffnen",

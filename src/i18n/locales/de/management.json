@@ -13,6 +13,10 @@
       "title": "Kunden",
       "subtitle": "Kundendaten bearbeiten und synchron in Listen und Ansichten speichern."
     },
+    "cities": {
+      "title": "Staedte",
+      "subtitle": "Staedte durchsuchen und Kunden nach Stadt anzeigen."
+    },
     "countries": {
       "title": "Laender",
       "subtitle": "Laender verwalten, aktivieren, deaktivieren und loeschen."
@@ -24,7 +28,29 @@
     "catalog": {
       "title": "Katalog laden",
       "subtitle": "Beispielkatalog fuer den ersten Start laden."
+    },
+    "drivers": {
+      "title": "Fahrer",
+      "subtitle": "Live-Uebersicht deiner Fahrer: offene und heute erledigte Bestellungen."
+    },
+    "whatsapp": {
+      "title": "WhatsApp-Text",
+      "subtitle": "Automatischen Text fuer markierte Kundenauswahlen bearbeiten."
+    },
+    "admins": {
+      "title": "Admins",
+      "subtitle": "Deine eigenen Admin-Konten anlegen, deaktivieren oder loeschen."
     }
+  },
+  "whatsappTemplate": {
+    "title": "WhatsApp-Text",
+    "subtitle": "Dieser Text steht vor den automatisch eingefuegten Kunden und Bestellungen aus der Karte.",
+    "fieldLabel": "Nachrichtentext",
+    "placeholder": "Hallo, hier ist die Auswahl: {{kunden}} Kunden.",
+    "placeholders": "Platzhalter: {{kunden}} fuer Kunden, {{bestellungen}} fuer offene Bestellungen.",
+    "save": "Text speichern",
+    "saved": "Der WhatsApp-Text wurde gespeichert.",
+    "notAllowed": "Dieser Bereich ist nur fuer Admins sichtbar."
   },
   "workspaceTabs": {
     "customers": "Kunden",
@@ -38,8 +64,14 @@
     "subtitle": "Tippe auf einen Kunden, um seine Daten zu bearbeiten, und speichere, um direkt zur Liste zurueckzukehren.",
     "count": "Kunden",
     "loading": "Kunden werden geladen...",
+    "tabs": {
+      "all": "Kunden",
+      "openOrders": "Mit offenen Bestellungen"
+    },
     "emptyTitle": "Keine Kunden",
     "emptyMessage": "Es wurden keine Kunden fuer diese Liste oder diese Suche gefunden.",
+    "emptyOpenOrdersTitle": "Keine offenen Bestellungen",
+    "emptyOpenOrdersMessage": "Es gibt aktuell keine Kunden mit offenen Bestellungen.",
     "deleteConfirmTitle": "Diesen Kunden loeschen?",
     "deleteConfirmMessage": "Dieser Kunde und alle seine Bestellungen werden endgueltig geloescht. Das kann nicht rueckgaengig gemacht werden."
   },

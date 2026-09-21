@@ -4,11 +4,22 @@
     "title": "نظرة عامة",
     "subtitle": "نظرة سريعة على الطلبات والتنظيم والتقدم.",
     "heroTitle": "تركيز اليوم",
-    "messageTitle": "نظرة على اليوم"
+    "messageTitle": "نظرة على اليوم",
+    "live": "مباشر",
+    "heroOpenOrders": "طلبات مفتوحة تحتاج إلى المتابعة",
+    "heroAction": "عرض الطلبات المفتوحة"
+  },
+  "sections": {
+    "today": "متابعة اليوم",
+    "todayCaption": "وضع العمل الحالي",
+    "workspace": "مساحة العمل",
+    "workspaceAction": "إدارة"
   },
   "stats": {
     "openOrders": { "title": "الطلبات المفتوحة", "caption": "نشطة قيد التنفيذ" },
+    "openOrderCustomers": { "title": "عملاء لديهم طلبات", "caption": "إدارة الطلبات المفتوحة" },
     "completedOrders": { "title": "الطلبات المكتملة", "caption": "تم إنجازها بالفعل" },
+    "drivers": { "title": "السائقون", "caption": "ضمن الفريق" },
     "countries": { "title": "الدول", "caption": "هيكل نشط" },
     "cities": { "title": "المدن", "caption": "بها عملاء" },
     "products": { "title": "المنتجات", "caption": "لطلبات جديدة" },
@@ -29,5 +40,18 @@
     "newOrder": "طلب جديد",
     "openCities": "فتح المدن",
     "management": "الإدارة"
+  },
+  "completedToday": {
+    "title": "أُنجز اليوم",
+    "count": "{{count}} طلب أُنجز اليوم",
+    "searchPlaceholder": "البحث عن عميل",
+    "deleteAll": "حذف الكل",
+    "deleteEntry": "حذف",
+    "itemCount": "{{count}} عنصر",
+    "emptyMessage": "لم يتم إنجاز أي طلب اليوم بعد.",
+    "noSearchResults": "لا يوجد عنصر يطابق بحثك.",
+    "deleteAllConfirmTitle": "حذف جميع الطلبات المُنجزة اليوم؟",
+    "deleteAllConfirmMessage": "هل تريد حقًا حذف جميع الطلبات المُنجزة اليوم؟ سيبقى العملاء محفوظين.",
+    "deleteAllPartialError": "تعذر حذف {{failedCount}} من أصل {{totalCount}} عناصر. تم تحديث القائمة."
   }
 }

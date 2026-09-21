@@ -1,5 +1,6 @@
 {
   "firebaseNotConfigured": "لم يتم إعداد Firebase بعد.",
+  "backendNotConfigured": "لم يتم إعداد الخادم بعد.",
   "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
   "recentLoginRequired": "يرجى تسجيل الدخول مرة أخرى قبل تغيير البريد الإلكتروني.",
   "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",

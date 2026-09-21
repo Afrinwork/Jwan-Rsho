@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { spacing } from "@/src/constants/spacing";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { radius } from "@/src/theme/radius";
 import { Region } from "@/src/types/region";
 import { getLocalizedName } from "@/src/utils/localizedName";
 
@@ -18,7 +19,7 @@ export function RegionListItem({ region, onEdit, onToggleActive, onDelete }: Reg
   const colors = useThemeColors();
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, shadowColor: colors.shadow }]}>
+    <View style={[styles.card, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
       <View style={styles.topRow}>
         <View style={styles.text}>
           <Text numberOfLines={2} style={[styles.name, { color: colors.text }, !region.isActive && { color: colors.mutedText }]}>
@@ -41,12 +42,9 @@ export function RegionListItem({ region, onEdit, onToggleActive, onDelete }: Reg
 const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
-    borderRadius: 18,
+    borderRadius: radius.card,
     padding: spacing.md,
     gap: spacing.sm,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.06,
-    shadowRadius: 14,
   },
   topRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
   text: { gap: 2, flex: 1 },

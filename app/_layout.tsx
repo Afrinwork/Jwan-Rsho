@@ -51,6 +51,10 @@ export default function RootLayout() {
           <Stack.Screen name="management/products" options={{ title: t("stack.products") }} />
           <Stack.Screen name="management/countries" options={{ title: t("stack.countries") }} />
           <Stack.Screen name="management/catalog" options={{ title: t("stack.catalog") }} />
+          <Stack.Screen name="management/drivers" options={{ title: t("stack.drivers") }} />
+          <Stack.Screen name="management/admins" options={{ title: t("stack.admins") }} />
+          <Stack.Screen name="management/whatsapp" options={{ title: t("stack.whatsappTemplate") }} />
+          <Stack.Screen name="management/driver-map" options={{ title: t("stack.driverMap") }} />
           <Stack.Screen name="cities/index" options={{ title: t("stack.cities") }} />
           <Stack.Screen name="city/[city]" options={{ title: t("stack.city") }} />
           <Stack.Screen name="customer/[id]" options={{ title: t("stack.customer") }} />

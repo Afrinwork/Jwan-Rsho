@@ -60,13 +60,11 @@
     "removeConfirmMessage": "Dieses Produkt wird aus der Bestellung entfernt."
   },
   "search": {
-    "placeholder": "Name, Telefon, Stadt oder Strasse",
     "selected": "Ausgewaehlt"
   },
-  "duplicateCheck": {
+  "suggestions": {
     "title": "Meinst du einen von diesen?",
-    "subtitle": "Tippe auf einen Kunden, um dessen Daten zu verwenden, statt einen neuen anzulegen.",
-    "useButton": "Diesen Kunden verwenden"
+    "subtitle": "Tippe auf einen Kunden, um dessen Daten zu uebernehmen."
   },
   "orderStatus": {
     "open": "Offene Bestellung",

@@ -95,6 +95,25 @@ export function useDeliveryNavigation(markers: MapCustomerMarker[]) {
     [state.stops],
   );
 
+  const skipToStop = useCallback(
+    (customerId: string) => {
+      const index = state.stops.findIndex((stop) => stop.customerId === customerId && (stop.status === "active" || stop.status === "pending"));
+      if (index === -1) return;
+      dispatch({ type: "SKIP_TO", stopIndex: index });
+    },
+    [state.stops],
+  );
+
+  // Changes the route's last stop while GPS turn-by-turn navigation is
+  // already running — the caller (RouteLiveScreen) also reorders the plain
+  // marker list for useRouteLiveNavigation, but this reducer's `state.stops`
+  // is its own snapshot (taken once in start()), so it needs this explicit
+  // action to stay in sync instead of picking up the reordered markers prop
+  // automatically.
+  const reorderLast = useCallback((customerId: string) => {
+    dispatch({ type: "REORDER_LAST", customerId });
+  }, []);
+
   useEffect(() => () => stopWatching(), [stopWatching]);
 
   // Also stop the GPS watch when navigation ends on its own (last stop
@@ -209,5 +228,5 @@ export function useDeliveryNavigation(markers: MapCustomerMarker[]) {
     return () => subscription.remove();
   }, [state.isNavigating]);
 
-  return { state, activeTimeZone, start, end, markStopHandled };
+  return { state, activeTimeZone, start, end, markStopHandled, skipToStop, reorderLast };
 }
