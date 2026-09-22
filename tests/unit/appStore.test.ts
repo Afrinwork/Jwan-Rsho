@@ -13,7 +13,9 @@ test("app preferences reset to defaults after custom values", () => {
     shareIncludeAddress: false,
     shareIncludePhone: true,
     shareIncludeTotals: false,
-    whatsappSelectionTemplate: "Eigene Nachricht: {{kunden}}",
+    whatsappTemplateDe: "Eigene Nachricht",
+    whatsappTemplateAr: "رسالة خاصة",
+    whatsappComponents: ["name", "orders"] as const,
   });
 
   useAppStore.getState().resetPreferences();
@@ -27,7 +29,9 @@ test("app preferences reset to defaults after custom values", () => {
       shareIncludeAddress: useAppStore.getState().shareIncludeAddress,
       shareIncludePhone: useAppStore.getState().shareIncludePhone,
       shareIncludeTotals: useAppStore.getState().shareIncludeTotals,
-      whatsappSelectionTemplate: useAppStore.getState().whatsappSelectionTemplate,
+      whatsappTemplateDe: useAppStore.getState().whatsappTemplateDe,
+      whatsappTemplateAr: useAppStore.getState().whatsappTemplateAr,
+      whatsappComponents: useAppStore.getState().whatsappComponents,
     },
     defaultAppPreferences,
   );

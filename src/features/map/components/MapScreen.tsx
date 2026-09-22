@@ -78,7 +78,10 @@ export function MapScreen() {
   const selectedMarker = useMemo(() => filteredMarkers.find((value) => value.id === selectedCustomerId) ?? null, [filteredMarkers, selectedCustomerId]);
   const mapActions = useMapActions(details, selectedMarker);
   const productEmojiById = useMemo(() => new Map(mapActions.products.map((product) => [product.id, product.emoji])), [mapActions.products]);
-  const customerSelection = useMapCustomerSelection(markers, filteredMarkers, productEmojiById);
+  // Only a real GPS fix should feed the "approximate arrival time" WhatsApp
+  // component -- the fallback region (map center with no permission) would
+  // otherwise produce a plausible-looking but meaningless estimate.
+  const customerSelection = useMapCustomerSelection(markers, filteredMarkers, productEmojiById, hasPermission ? region : null);
   const selectedIdSet = useMemo(() => new Set(customerSelection.selection.selectedIds), [customerSelection.selection.selectedIds]);
   const drawingSelection = customerSelection.selection.activeTool === "polygon";
   const drawingPaused = customerSelection.selection.polygonPaused;

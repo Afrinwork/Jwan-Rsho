@@ -51,7 +51,9 @@ export function useUserPreferences() {
           shareIncludeAddress: preferences.shareIncludeAddress,
           shareIncludePhone: preferences.shareIncludePhone,
           shareIncludeTotals: preferences.shareIncludeTotals,
-          whatsappSelectionTemplate: preferences.whatsappSelectionTemplate ?? defaultAppPreferences.whatsappSelectionTemplate,
+          whatsappTemplateDe: preferences.whatsappTemplateDe ?? defaultAppPreferences.whatsappTemplateDe,
+          whatsappTemplateAr: preferences.whatsappTemplateAr ?? defaultAppPreferences.whatsappTemplateAr,
+          whatsappComponents: preferences.whatsappComponents ?? defaultAppPreferences.whatsappComponents,
         });
 
         // Keeps this device in sync with a language chosen on another

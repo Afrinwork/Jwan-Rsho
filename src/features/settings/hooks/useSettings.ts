@@ -38,7 +38,9 @@ export function useSettings() {
     shareIncludeAddress,
     shareIncludePhone,
     shareIncludeTotals,
-    whatsappSelectionTemplate,
+    whatsappTemplateDe,
+    whatsappTemplateAr,
+    whatsappComponents,
     setThemeMode,
     setLanguage: setStoreLanguage,
     setPreferredNavigationApp,
@@ -133,7 +135,9 @@ export function useSettings() {
         shareIncludeAddress,
         shareIncludePhone,
         shareIncludeTotals,
-        whatsappSelectionTemplate,
+        whatsappTemplateDe,
+        whatsappTemplateAr,
+        whatsappComponents,
       });
       updateDisplayName(fullName.trim());
       if (hasEmailChanged) {
@@ -161,7 +165,9 @@ export function useSettings() {
     shareIncludeAddress,
     shareIncludePhone,
     shareIncludeTotals,
-    whatsappSelectionTemplate,
+    whatsappTemplateDe,
+    whatsappTemplateAr,
+    whatsappComponents,
     themeMode,
     t,
     updateDisplayName,

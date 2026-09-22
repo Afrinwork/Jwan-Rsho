@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { mapT } from "@/src/features/map/i18n/mapT";
 
+import { LatLng } from "@/src/features/map/services/mapShareEtaService";
 import { buildEmailExport, canStartSelectionExport, SelectionExportSnapshot } from "@/src/features/map/services/mapSelectionExportService";
 import { useMapSelection } from "@/src/features/map/hooks/useMapSelection";
 import { useSelectionSummary } from "@/src/features/map/hooks/useSelectionSummary";
@@ -15,13 +16,24 @@ export function useMapCustomerSelection(
   allMarkers: MapCustomerMarker[],
   visibleMarkers: MapCustomerMarker[],
   productEmojiById: Map<string, string | undefined>,
+  // The sharer's own current GPS position, if known -- only used for the
+  // optional "approximate arrival time" WhatsApp message component. See
+  // mapShareEtaService.ts.
+  origin?: LatLng | null,
 ) {
   const t = mapT;
   const shopName = useAppStore((state) => state.shopName);
   const shareIncludeAddress = useAppStore((state) => state.shareIncludeAddress);
   const shareIncludePhone = useAppStore((state) => state.shareIncludePhone);
   const shareIncludeTotals = useAppStore((state) => state.shareIncludeTotals);
-  const whatsappSelectionTemplate = useAppStore((state) => state.whatsappSelectionTemplate);
+  const language = useAppStore((state) => state.language);
+  const whatsappTemplateDe = useAppStore((state) => state.whatsappTemplateDe);
+  const whatsappTemplateAr = useAppStore((state) => state.whatsappTemplateAr);
+  const whatsappComponents = useAppStore((state) => state.whatsappComponents);
+  // Whichever language the sender's own app is currently in picks the
+  // template -- not the recipient's language, which the app has no
+  // reliable way to know per customer.
+  const whatsappTemplate = language === "ar" ? whatsappTemplateAr : whatsappTemplateDe;
   const selection = useMapSelection(visibleMarkers);
   const summary = useSelectionSummary(selection.selectedIds);
   const [listVisible, setListVisible] = useState(false);
@@ -84,7 +96,9 @@ export function useMapCustomerSelection(
         shareIncludePhone,
         shareIncludeTotals,
         shopName,
-        messageTemplate: whatsappSelectionTemplate,
+        messageTemplate: whatsappTemplate,
+        components: whatsappComponents,
+        origin,
         summary,
       });
       setExportPreview(exportSnapshot);
@@ -100,7 +114,7 @@ export function useMapCustomerSelection(
     } finally {
       setSharing(false);
     }
-  }, [allMarkers, emailing, productEmojiById, selection.selectedIds, shareIncludeAddress, shareIncludePhone, shareIncludeTotals, sharing, shopName, summary, t, whatsappSelectionTemplate]);
+  }, [allMarkers, emailing, origin, productEmojiById, selection.selectedIds, shareIncludeAddress, shareIncludePhone, shareIncludeTotals, sharing, shopName, summary, t, whatsappComponents, whatsappTemplate]);
 
   const shareByEmail = useCallback(async () => {
     if (!canStartSelectionExport({ sharing, emailing })) return;
@@ -164,6 +178,8 @@ async function buildSelectionExport({
   shareIncludeTotals,
   shopName,
   messageTemplate,
+  components,
+  origin,
   summary,
 }: {
   allMarkers: MapCustomerMarker[];
@@ -174,6 +190,8 @@ async function buildSelectionExport({
   shareIncludeTotals: boolean;
   shopName: string;
   messageTemplate?: string;
+  components?: import("@/src/types/userPreferences").WhatsappMessageComponent[];
+  origin?: LatLng | null;
   summary: { ensureLoaded: (ids?: string[]) => Promise<import("@/src/types/order").OrderWithItems[]>; totals: import("@/src/types/productTotal").ProductTotal[] };
 }) {
   const customerIds = [...new Set(selectedIds)];
@@ -190,6 +208,8 @@ async function buildSelectionExport({
       includeTotal: shareIncludeTotals,
       shopName,
       messageTemplate,
+      components,
+      origin,
     },
   });
 }

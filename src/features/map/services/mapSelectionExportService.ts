@@ -1,5 +1,6 @@
 import { MapCircleSelection, MapSelectionPoint } from "@/src/features/map/types/mapSelectionTypes";
 import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
+import { LatLng, estimateArrivalLabel } from "@/src/features/map/services/mapShareEtaService";
 import {
   buildSelectionShareMessage,
   SelectionShareCustomer,
@@ -9,6 +10,7 @@ import { mapSelectionService } from "@/src/features/map/services/mapSelectionSer
 import { Customer } from "@/src/types/customer";
 import { OrderWithItems } from "@/src/types/order";
 import { ProductTotal } from "@/src/types/productTotal";
+import { WhatsappMessageComponent } from "@/src/types/userPreferences";
 import { buildProductTotals } from "@/src/utils/orderItemTotals";
 
 export type SelectionExportSnapshot = {
@@ -28,6 +30,11 @@ export type SelectionExportOptions = {
   includeTotal?: boolean;
   shopName?: string;
   messageTemplate?: string;
+  components?: WhatsappMessageComponent[];
+  // The sharer's own current GPS position -- only used when `components`
+  // includes "eta" (see mapShareEtaService.ts). Omitted/null just means no
+  // arrival-time line is added, never a crash or a fake guess.
+  origin?: LatLng | null;
 };
 
 export function canStartSelectionExport(state: { sharing: boolean; emailing: boolean }) {
@@ -72,10 +79,13 @@ export function buildEmailExport({
   const uniqueCustomerIds = uniqueStable(customerIds);
   const markersById = new Map(markers.map((marker) => [marker.id, marker]));
   const ordersByCustomerId = groupOrdersByCustomerId(orders);
+  const includeEta = Boolean(options?.components?.includes("eta"));
   const customers = uniqueCustomerIds
     .map((id) => markersById.get(id))
     .filter((marker): marker is MapCustomerMarker => Boolean(marker))
-    .map((marker) => buildShareCustomer(marker, ordersByCustomerId.get(marker.id) ?? [], productEmojiById));
+    .map((marker) =>
+      buildShareCustomer(marker, ordersByCustomerId.get(marker.id) ?? [], productEmojiById, includeEta ? options?.origin : null),
+    );
   const exportTotals = enrichTotalsWithEmoji(totals ?? buildProductTotals(orders), productEmojiById);
 
   return {
@@ -108,6 +118,7 @@ function buildShareCustomer(
   marker: MapCustomerMarker,
   customerOrders: OrderWithItems[],
   productEmojiById: Map<string, string | undefined>,
+  etaOrigin?: LatLng | null,
 ): SelectionShareCustomer {
   return {
     fullName: marker.title,
@@ -116,6 +127,7 @@ function buildShareCustomer(
     city: marker.city,
     note: marker.note,
     orderCount: customerOrders.length,
+    etaLabel: etaOrigin ? estimateArrivalLabel(etaOrigin, marker) : undefined,
     items: customerOrders.flatMap((order) =>
       order.items.map((item) => ({
         productName: item.productNameSnapshot,

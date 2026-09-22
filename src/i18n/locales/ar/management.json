@@ -45,13 +45,27 @@
   "whatsappTemplate": {
     "title": "نص واتساب",
     "subtitle": "يظهر هذا النص قبل بيانات العملاء والطلبات التي تُضاف تلقائياً من الخريطة.",
+    "tabDe": "الألمانية",
+    "tabAr": "العربية",
     "fieldLabel": "نص الرسالة",
     "placeholder": "مرحباً، هذه هي القائمة:",
+    "componentsLabel": "عناصر الرسالة",
+    "componentsSummary": "تم اختيار {{count}} من {{total}}",
+    "componentsDone": "تم",
+    "component": {
+      "name": "الاسم",
+      "address": "العنوان",
+      "phone": "رقم الهاتف",
+      "orders": "قائمة الطلبات",
+      "thankYou": "نص الشكر",
+      "eta": "وقت الوصول التقريبي"
+    },
     "previewLabel": "هكذا ستظهر الرسالة في واتساب",
     "previewSampleName": "أحمد علي",
     "previewSampleCity": "برلين",
     "previewSampleProduct1": "جبنة فيتا",
     "previewSampleProduct2": "زيتون",
+    "previewSampleEta": "14:20",
     "save": "حفظ النص",
     "saved": "تم حفظ نص واتساب.",
     "notAllowed": "هذا القسم متاح للمسؤولين فقط."
