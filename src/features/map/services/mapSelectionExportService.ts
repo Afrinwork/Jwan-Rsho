@@ -5,6 +5,7 @@ import {
   buildSelectionShareMessage,
   SelectionShareCustomer,
   SelectionShareItem,
+  ShareMessageLanguage,
 } from "@/src/features/map/services/mapShareFormatterService";
 import { mapSelectionService } from "@/src/features/map/services/mapSelectionService";
 import { Customer } from "@/src/types/customer";
@@ -31,6 +32,7 @@ export type SelectionExportOptions = {
   shopName?: string;
   messageTemplate?: string;
   components?: WhatsappMessageComponent[];
+  language?: ShareMessageLanguage;
   // The sharer's own current GPS position -- only used when `components`
   // includes "eta" (see mapShareEtaService.ts). Omitted/null just means no
   // arrival-time line is added, never a crash or a fake guess.

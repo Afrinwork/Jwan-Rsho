@@ -119,3 +119,10 @@ test("multi-line blocks get a blank line before them unless they open the block"
   const message = buildSelectionShareMessage([customer], [], { components: ["thankYou", "name", "orders"] });
   assert.equal(message, ["Danke fuer Ihre Bestellung.", "Name: Anna", "", "Bestellung:", "Keine offene Bestellung"].join("\n"));
 });
+
+test("an Arabic message uses Arabic labels throughout", () => {
+  const customer = { fullName: "أحمد", address: "", phone: "0151", city: "برلين", items: [{ productName: "جبنة", quantity: 2, unit: "kg" }] };
+  const message = buildSelectionShareMessage([customer], [], { components: ["name", "address", "phone", "orders", "thankYou"], language: "ar" });
+  assert.equal(message, ["الاسم: أحمد", "العنوان: برلين", "الهاتف: 0151", "", "الطلب:", "جبنة: 2 kg", "", "شكراً لطلبكم."].join("\n"));
+  assert.doesNotMatch(message, /Name|Adresse|Telefon|Bestellung|Danke/);
+});

@@ -98,6 +98,7 @@ export function useMapCustomerSelection(
         shopName,
         messageTemplate: whatsappTemplate,
         components: whatsappComponents,
+        language: language === "ar" ? "ar" : "de",
         origin,
         summary,
       });
@@ -114,7 +115,7 @@ export function useMapCustomerSelection(
     } finally {
       setSharing(false);
     }
-  }, [allMarkers, emailing, origin, productEmojiById, selection.selectedIds, shareIncludeAddress, shareIncludePhone, shareIncludeTotals, sharing, shopName, summary, t, whatsappComponents, whatsappTemplate]);
+  }, [allMarkers, emailing, language, origin, productEmojiById, selection.selectedIds, shareIncludeAddress, shareIncludePhone, shareIncludeTotals, sharing, shopName, summary, t, whatsappComponents, whatsappTemplate]);
 
   const shareByEmail = useCallback(async () => {
     if (!canStartSelectionExport({ sharing, emailing })) return;
@@ -179,6 +180,7 @@ async function buildSelectionExport({
   shopName,
   messageTemplate,
   components,
+  language,
   origin,
   summary,
 }: {
@@ -191,6 +193,7 @@ async function buildSelectionExport({
   shopName: string;
   messageTemplate?: string;
   components?: import("@/src/types/userPreferences").WhatsappMessageComponent[];
+  language?: import("@/src/features/map/services/mapShareFormatterService").ShareMessageLanguage;
   origin?: LatLng | null;
   summary: { ensureLoaded: (ids?: string[]) => Promise<import("@/src/types/order").OrderWithItems[]>; totals: import("@/src/types/productTotal").ProductTotal[] };
 }) {
@@ -209,6 +212,7 @@ async function buildSelectionExport({
       shopName,
       messageTemplate,
       components,
+      language,
       origin,
     },
   });

@@ -73,7 +73,8 @@
     "componentsAvailable": "Weitere Bausteine hinzufügen",
     "moveUp": "Nach oben",
     "moveDown": "Nach unten",
-    "removeComponent": "Entfernen"
+    "removeComponent": "Entfernen",
+    "previewSampleUnit2": "Glas"
   },
   "workspaceTabs": {
     "customers": "Kunden",

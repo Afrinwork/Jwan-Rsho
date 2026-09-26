@@ -73,7 +73,8 @@
     "componentsAvailable": "إضافة عناصر أخرى",
     "moveUp": "إلى الأعلى",
     "moveDown": "إلى الأسفل",
-    "removeComponent": "إزالة"
+    "removeComponent": "إزالة",
+    "previewSampleUnit2": "برطمان"
   },
   "workspaceTabs": {
     "customers": "العملاء",
