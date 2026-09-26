@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { FirebaseError } from "firebase/app";
+import { PostgrestError } from "@supabase/supabase-js";
 
 import { errorMessages } from "@/src/errors/errorMessages";
 import { formatError } from "@/src/utils/formatError";
@@ -15,27 +15,20 @@ test("Error State: non-error values are also hidden behind a friendly message", 
   assert.equal(result.message, errorMessages.generic);
 });
 
-test("Netzwerkfehler: auth offline error is translated", () => {
-  const result = formatError(new FirebaseError("auth/network-request-failed", "offline"));
+function postgrestError(code: string, message = "db error") {
+  return new PostgrestError({ code, message, details: "", hint: "" });
+}
+
+test("Netzwerkfehler: a failed fetch is translated", () => {
+  const result = formatError(new TypeError("Network request failed"));
   assert.equal(result.message, errorMessages.noInternet);
 });
 
-test("Netzwerkfehler: firestore unavailable is translated", () => {
-  const result = formatError(new FirebaseError("unavailable", "unavailable"));
-  assert.equal(result.message, errorMessages.noInternet);
+test("Datenbank Fehler: RLS permission-denied (42501) is translated, not generic", () => {
+  assert.equal(formatError(postgrestError("42501")).message, errorMessages.forbidden);
 });
 
-test("Firestore Fehler: missing composite index (failed-precondition) is translated, not generic", () => {
-  const result = formatError(new FirebaseError("failed-precondition", "requires an index"));
-  assert.equal(result.message, errorMessages.dataLoadFailed);
-});
-
-test("Firestore Fehler: permission-denied is translated, not generic", () => {
-  const result = formatError(new FirebaseError("permission-denied", "missing permissions"));
-  assert.equal(result.message, errorMessages.forbidden);
-});
-
-test("Cloud Function Fehler: internal function error is translated", () => {
-  const result = formatError(new FirebaseError("functions/internal", "internal"));
-  assert.equal(result.message, errorMessages.cloudUnavailable);
+test("Datenbank Fehler: a schema behind the app (missing column/table) says so instead of 'try again'", () => {
+  assert.equal(formatError(postgrestError("42703")).message, errorMessages.databaseOutdated);
+  assert.equal(formatError(postgrestError("PGRST205")).message, errorMessages.databaseOutdated);
 });

@@ -9,7 +9,15 @@ import { getBerlinDateKeyDaysAgo } from "../_shared/europeBerlin.ts";
 // Storage object deleted BEFORE the row, matching the Firebase version:
 // if this is interrupted mid-run, at worst a row survives with no photo
 // (caught by the next run), never a photo with no row referencing it.
-Deno.serve(async (_req) => {
+Deno.serve(async (req) => {
+  // Only the scheduled job may run this: it calls with the service-role key
+  // (from Vault) as its bearer token. Anyone else — including signed-in app
+  // users — is turned away, so the cleanup can't be triggered from outside.
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!serviceRoleKey || req.headers.get("Authorization") !== `Bearer ${serviceRoleKey}`) {
+    return jsonResponse({ error: "unauthorized" }, 401);
+  }
+
   const admin = getAdminClient();
   const cutoff = getBerlinDateKeyDaysAgo(3);
 

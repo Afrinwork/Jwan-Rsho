@@ -1,6 +1,4 @@
-import { backend } from "@/src/config/backendEnv";
-import { driverCheckInRepository as firebaseImpl } from "@/src/repositories/driverCheckInRepository.firebase";
-import { driverCheckInRepository as supabaseImpl } from "@/src/repositories/supabase/driverCheckInRepository";
-
-export type { CheckInAttemptFailureReason } from "@/src/repositories/driverCheckInRepository.firebase";
-export const driverCheckInRepository = backend === "supabase" ? supabaseImpl : firebaseImpl;
+// Supabase is the only backend (Firebase -> Supabase migration complete);
+// kept as a stable import path for the rest of the app.
+export { driverCheckInRepository } from "@/src/repositories/supabase/driverCheckInRepository";
+export type { CheckInAttemptFailureReason } from "@/src/repositories/supabase/driverCheckInRepository";

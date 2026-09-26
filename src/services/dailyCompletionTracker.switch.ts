@@ -1,5 +1,3 @@
-import { backend } from "@/src/config/backendEnv";
-import { dailyCompletionTracker as firebaseImpl } from "@/src/services/dailyCompletionTracker";
-import { dailyCompletionTracker as supabaseImpl } from "@/src/services/supabase/dailyCompletionTracker";
-
-export const dailyCompletionTracker = backend === "supabase" ? supabaseImpl : firebaseImpl;
+// Supabase is the only backend (Firebase -> Supabase migration complete);
+// kept as a stable import path for the rest of the app.
+export { dailyCompletionTracker } from "@/src/services/supabase/dailyCompletionTracker";

@@ -1,7 +1,4 @@
-import { backend } from "@/src/config/backendEnv";
-import { driverStatsRepository as firebaseImpl, todayKey as firebaseTodayKey } from "@/src/repositories/driverStatsRepository.firebase";
-import { driverStatsRepository as supabaseImpl, todayKey as supabaseTodayKey } from "@/src/repositories/supabase/driverStatsRepository";
-
-export type { DriverCompletionStat } from "@/src/repositories/driverStatsRepository.firebase";
-export const driverStatsRepository = backend === "supabase" ? supabaseImpl : firebaseImpl;
-export const todayKey = backend === "supabase" ? supabaseTodayKey : firebaseTodayKey;
+// Supabase is the only backend (Firebase -> Supabase migration complete);
+// kept as a stable import path for the rest of the app.
+export { driverStatsRepository, todayKey } from "@/src/repositories/supabase/driverStatsRepository";
+export type { DriverCompletionStat } from "@/src/repositories/supabase/driverStatsRepository";

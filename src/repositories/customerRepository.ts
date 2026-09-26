@@ -1,5 +1,3 @@
-import { backend } from "@/src/config/backendEnv";
-import { customerRepository as firebaseImpl } from "@/src/repositories/customerRepository.firebase";
-import { customerRepository as supabaseImpl } from "@/src/repositories/supabase/customerRepository";
-
-export const customerRepository = backend === "supabase" ? supabaseImpl : firebaseImpl;
+// Supabase is the only backend (Firebase -> Supabase migration complete);
+// kept as a stable import path for the rest of the app.
+export { customerRepository } from "@/src/repositories/supabase/customerRepository";

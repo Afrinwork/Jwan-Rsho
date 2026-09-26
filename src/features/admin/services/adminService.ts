@@ -1,5 +1,3 @@
-import { backend } from "@/src/config/backendEnv";
-import { adminService as firebaseImpl } from "@/src/features/admin/services/adminService.firebase";
-import { adminService as supabaseImpl } from "@/src/features/admin/services/adminService.supabase";
-
-export const adminService = backend === "supabase" ? supabaseImpl : firebaseImpl;
+// Supabase is the only backend (Firebase -> Supabase migration complete);
+// kept as a stable import path for the rest of the app.
+export { adminService } from "@/src/features/admin/services/adminService.supabase";
