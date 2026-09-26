@@ -334,6 +334,7 @@ export type Database = {
           completed_at: string | null
           created_at: string
           customer_id: string
+          hidden_from_driver: boolean
           id: string
           note: string | null
           ordered_at: string
@@ -347,6 +348,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           customer_id: string
+          hidden_from_driver?: boolean
           id: string
           note?: string | null
           ordered_at: string
@@ -360,6 +362,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           customer_id?: string
+          hidden_from_driver?: boolean
           id?: string
           note?: string | null
           ordered_at?: string
@@ -530,6 +533,51 @@ export type Database = {
           {
             foreignKeyName: "regions_owner_id_fkey"
             columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      route_orders: {
+        Row: {
+          customer_ids: string[]
+          trip_current_customer_id: string | null
+          trip_customer_ids: string[] | null
+          trip_updated_at: string | null
+          updated_at: string
+          updated_by: string
+          user_id: string
+        }
+        Insert: {
+          customer_ids?: string[]
+          trip_current_customer_id?: string | null
+          trip_customer_ids?: string[] | null
+          trip_updated_at?: string | null
+          updated_at?: string
+          updated_by: string
+          user_id: string
+        }
+        Update: {
+          customer_ids?: string[]
+          trip_current_customer_id?: string | null
+          trip_customer_ids?: string[] | null
+          trip_updated_at?: string | null
+          updated_at?: string
+          updated_by?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "route_orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "route_orders_updated_by_fkey"
+            columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

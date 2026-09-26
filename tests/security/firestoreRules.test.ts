@@ -133,16 +133,34 @@ test("customers: a driver cannot read a customer from their own manager that isn
   await assertFails(getDoc(doc(driverA.firestore(), "customers", "cust1")));
 });
 
-test("customers: an assigned driver still cannot create, update, or delete a customer", async () => {
+test("customers: a driver can create a self-assigned customer but still cannot update or delete", async () => {
   await seedUserProfile("driverA", "driver", "managerA");
   await testEnv.withSecurityRulesDisabled(async (context) => {
     await setDoc(doc(context.firestore(), "customers", "cust1"), { ownerId: "managerA", assignedDriverId: "driverA", name: "Seed" });
   });
 
   const driverA = testEnv.authenticatedContext("driverA");
-  await assertFails(setDoc(doc(driverA.firestore(), "customers", "cust2"), { ownerId: "managerA", assignedDriverId: "driverA", name: "New" }));
+  await assertSucceeds(setDoc(doc(driverA.firestore(), "customers", "cust2"), { ownerId: "managerA", assignedDriverId: "driverA", name: "New" }));
+  await assertFails(setDoc(doc(driverA.firestore(), "customers", "cust3"), { ownerId: "managerA", assignedDriverId: "driverB", name: "Other driver" }));
+  await assertFails(setDoc(doc(driverA.firestore(), "customers", "cust4"), { ownerId: "managerB", assignedDriverId: "driverA", name: "Other manager" }));
   await assertFails(updateDoc(doc(driverA.firestore(), "customers", "cust1"), { name: "Changed" }));
   await assertFails(deleteDoc(doc(driverA.firestore(), "customers", "cust1")));
+});
+
+test("orders: a driver can create an order only for their own assigned customer", async () => {
+  await seedUserProfile("driverA", "driver", "managerA");
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), "customers", "cust1"), { ownerId: "managerA", assignedDriverId: "driverA", name: "Assigned" });
+    await setDoc(doc(context.firestore(), "customers", "cust2"), { ownerId: "managerA", assignedDriverId: "driverB", name: "Other" });
+  });
+
+  const driverA = testEnv.authenticatedContext("driverA");
+  await assertSucceeds(setDoc(doc(driverA.firestore(), "orders", "order-new"), {
+    ownerId: "managerA", assignedDriverId: "driverA", customerId: "cust1", status: "open",
+  }));
+  await assertFails(setDoc(doc(driverA.firestore(), "orders", "order-other"), {
+    ownerId: "managerA", assignedDriverId: "driverA", customerId: "cust2", status: "open",
+  }));
 });
 
 test("orders: an assigned driver can read an order belonging to their manager", async () => {
@@ -167,7 +185,7 @@ test("orders: a driver cannot read an order belonging to a different manager or 
   await assertFails(getDoc(doc(driverA.firestore(), "orders", "order2")));
 });
 
-test("orders/items: an assigned driver can read items of an order belonging to their manager", async () => {
+test("orders/items: an assigned driver can read and add items to an assigned order", async () => {
   await seedUserProfile("driverA", "driver", "managerA");
   await testEnv.withSecurityRulesDisabled(async (context) => {
     await setDoc(doc(context.firestore(), "orders", "order1"), { ownerId: "managerA", assignedDriverId: "driverA", status: "open" });
@@ -176,7 +194,16 @@ test("orders/items: an assigned driver can read items of an order belonging to t
 
   const driverA = testEnv.authenticatedContext("driverA");
   await assertSucceeds(getDoc(doc(driverA.firestore(), "orders", "order1", "items", "item1")));
-  await assertFails(setDoc(doc(driverA.firestore(), "orders", "order1", "items", "item2"), { productId: "p2", quantity: 1 }));
+  await assertSucceeds(setDoc(doc(driverA.firestore(), "orders", "order1", "items", "item2"), { ownerId: "managerA", productId: "p2", quantity: 1 }));
+});
+
+test("products and countries: an active driver can read their manager's add-form catalogs", async () => {
+  await seedUserProfile("driverA", "driver", "managerA");
+  await seedOwnerDoc("products", "product1", "managerA");
+  await seedOwnerDoc("countries", "country1", "managerA");
+  const driverA = testEnv.authenticatedContext("driverA");
+  await assertSucceeds(getDoc(doc(driverA.firestore(), "products", "product1")));
+  await assertSucceeds(getDoc(doc(driverA.firestore(), "countries", "country1")));
 });
 
 test("orders/items: owner can read their order's items", async () => {

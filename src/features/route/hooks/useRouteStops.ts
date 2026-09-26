@@ -8,8 +8,12 @@ import {
   buildFallbackLegs,
   computeOsrmTripLegs,
   computeRouteLegs,
+  fetchOsrmRoutePolyline,
+  fetchRoutePolyline,
   nearestNeighborOrder,
 } from "@/src/features/route/services/routeDirectionsService";
+import { applyManualOrder } from "@/src/features/route/services/routeManualOrderService";
+import { presetRouteOrder, RouteSortMode } from "@/src/features/route/services/routeSortModeService";
 import { RouteComputationStatus, RouteOrigin, RoutePoint, RouteStop } from "@/src/features/route/types/routeTypes";
 import { useMapCustomers } from "@/src/features/map/hooks/useMapCustomers";
 import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
@@ -58,7 +62,28 @@ function toRouteStops(
     .filter((value): value is RouteStop => value !== null);
 }
 
-export function useRouteStops(selectedIds: string[], origin: RouteOrigin | null, departureDate: Date, lastStopId: string | null) {
+// `manualOrderIds` (set once the driver moved a stop by hand) switches off
+// every automatic optimization: the stops are timed in exactly that order
+// and lastStopId is ignored, since the manual order already decides it.
+// Stops the saved/manual order knows keep exactly that order; any others
+// (never sorted by hand yet) follow nearest-neighbor from the last of them
+// instead of landing at the end in arbitrary order.
+function manualPreOrder(origin: RouteOrigin, points: RoutePoint[], manualOrderIds: string[]) {
+  const known = new Set(manualOrderIds);
+  const ordered = applyManualOrder(points, manualOrderIds);
+  const fixed = ordered.filter((point) => known.has(point.id));
+  const rest = ordered.filter((point) => !known.has(point.id));
+  const lastFixed = fixed.at(-1);
+  return [...fixed, ...nearestNeighborOrder(lastFixed ? { ...lastFixed, label: "" } : origin, rest)];
+}
+
+export function useRouteStops(
+  selectedIds: string[],
+  origin: RouteOrigin | null,
+  departureDate: Date,
+  sortMode: RouteSortMode,
+  manualOrderIds: string[] | null = null,
+) {
   const { markers, isLoading: customersLoading, error: customersError, reload } = useMapCustomers();
   const selectedMarkers = useMemo(() => {
     const idSet = new Set(selectedIds);
@@ -92,7 +117,12 @@ export function useRouteStops(selectedIds: string[], origin: RouteOrigin | null,
       longitude: marker.longitude,
     }));
 
-    const preOrderedPoints = nearestNeighborOrder(origin, points, lastStopId ?? undefined);
+    // A fixed order (hand-made, or one of the preset sort modes) is timed
+    // exactly as given; only "optimized" lets the providers re-sort.
+    const fixedOrder = manualOrderIds
+      ? manualPreOrder(origin, points, manualOrderIds)
+      : presetRouteOrder(sortMode, origin, selectedMarkers.map((marker) => ({ id: marker.id, latitude: marker.latitude, longitude: marker.longitude, city: marker.city })))?.map(({ id, latitude, longitude }) => ({ id, latitude, longitude })) ?? null;
+    const preOrderedPoints = fixedOrder ?? nearestNeighborOrder(origin, points);
     const fallbackStops = buildCumulativeStops(buildFallbackLegs(origin, preOrderedPoints), departureDate);
     setStops(toRouteStops(fallbackStops, markerById, true));
     setStatus("loading");
@@ -113,10 +143,20 @@ export function useRouteStops(selectedIds: string[], origin: RouteOrigin | null,
         // Google's traffic-aware estimate). A specific, actionable Google
         // failure (bad/quota'd key) is remembered and only shown if OSRM
         // fails too — otherwise the free result speaks for itself.
+        //
+        // A fixed order uses the same provider chain, but the
+        // non-optimizing requests — legs come back in exactly
+        // preOrderedPoints' order instead of being re-sorted.
+        const computeGoogleLegs = fixedOrder
+          ? async () => (await fetchRoutePolyline(origin, preOrderedPoints, googleDirectionsApiKey)).legs
+          : () => computeRouteLegs(origin, points, departureDate, googleDirectionsApiKey);
+        const computeOsrmLegs = fixedOrder
+          ? async () => (await fetchOsrmRoutePolyline(origin, preOrderedPoints)).legs
+          : () => computeOsrmTripLegs(origin, points);
         let googleErrorMessage: string | null = null;
 
         try {
-          applyLegs(await computeRouteLegs(origin, points, departureDate, googleDirectionsApiKey, lastStopId ?? undefined));
+          applyLegs(await computeGoogleLegs());
           return;
         } catch (computeError) {
           if (requestIdRef.current !== requestId) return;
@@ -126,7 +166,7 @@ export function useRouteStops(selectedIds: string[], origin: RouteOrigin | null,
         }
 
         try {
-          applyLegs(await computeOsrmTripLegs(origin, points, lastStopId ?? undefined));
+          applyLegs(await computeOsrmLegs());
           return;
         } catch {
           // fall through — keep the straight-line preview already shown
@@ -144,7 +184,7 @@ export function useRouteStops(selectedIds: string[], origin: RouteOrigin | null,
     }, RECOMPUTE_DEBOUNCE_MS);
 
     return () => clearTimeout(timeoutId);
-  }, [origin, departureDate, selectedMarkers, markerById, lastStopId]);
+  }, [origin, departureDate, selectedMarkers, markerById, sortMode, manualOrderIds]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   return {

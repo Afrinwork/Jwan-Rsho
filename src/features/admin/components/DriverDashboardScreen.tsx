@@ -106,6 +106,7 @@ export function DriverDashboardScreen() {
                   router.push({
                     pathname: "/management/driver-map",
                     params: {
+                      driverId: entry.driver.id,
                       driverName: entry.driver.fullName,
                       ids: entry.assignedCustomerIds.join(","),
                       openCount: String(entry.openCount),

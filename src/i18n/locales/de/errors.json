@@ -22,5 +22,6 @@
   "cityInUse": "Diese Stadt wird bereits von Kunden verwendet und kann nicht geloescht werden.",
   "invalidForm": "Bitte pruefe die eingegebenen Daten im Formular.",
   "uiCrashTitle": "Diese Ansicht wurde vorsorglich angehalten.",
-  "uiCrashMessage": "In der Ansicht ist ein Fehler aufgetreten, der Absturz der ganzen App wurde aber verhindert. Du kannst diesen Bildschirm jetzt neu laden."
+  "uiCrashMessage": "In der Ansicht ist ein Fehler aufgetreten, der Absturz der ganzen App wurde aber verhindert. Du kannst diesen Bildschirm jetzt neu laden.",
+  "databaseOutdated": "Die Datenbank ist noch nicht auf dem neuesten Stand. Bitte den Administrator informieren – erneutes Versuchen hilft hier nicht."
 }

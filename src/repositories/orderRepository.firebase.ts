@@ -98,7 +98,28 @@ export const orderRepository = {
 
   async getOpenOrders() {
     const orderQuery = buildOpenOrdersQuery();
-    return sortOrdersByDateDesc((await getDocs(orderQuery)).docs.map((value) => mapSnapshot<Order>(value)));
+    return filterHiddenForDriver(sortOrdersByDateDesc((await getDocs(orderQuery)).docs.map((value) => mapSnapshot<Order>(value))));
+  },
+
+  // See the Supabase version. Firestore has no multi-doc update-by-query,
+  // so the matching open orders are fetched and updated in one batch.
+  async setHiddenFromDriver(driverId: string | null, customerIds: string[], hidden: boolean) {
+    if (!customerIds.length) return 0;
+    const { ownerId } = resolveOwnerScope();
+    const customerIdSet = new Set(customerIds);
+    const snapshot = await getDocs(
+      query(collection(requireDb(), "orders"), where("ownerId", "==", ownerId), where("status", "==", "open")),
+    );
+    const matching = snapshot.docs.filter((value) => {
+      const data = value.data();
+      const assignedDriverId = data.assignedDriverId as string | undefined;
+      return customerIdSet.has(data.customerId as string) && (driverId ? assignedDriverId === driverId : Boolean(assignedDriverId));
+    });
+    const batch = writeBatch(requireDb());
+    const timestamp = new Date().toISOString();
+    matching.forEach((value) => batch.update(value.ref, { hiddenFromDriver: hidden, updatedAt: timestamp }));
+    await batch.commit();
+    return matching.length;
   },
 
   // Live view of the same scope as getOpenOrders() — fires immediately with
@@ -110,7 +131,7 @@ export const orderRepository = {
     const orderQuery = buildOpenOrdersQuery();
     return onSnapshot(
       orderQuery,
-      (snapshot) => onChange(sortOrdersByDateDesc(snapshot.docs.map((value) => mapSnapshot<Order>(value)))),
+      (snapshot) => onChange(filterHiddenForDriver(sortOrdersByDateDesc(snapshot.docs.map((value) => mapSnapshot<Order>(value))))),
       onError,
     );
   },
@@ -320,6 +341,12 @@ function withCreateTimestamps<T extends object>(value: T) {
 
 function clean<T extends object>(value: T) {
   return Object.fromEntries(Object.entries(value).filter(([, current]) => current !== undefined)) as T;
+}
+
+// Filtered client-side: a where("hiddenFromDriver", "==", false) clause
+// would also drop every older order that simply has no such field yet.
+function filterHiddenForDriver(orders: Order[]) {
+  return resolveOwnerScope().driverId ? orders.filter((order) => order.hiddenFromDriver !== true) : orders;
 }
 
 function buildOpenOrdersQuery() {

@@ -6,7 +6,8 @@
   },
   "screen": {
     "loading": "جارٍ تجهيز الخريطة...",
-    "newAssignment": "تم تعيين {{count}} طلبات جديدة لك"
+    "newAssignment": "تم تعيين {{count}} طلبات جديدة لك",
+    "newDriverOrder": "🚚 {{count}} طلب جديد من السائق: {{names}} – اضغط على الزبون لعرضه."
   },
   "toolbar": {
     "title": "الخريطة",
@@ -15,7 +16,8 @@
     "retryCustomers": "إعادة تحميل الزبائن",
     "loadingCustomers": "جارٍ تحميل علامات الزبائن...",
     "diagnostics": "{{openOrders}} طلب مفتوح · {{customers}} زبون · {{markers}} نقطة على الخريطة",
-    "needsAddressCheck": "{{count}} عنوان يحتاج مراجعة"
+    "needsAddressCheck": "{{count}} عنوان يحتاج مراجعة",
+    "noOpenOrders": "لا توجد طلبات مفتوحة حاليًا. ستظهر الطلبات الجديدة هنا تلقائيًا."
   },
   "addressCheck": {
     "title": "مراجعة العناوين",
@@ -54,7 +56,13 @@
     "clear": "حذف",
     "deleteConfirmTitle": "حذف الزبائن المحددين؟",
     "deleteConfirmMessage": "سيتم حذف {{count}} من الزبائن نهائيًا مع جميع طلباتهم. لا يمكن التراجع عن هذا الإجراء.",
-    "deleteError": "تعذر حذف بعض الزبائن."
+    "deleteError": "تعذر حذف بعض الزبائن.",
+    "hideForDriver": "إخفاء عن السائق",
+    "showForDriver": "إظهار للسائق مرة أخرى",
+    "hiddenForDriverCount": "{{count}} منها مخفية عن السائق",
+    "noAssignedOrders": "لا يوجد لدى أي من الزبائن المحددين طلب مفتوح مُسند إلى سائق.",
+    "hiddenDone": "تم إخفاء {{count}} طلب عن السائق.",
+    "shownDone": "تم إظهار {{count}} طلب للسائق مرة أخرى."
   },
   "selectedList": {
     "emptyTitle": "لا يوجد تحديد",

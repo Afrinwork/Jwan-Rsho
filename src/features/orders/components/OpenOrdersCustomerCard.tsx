@@ -82,6 +82,11 @@ export function OpenOrdersCustomerCard({
             style={[styles.orderBlock, index > 0 ? [styles.orderBlockDivider, { borderTopColor: colors.border }] : null]}
           >
             <AppBadge label={t("openOrders.orderDateLabel", { date: formatDate(order.orderedAt) })} tone="secondary" />
+            {order.note ? (
+              <AppText color="muted" variant="caption">
+                {order.note}
+              </AppText>
+            ) : null}
             <View style={styles.items}>
               {order.items.map((item) => (
                 <View

@@ -68,7 +68,12 @@
     "previewSampleEta": "14:20",
     "save": "Text speichern",
     "saved": "Der WhatsApp-Text wurde gespeichert.",
-    "notAllowed": "Dieser Bereich ist nur fuer Admins sichtbar."
+    "notAllowed": "Dieser Bereich ist nur fuer Admins sichtbar.",
+    "componentsOrderHint": "Oben stehen die Bausteine in der Reihenfolge, in der sie in der Nachricht erscheinen. Mit den Pfeilen verschieben, mit ✕ entfernen.",
+    "componentsAvailable": "Weitere Bausteine hinzufügen",
+    "moveUp": "Nach oben",
+    "moveDown": "Nach unten",
+    "removeComponent": "Entfernen"
   },
   "workspaceTabs": {
     "customers": "Kunden",

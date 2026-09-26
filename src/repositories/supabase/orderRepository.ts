@@ -15,6 +15,12 @@ function withCreateTimestamps<T extends object>(value: T) {
   return { ...value, createdAt: timestamp, updatedAt: timestamp };
 }
 
+// Postgres "undefined column" (42703), or PostgREST not finding it in its
+// schema cache (PGRST204).
+function isMissingColumnError(error: { code?: string }) {
+  return error.code === "42703" || error.code === "PGRST204";
+}
+
 function sortOrdersByDateDesc(orders: Order[], field: "orderedAt" | "completedAt" = "orderedAt") {
   return [...orders].sort((left, right) => (right[field] ?? "").localeCompare(left[field] ?? ""));
 }
@@ -83,12 +89,43 @@ export const orderRepository = {
 
   async getOpenOrders() {
     const { ownerId, driverId } = resolveOwnerScope();
-    let queryBuilder = requireSupabase().from("orders").select("*").eq("owner_id", ownerId).eq("status", "open");
-    if (driverId) queryBuilder = queryBuilder.eq("assigned_driver_id", driverId);
+    const buildQuery = (withHiddenFilter: boolean) => {
+      let queryBuilder = requireSupabase().from("orders").select("*").eq("owner_id", ownerId).eq("status", "open");
+      if (driverId) queryBuilder = queryBuilder.eq("assigned_driver_id", driverId);
+      // Hidden orders are off the driver's map/route (and so can't be
+      // completed from there either) until the owner shows them again.
+      if (driverId && withHiddenFilter) queryBuilder = queryBuilder.eq("hidden_from_driver", false);
+      return queryBuilder;
+    };
 
-    const { data, error } = await queryBuilder;
+    let { data, error } = await buildQuery(true);
+    // Database without the hidden_from_driver column yet (migration
+    // 20260926190000 not applied): nothing can be hidden there anyway, so
+    // load without the filter instead of breaking the driver's map.
+    if (error && isMissingColumnError(error)) ({ data, error } = await buildQuery(false));
     if (error) throw error;
     return sortOrdersByDateDesc((data ?? []).map((row) => toCamelCase<Order>(row)));
+  },
+
+  // Owner-only (RLS: orders_update is owner_id = auth.uid()): hides/shows
+  // every open order of these customers that is assigned to a driver —
+  // `driverId` narrows it to one driver (driver view), null means whichever
+  // driver each one is assigned to (map selection). The driver's
+  // open-orders subscription picks the change up live. Returns how many
+  // orders changed, so a no-op (nothing assigned) can be reported.
+  async setHiddenFromDriver(driverId: string | null, customerIds: string[], hidden: boolean) {
+    if (!customerIds.length) return 0;
+    const { ownerId } = resolveOwnerScope();
+    let queryBuilder = requireSupabase()
+      .from("orders")
+      .update({ hidden_from_driver: hidden, updated_at: new Date().toISOString() })
+      .eq("owner_id", ownerId)
+      .eq("status", "open")
+      .in("customer_id", customerIds);
+    queryBuilder = driverId ? queryBuilder.eq("assigned_driver_id", driverId) : queryBuilder.not("assigned_driver_id", "is", null);
+    const { data, error } = await queryBuilder.select("id");
+    if (error) throw error;
+    return data?.length ?? 0;
   },
 
   // Live view of the same scope as getOpenOrders() -- refetches on every

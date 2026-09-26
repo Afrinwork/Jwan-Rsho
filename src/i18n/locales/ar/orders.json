@@ -2,6 +2,16 @@
   "addScreen": {
     "subtitle": "تسجيل الطلب مباشرة."
   },
+  "driverSuggestions": {
+    "title": "اقتراحات لك",
+    "subtitle": "طلبات على مسارك وعملاء قريبون منك.",
+    "empty": "لا توجد اقتراحات مناسبة حاليًا.",
+    "routeOrder": "{{count}} طلبات مفتوحة على مسارك",
+    "nearbyCustomer": "عميل مخصص قريب منك",
+    "distance": "يبعد {{distance}} كم",
+    "open": "فتح",
+    "select": "اختيار"
+  },
   "customerSection": {
     "title": "العميل"
   },
@@ -18,7 +28,8 @@
       "open": "مفتوح",
       "completed": "مكتمل",
       "cancelled": "ملغى"
-    }
+    },
+    "noteLabel": "ملاحظة:"
   },
   "items": {
     "sectionTitle": "المنتجات",
@@ -38,7 +49,9 @@
     "summaryTitle": "ملخص الطلبية",
     "summaryCount": "إجمالي المنتجات: {{count}}",
     "summaryQuantity": "إجمالي الكمية: {{quantity}}",
-    "confirmSelection": "إضافة المنتجات المحددة"
+    "confirmSelection": "إضافة المنتجات المحددة",
+    "catalogEmptyDriver": "لا توجد منتجات نشطة في كتالوج المسؤول الخاص بك بعد. اطلب من المسؤول إضافة المنتجات.",
+    "catalogEmptyOwner": "لا توجد لديك منتجات نشطة بعد. أضفها من الإدارة ← المنتجات."
   },
   "save": {
     "button": "حفظ الطلب",

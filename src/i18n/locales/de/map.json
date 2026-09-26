@@ -6,7 +6,8 @@
   },
   "screen": {
     "loading": "Karte wird vorbereitet...",
-    "newAssignment": "Dir wurden {{count}} neue Bestellungen zugewiesen"
+    "newAssignment": "Dir wurden {{count}} neue Bestellungen zugewiesen",
+    "newDriverOrder": "🚚 {{count}} neue Bestellung(en) von Fahrer: {{names}} – Kunden antippen, um sie zu sehen."
   },
   "toolbar": {
     "title": "Karte",
@@ -15,7 +16,8 @@
     "retryCustomers": "Kunden neu laden",
     "loadingCustomers": "Kundenpins werden geladen...",
     "diagnostics": "{{openOrders}} offene Bestellungen · {{customers}} Kunden · {{markers}} Kartenpunkte",
-    "needsAddressCheck": "{{count}} Adressen pruefen"
+    "needsAddressCheck": "{{count}} Adressen pruefen",
+    "noOpenOrders": "Aktuell keine offenen Bestellungen. Neue Bestellungen erscheinen hier automatisch."
   },
   "addressCheck": {
     "title": "Adressen pruefen",
@@ -58,7 +60,13 @@
     "deleteConfirmMessage3": "Letzte Warnung: Wenn du jetzt bestaetigst, wird wirklich alles fuer diese {{count}} Kunden geloescht.",
     "deleteConfirmNextLabel": "Ja, weiter",
     "deleteConfirmFinalLabel": "Endgueltig loeschen",
-    "deleteError": "Einige Kunden konnten nicht geloescht werden."
+    "deleteError": "Einige Kunden konnten nicht geloescht werden.",
+    "hideForDriver": "Für Fahrer ausblenden",
+    "showForDriver": "Für Fahrer wieder einblenden",
+    "hiddenForDriverCount": "{{count}} davon sind für den Fahrer ausgeblendet",
+    "noAssignedOrders": "Keiner der ausgewählten Kunden hat eine offene Bestellung, die einem Fahrer zugewiesen ist.",
+    "hiddenDone": "{{count}} Bestellung(en) für den Fahrer ausgeblendet.",
+    "shownDone": "{{count}} Bestellung(en) für den Fahrer wieder eingeblendet."
   },
   "selectedList": {
     "emptyTitle": "Keine Auswahl",

@@ -40,7 +40,7 @@ export function useRouteLiveNavigation(markers: MapCustomerMarker[], liveCoordin
     !dismissedIds.has(currentMarker.id);
 
   // Returns whether the order actually got completed — callers that need to
-  // react to a successful arrival (e.g. advancing the delivery-navigation
+  // react to a successful arrival (e.g. closing a panel or advancing some
   // reducer's own stop index) can't just assume success, since this can fail.
   const confirmArrival = useCallback(async (): Promise<boolean> => {
     if (!currentMarker) return false;

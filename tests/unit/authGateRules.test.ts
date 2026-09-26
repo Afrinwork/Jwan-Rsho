@@ -47,3 +47,13 @@ test("driver is sent to the map after login and cannot open admin tabs", () => {
     null,
   );
 });
+
+test("driver may open every tab the tab bar shows them (map, add, settings)", () => {
+  for (const tab of ["map", "add", "settings"]) {
+    assert.equal(
+      resolveAuthRedirect({ isAuthenticated: true, canAccessAdminArea: false, firstSegment: "(tabs)", secondSegment: tab, isDriver: true }),
+      null,
+      tab,
+    );
+  }
+});

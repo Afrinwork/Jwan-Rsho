@@ -111,14 +111,20 @@ test("customers: a driver cannot read a customer belonging to a different manage
   assert.equal(data, null);
 });
 
-test("customers: a driver cannot write, only read", async () => {
+test("customers: a driver can create a self-assigned customer but cannot alter existing customers", async () => {
   const manager = await createTestUser("super_admin");
   const driver = await createTestUser("driver", manager.id);
   const customerId = uid();
   await adminClient.from("customers").insert({ id: customerId, owner_id: manager.id, full_name: "Assigned", assigned_driver_id: driver.id });
 
-  const { error: insertError } = await driver.client.from("customers").insert({ id: uid(), owner_id: manager.id, full_name: "New" });
-  assert.ok(insertError);
+  const { error: insertError } = await driver.client.from("customers").insert({
+    id: uid(), owner_id: manager.id, full_name: "New", assigned_driver_id: driver.id,
+  });
+  assert.equal(insertError, null);
+  const { error: unassignedInsertError } = await driver.client.from("customers").insert({
+    id: uid(), owner_id: manager.id, full_name: "Unassigned",
+  });
+  assert.ok(unassignedInsertError);
 
   const updateResult = await driver.client.from("customers").update({ full_name: "Changed" }).eq("id", customerId);
   assert.equal(updateResult.count ?? 0, 0);
@@ -126,7 +132,29 @@ test("customers: a driver cannot write, only read", async () => {
   assert.equal(unchanged?.full_name, "Assigned");
 });
 
-test("order_items: owner and assigned driver can read/delete, only owner can insert/update", async () => {
+test("orders: a driver can create an order only for their own assigned customer", async () => {
+  const manager = await createTestUser("super_admin");
+  const driver = await createTestUser("driver", manager.id);
+  const assignedCustomerId = uid();
+  const otherCustomerId = uid();
+  await adminClient.from("customers").insert([
+    { id: assignedCustomerId, owner_id: manager.id, full_name: "Assigned", assigned_driver_id: driver.id },
+    { id: otherCustomerId, owner_id: manager.id, full_name: "Other" },
+  ]);
+
+  const { error } = await driver.client.from("orders").insert({
+    id: uid(), owner_id: manager.id, customer_id: assignedCustomerId, assigned_driver_id: driver.id,
+    status: "open", ordered_at: new Date().toISOString(),
+  });
+  assert.equal(error, null);
+  const { error: otherError } = await driver.client.from("orders").insert({
+    id: uid(), owner_id: manager.id, customer_id: otherCustomerId, assigned_driver_id: driver.id,
+    status: "open", ordered_at: new Date().toISOString(),
+  });
+  assert.ok(otherError);
+});
+
+test("order_items: owner and assigned driver can read/delete/insert, only owner can update", async () => {
   const manager = await createTestUser("super_admin");
   const driver = await createTestUser("driver", manager.id);
   const customerId = uid();
@@ -144,10 +172,24 @@ test("order_items: owner and assigned driver can read/delete, only owner can ins
   const { error: driverInsertError } = await driver.client
     .from("order_items")
     .insert({ id: uid(), order_id: orderId, product_name_snapshot: "P2", quantity: 1, unit: "pcs" });
-  assert.ok(driverInsertError, "driver must not be able to insert order items");
+  assert.equal(driverInsertError, null);
 
   const { data: ownerRead } = await manager.client.from("order_items").select("*").eq("id", itemId).maybeSingle();
   assert.ok(ownerRead);
+});
+
+test("products and countries: a driver can read their manager's add-form catalogs", async () => {
+  const manager = await createTestUser("super_admin");
+  const driver = await createTestUser("driver", manager.id);
+  const productId = uid();
+  const countryId = uid();
+  await adminClient.from("products").insert({ id: productId, owner_id: manager.id, name: "P", normalized_name: "p", default_unit: "pcs" });
+  await adminClient.from("countries").insert({ id: countryId, owner_id: manager.id, name: "DE", normalized_name: "de" });
+
+  const { data: product } = await driver.client.from("products").select("id").eq("id", productId).maybeSingle();
+  const { data: country } = await driver.client.from("countries").select("id").eq("id", countryId).maybeSingle();
+  assert.ok(product);
+  assert.ok(country);
 });
 
 test("order_items: foreign user cannot read another owner's items", async () => {

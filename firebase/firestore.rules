@@ -70,6 +70,18 @@ service cloud.firestore {
       return isDriverRole() && isActiveDriver() && assignedDriverId == request.auth.uid && ownerId == callerManagerId();
     }
 
+    function isOwnDriverWrite(ownerId, assignedDriverId) {
+      return isDriverRole() && isActiveDriver() &&
+        ownerId == callerManagerId() && assignedDriverId == request.auth.uid;
+    }
+
+    function isDriverOrderCreate() {
+      let customer = getAfter(/databases/$(database)/documents/customers/$(request.resource.data.customerId)).data;
+      return isOwnDriverWrite(request.resource.data.ownerId, request.resource.data.get('assignedDriverId', null)) &&
+        customer.ownerId == callerManagerId() &&
+        customer.get('assignedDriverId', null) == request.auth.uid;
+    }
+
     function canCreateTargetUser() {
       let targetRole = request.resource.data.role;
       let targetManagerId = request.resource.data.get('managerId', null);
@@ -120,7 +132,12 @@ service cloud.firestore {
           get(/databases/$(database)/documents/orders/$(orderId)).data.get('assignedDriverId', null)
         )
       );
-      allow create, update: if validOwnerWrite();
+      allow create: if validOwnerWrite() || (
+        isOwnDriverWrite(request.resource.data.ownerId,
+          getAfter(/databases/$(database)/documents/orders/$(orderId)).data.get('assignedDriverId', null)) &&
+        getAfter(/databases/$(database)/documents/orders/$(orderId)).data.ownerId == callerManagerId()
+      );
+      allow update: if validOwnerWrite();
     }
 
     // A rule scoped to a specific parent path (above) only ever authorizes a
@@ -217,15 +234,38 @@ service cloud.firestore {
       allow delete: if false; // only the scheduled Cloud Function (Admin SDK) deletes
     }
 
+    // A user's list is theirs, plus editable by the admin/super_admin who
+    // manages them (their users doc's managerId) — see routeOrderRepository.
+    function isRouteOrderManagerFor(userId) {
+      return (isSuperAdmin() || isAdminRole()) &&
+        get(/databases/$(database)/documents/users/$(userId)).data.get('managerId', null) == request.auth.uid;
+    }
+
+    function canManageRouteOrder(userId) {
+      return isSignedIn() && (request.auth.uid == userId || isRouteOrderManagerFor(userId));
+    }
+
+    // One doc per person (doc id == their uid): their own saved stop order.
+    match /routeOrders/{userId} {
+      allow read, delete: if canManageRouteOrder(userId);
+      allow create, update: if canManageRouteOrder(userId) &&
+        request.resource.data.keys().hasOnly(['userId', 'customerIds', 'updatedBy', 'updatedAt', 'trip']) &&
+        request.resource.data.userId == userId &&
+        request.resource.data.updatedBy == request.auth.uid &&
+        request.resource.data.get('customerIds', []) is list &&
+        request.resource.data.get('customerIds', []).size() <= 2000;
+    }
+
     match /customers/{docId} {
-      // Drivers get read-only access to their manager's customers, and only
-      // the ones assigned to them - never create/update/delete.
+      // Drivers may add a customer only when it is immediately assigned to
+      // themselves under their own manager. Existing records stay owner-only.
       allow read: if isSignedIn() && (
         resource == null ||
         isOwner(resource.data.ownerId) ||
         isAssignedDriverFor(resource.data.ownerId, resource.data.get('assignedDriverId', null))
       );
-      allow create: if validOwnerWrite();
+      allow create: if validOwnerWrite() ||
+        isOwnDriverWrite(request.resource.data.ownerId, request.resource.data.get('assignedDriverId', null));
       allow update: if isOwner(resource.data.ownerId) && ownerUnchanged();
       allow delete: if isOwner(resource.data.ownerId);
     }
@@ -236,20 +276,22 @@ service cloud.firestore {
         isOwner(resource.data.ownerId) ||
         isAssignedDriverFor(resource.data.ownerId, resource.data.get('assignedDriverId', null))
       );
-      allow create: if validOwnerWrite();
+      allow create: if validOwnerWrite() || isDriverOrderCreate();
       allow update: if isOwner(resource.data.ownerId) && ownerUnchanged();
       allow delete: if isOwner(resource.data.ownerId);
     }
 
     match /products/{docId} {
-      allow read: if isSignedIn() && (resource == null || isOwner(resource.data.ownerId));
+      allow read: if isSignedIn() && (resource == null || isOwner(resource.data.ownerId) ||
+        (isDriverRole() && isActiveDriver() && resource.data.ownerId == callerManagerId()));
       allow create: if validOwnerWrite();
       allow update: if isOwner(resource.data.ownerId) && ownerUnchanged();
       allow delete: if isOwner(resource.data.ownerId);
     }
 
     match /countries/{docId} {
-      allow read: if isSignedIn() && (resource == null || isOwner(resource.data.ownerId));
+      allow read: if isSignedIn() && (resource == null || isOwner(resource.data.ownerId) ||
+        (isDriverRole() && isActiveDriver() && resource.data.ownerId == callerManagerId()));
       allow create: if validOwnerWrite();
       allow update: if isOwner(resource.data.ownerId) && ownerUnchanged();
       allow delete: if isOwner(resource.data.ownerId);

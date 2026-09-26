@@ -1,4 +1,4 @@
-import { CheckmarkCircle20Regular, Navigation20Regular } from "@fluentui/react-native-icons";
+import { ArrowDown20Regular, ArrowUp20Regular, CheckmarkCircle20Regular, Navigation20Regular } from "@fluentui/react-native-icons";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { AppBadge } from "@/src/components/ui/AppBadge";
@@ -18,6 +18,12 @@ type RouteStopRowProps = {
   selected: boolean;
   onToggleSelection: () => void;
   onNavigate: () => void;
+  // Manual ordering — tapping the stop number opens "move to position N",
+  // the arrows swap with the neighbor. Omitted arrows (first/last row) are
+  // simply not rendered.
+  onPressPosition: () => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 };
 
 export function RouteStopRow(props: RouteStopRowProps) {
@@ -41,16 +47,44 @@ export function RouteStopRow(props: RouteStopRowProps) {
       tone={props.selected ? "primary" : "surface"}
     >
       <View style={styles.header}>
-        <View style={[styles.index, { backgroundColor: colors.primaryMuted, borderColor: colors.border }]}>
+        <Pressable
+          accessibilityHint={t("manualOrder.positionHint")}
+          accessibilityRole="button"
+          hitSlop={8}
+          onPress={props.onPressPosition}
+          style={[styles.index, { backgroundColor: colors.primaryMuted, borderColor: colors.primary }]}
+        >
           <AppText color="primary" variant="label">
             {props.stop.orderIndex + 1}
           </AppText>
-        </View>
+        </Pressable>
         <View style={styles.headerText}>
           <AppText variant="subheading">{marker.description}</AppText>
           <AppText color="muted" variant="caption">
             {marker.city}
           </AppText>
+        </View>
+        <View style={styles.moveButtons}>
+          {props.onMoveUp ? (
+            <Pressable
+              accessibilityLabel={t("manualOrder.moveUp")}
+              hitSlop={6}
+              onPress={props.onMoveUp}
+              style={[styles.moveButton, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
+            >
+              <ArrowUp20Regular color={colors.primary} />
+            </Pressable>
+          ) : null}
+          {props.onMoveDown ? (
+            <Pressable
+              accessibilityLabel={t("manualOrder.moveDown")}
+              hitSlop={6}
+              onPress={props.onMoveDown}
+              style={[styles.moveButton, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
+            >
+              <ArrowDown20Regular color={colors.primary} />
+            </Pressable>
+          ) : null}
         </View>
       </View>
       <View style={styles.addressBlock}>
@@ -138,6 +172,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   headerText: { flex: 1, gap: 2 },
+  moveButtons: { flexDirection: "row", gap: spacing.xxs },
+  moveButton: {
+    width: 34,
+    height: 34,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   navigateButton: {
     borderWidth: 1,
     borderRadius: radius.pill,

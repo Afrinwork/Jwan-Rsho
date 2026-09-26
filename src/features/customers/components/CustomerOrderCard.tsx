@@ -17,6 +17,7 @@ export function CustomerOrderCard({ order }: CustomerOrderCardProps) {
     <View style={styles.card}>
       <Text style={styles.title}>{labelForStatus(order.status, t)}</Text>
       <Text style={styles.meta}>{formatDate(order.orderedAt)}</Text>
+      {order.note ? <Text style={styles.meta}>{order.note}</Text> : null}
       {order.items.map((item) => (
         <Text key={item.id} style={styles.meta}>
           {item.productNameSnapshot}: {item.quantity} {item.unit}

@@ -2,6 +2,16 @@
   "addScreen": {
     "subtitle": "Bestellung direkt erfassen."
   },
+  "driverSuggestions": {
+    "title": "Vorschlaege fuer dich",
+    "subtitle": "Bestellungen auf deiner Route und Kunden in deiner Naehe.",
+    "empty": "Aktuell gibt es keine passenden Vorschlaege.",
+    "routeOrder": "{{count}} offene Bestellung(en) auf deiner Route",
+    "nearbyCustomer": "Zugewiesener Kunde in deiner Naehe",
+    "distance": "{{distance}} km entfernt",
+    "open": "Oeffnen",
+    "select": "Auswaehlen"
+  },
   "customerSection": {
     "title": "Kunde"
   },
@@ -18,7 +28,8 @@
       "open": "Offen",
       "completed": "Erledigt",
       "cancelled": "Storniert"
-    }
+    },
+    "noteLabel": "Notiz:"
   },
   "items": {
     "sectionTitle": "Produkte",
@@ -38,7 +49,9 @@
     "summaryTitle": "Bestelluebersicht",
     "summaryCount": "Produkte insgesamt: {{count}}",
     "summaryQuantity": "Menge insgesamt: {{quantity}}",
-    "confirmSelection": "Ausgewaehlte Produkte hinzufuegen"
+    "confirmSelection": "Ausgewaehlte Produkte hinzufuegen",
+    "catalogEmptyDriver": "Im Produktkatalog deines Admins sind noch keine aktiven Produkte. Bitte deinen Admin, Produkte anzulegen.",
+    "catalogEmptyOwner": "Du hast noch keine aktiven Produkte. Lege sie unter Verwaltung → Produkte an."
   },
   "save": {
     "button": "Bestellung speichern",

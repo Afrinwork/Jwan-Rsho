@@ -35,6 +35,7 @@ export function CustomerMapCard({ details }: CustomerMapCardProps) {
                 ? t("customerCard.openOrderIndexed", { index: index + 1, count: openOrders.length })
                 : t("customerCard.openOrder")}
             </Text>
+            {order.note ? <Text style={[styles.noteText, { color: colors.mutedText }]}>{order.note}</Text> : null}
             <View style={styles.items}>
               {order.items.map((item) => (
                 <View key={item.id} style={styles.itemRow}>

@@ -16,6 +16,8 @@ type RouteSelectionActionsBarProps = {
   actionError: string | null;
   onShare: () => void;
   onCompleteAll: () => void;
+  // Takes the selected stops out of this route only (nothing is deleted).
+  onRemoveFromRoute?: () => void;
 };
 
 export function RouteSelectionActionsBar(props: RouteSelectionActionsBarProps) {
@@ -61,6 +63,18 @@ export function RouteSelectionActionsBar(props: RouteSelectionActionsBarProps) {
           {t("selectionActions.completeAll")}
         </AppText>
       </Pressable>
+      {props.onRemoveFromRoute ? (
+        <Pressable
+          accessibilityLabel={t("selectionActions.removeFromRoute")}
+          onPress={props.onRemoveFromRoute}
+          style={[styles.completeButton, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
+        >
+          <MaterialCommunityIcons color={colors.text} name="map-marker-remove-outline" size={18} />
+          <AppText style={styles.completeLabel} variant="caption">
+            {t("selectionActions.removeFromRoute")}
+          </AppText>
+        </Pressable>
+      ) : null}
       {props.actionError ? <ErrorState durationMs={4200} message={props.actionError} /> : null}
     </View>
   );

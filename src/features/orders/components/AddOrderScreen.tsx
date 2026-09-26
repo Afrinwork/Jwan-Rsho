@@ -8,12 +8,16 @@ import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
 import { SuccessState } from "@/src/components/ui/SuccessState";
 import { spacing } from "@/src/constants/spacing";
 import { CustomerSection } from "@/src/features/orders/components/CustomerSection";
+import { DriverAddSuggestions } from "@/src/features/orders/components/DriverAddSuggestions";
 import { OrderItemsSection } from "@/src/features/orders/components/OrderItemsSection";
 import { SaveOrderButton } from "@/src/features/orders/components/SaveOrderButton";
 import { useAddOrder } from "@/src/features/orders/hooks/useAddOrder";
+import { isDriver } from "@/src/features/auth/permissions";
+import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 
 export function AddOrderScreen() {
   const { t } = useTranslation("orders");
+  const currentUser = useCurrentUser();
   const { form, items, selectedCustomer, selectCustomer, clearCustomer, submit, submitError, successMessage } = useAddOrder();
   const errors = form.formState.errors;
 
@@ -37,6 +41,11 @@ export function AddOrderScreen() {
             <AnimatedEntrance>
               <CompactScreenHeader title={t("common:add")} />
             </AnimatedEntrance>
+            {isDriver(currentUser) ? (
+              <AnimatedEntrance delay={40}>
+                <DriverAddSuggestions onSelectCustomer={selectCustomer} />
+              </AnimatedEntrance>
+            ) : null}
             <AnimatedEntrance delay={60}>
               <CustomerSection
                 control={form.control}

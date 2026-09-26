@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { reorderMarkersLast } from "@/src/features/route/services/routeLiveReorderService";
+import { insertMarkersAfterAnchor, reorderMarkersLast } from "@/src/features/route/services/routeLiveReorderService";
 import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
 
 function marker(id: string): MapCustomerMarker {
@@ -48,4 +48,26 @@ test("choosing the first marker moves it to the end, promoting the second to fir
   const markers = [marker("a"), marker("b"), marker("c")];
   const reordered = reorderMarkersLast(markers, "a");
   assert.deepEqual(reordered.map((value) => value.id), ["b", "c", "a"]);
+});
+
+function markerAt(id: string, longitude: number): MapCustomerMarker {
+  return { ...marker(id), longitude };
+}
+
+test("insertMarkersAfterAnchor puts a new stop where it adds the least detour, after the anchor", () => {
+  const route = [markerAt("a", 0), markerAt("b", 1), markerAt("c", 2), markerAt("d", 3)];
+  const result = insertMarkersAfterAnchor(route, [markerAt("n", 2.5)], "b");
+  assert.deepEqual(result.map((value) => value.id), ["a", "b", "c", "n", "d"]);
+});
+
+test("insertMarkersAfterAnchor never inserts before or at the anchor, even if that would be shorter", () => {
+  const route = [markerAt("a", 0), markerAt("b", 1), markerAt("c", 5)];
+  const result = insertMarkersAfterAnchor(route, [markerAt("n", 0.5)], "b");
+  assert.deepEqual(result.map((value) => value.id), ["a", "b", "n", "c"]);
+});
+
+test("insertMarkersAfterAnchor appends when there is no anchor, and skips ids already in the route", () => {
+  const route = [markerAt("a", 0), markerAt("b", 1)];
+  const result = insertMarkersAfterAnchor(route, [markerAt("a", 0), markerAt("n", 0.5)], null);
+  assert.deepEqual(result.map((value) => value.id), ["a", "b", "n"]);
 });

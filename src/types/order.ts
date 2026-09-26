@@ -21,6 +21,11 @@ export type Order = {
   // directly by the client) so driver-read Firestore rules on this collection
   // stay a plain field comparison instead of a get() lookup to the customer.
   assignedDriverId?: string;
+  // Set by the owning admin/super_admin from the driver view to take an
+  // assigned order off the driver's map/route for now without deleting or
+  // unassigning it (e.g. "only Hannover today, not Berlin"). Driver-scoped
+  // reads skip these; the owner still sees them and can show them again.
+  hiddenFromDriver?: boolean;
   orderedAt: TimestampValue;
   completedAt?: TimestampValue;
   createdAt: TimestampValue;

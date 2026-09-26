@@ -38,6 +38,8 @@ import { mapClusteringService } from "@/src/features/map/services/mapClusteringS
 import { useUserLocation } from "@/src/features/map/hooks/useUserLocation";
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 import { AppMapViewHandle } from "@/src/features/map/types/mapViewTypes";
+import { orderRepository } from "@/src/repositories/orderRepository";
+import { formatError } from "@/src/utils/formatError";
 
 const TAB_BAR_CLEARANCE = 68 + 14 + spacing.sm;
 
@@ -195,6 +197,32 @@ export function MapScreen() {
     await Promise.all([reloadCustomers(), selectedCustomerId ? reloadDetails() : Promise.resolve()]);
   }
 
+  const [changingDriverVisibility, setChangingDriverVisibility] = useState(false);
+  const [driverVisibilityMessage, setDriverVisibilityMessage] = useState<string | null>(null);
+  const [driverVisibilityError, setDriverVisibilityError] = useState<string | null>(null);
+
+  // Hide/show the selected customers from whichever driver they're
+  // assigned to — live on the driver's map/route, nothing is deleted.
+  async function setSelectionHiddenForDriver(hidden: boolean) {
+    const customerIds = customerSelection.selectedMarkers.map((marker) => marker.id);
+    setChangingDriverVisibility(true);
+    setDriverVisibilityMessage(null);
+    setDriverVisibilityError(null);
+    try {
+      const changed = await orderRepository.setHiddenFromDriver(null, customerIds, hidden);
+      if (changed === 0) {
+        setDriverVisibilityError(actionT("selectedBar.noAssignedOrders"));
+      } else {
+        setDriverVisibilityMessage(actionT(hidden ? "selectedBar.hiddenDone" : "selectedBar.shownDone", { count: changed }));
+        await reloadCustomers();
+      }
+    } catch (visibilityError) {
+      setDriverVisibilityError(formatError(visibilityError).message);
+    } finally {
+      setChangingDriverVisibility(false);
+    }
+  }
+
   function openDriverAssignment(customerIds: string[]) {
     if (!customerIds.length) return;
     setAssignmentCustomerIds([...new Set(customerIds)]);
@@ -296,6 +324,12 @@ export function MapScreen() {
                 emailing={customerSelection.emailing}
                 inline
                 assigningDriver={driverAssignment.assigning}
+                changingDriverVisibility={changingDriverVisibility}
+                driverVisibilityError={driverVisibilityError}
+                driverVisibilityMessage={driverVisibilityMessage}
+                hiddenForDriverCount={customerSelection.selectedMarkers.filter((marker) => marker.hiddenFromDriver).length}
+                onHideForDriver={canAssignDrivers ? () => void setSelectionHiddenForDriver(true) : undefined}
+                onShowForDriver={canAssignDrivers ? () => void setSelectionHiddenForDriver(false) : undefined}
                 onAssignDriver={canAssignDrivers
                   ? () => openDriverAssignment(customerSelection.selectedMarkers.map((marker) => marker.id))
                   : undefined}

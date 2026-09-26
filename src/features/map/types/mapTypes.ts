@@ -28,6 +28,9 @@ export type MapCustomerMarker = {
   // Optional (defaults to true / teal) so the many marker fixtures in tests
   // unrelated to this — clustering, filtering, selection — don't all need it.
   hasStreetAddress?: boolean;
+  // Assigned to a driver, but every open order is hidden from them right
+  // now (Order.hiddenFromDriver) — only an owner's map ever sees this true.
+  hiddenFromDriver?: boolean;
 };
 
 export type MapMarkerCoordinate = {

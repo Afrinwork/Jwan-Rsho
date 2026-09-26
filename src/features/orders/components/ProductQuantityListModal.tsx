@@ -6,6 +6,8 @@ import { Box20Regular } from "@fluentui/react-native-icons";
 import { AppButton } from "@/src/components/ui/AppButton";
 import { AppText } from "@/src/components/ui/AppText";
 import { EmptyState } from "@/src/components/ui/EmptyState";
+import { isDriver } from "@/src/features/auth/permissions";
+import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { LoadingView } from "@/src/components/ui/LoadingView";
 import { QuantityStepper } from "@/src/components/ui/QuantityStepper";
@@ -36,6 +38,7 @@ export function ProductQuantityListModal({
   onConfirm,
 }: ProductQuantityListModalProps) {
   const { products, loading, error } = useProducts();
+  const isCurrentUserDriver = isDriver(useCurrentUser());
   const [query, setQuery] = useState("");
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [prevVisible, setPrevVisible] = useState(visible);
@@ -99,7 +102,18 @@ export function ProductQuantityListModal({
       {loading ? <LoadingView label={t("products:loadingProducts")} /> : null}
       {error ? <ErrorState message={error} /> : null}
       {!loading && !error && activeProducts.length === 0 ? (
-        <EmptyState message={t("items.bulkEmptyMessage")} title={t("items.bulkEmptyTitle")} />
+        // An empty catalog is not the same as "nothing matches the search" —
+        // a driver sees their admin's catalog, so say whose it is.
+        <EmptyState
+          message={
+            normalized
+              ? t("items.bulkEmptyMessage")
+              : isCurrentUserDriver
+                ? t("items.catalogEmptyDriver")
+                : t("items.catalogEmptyOwner")
+          }
+          title={t("items.bulkEmptyTitle")}
+        />
       ) : null}
 
       <View style={styles.list}>

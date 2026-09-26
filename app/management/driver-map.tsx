@@ -4,6 +4,7 @@ import { DriverLiveMapScreen } from "@/src/features/admin/components/DriverLiveM
 
 export default function DriverMapRoute() {
   const params = useLocalSearchParams<{
+    driverId?: string;
     driverName?: string;
     ids?: string;
     lat?: string;
@@ -21,6 +22,7 @@ export default function DriverMapRoute() {
     <DriverLiveMapScreen
       completedToday={Number(params.completedToday ?? 0)}
       customerIds={params.ids ? params.ids.split(",") : []}
+      driverId={params.driverId ?? ""}
       driverName={params.driverName ?? ""}
       location={Number.isFinite(lat) && Number.isFinite(lng) ? { latitude: lat, longitude: lng, address: params.address ?? "", updatedAt: params.updatedAt ?? "" } : null}
       openCount={Number(params.openCount ?? 0)}

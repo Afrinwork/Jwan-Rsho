@@ -50,11 +50,15 @@
     "startNavigation": "Route starten",
     "endNavigation": "Route beenden",
     "tripComplete": "Route abgeschlossen",
+    "newStops": {
+      "title": "{{count}} neue Bestellung(en) zur Route hinzugefügt"
+    },
     "summary": {
       "completed": "{{count}} erledigt",
       "skipped": "{{count}} uebersprungen",
       "duration": "Gesamtdauer: {{duration}}"
-    }
+    },
+    "actionsMenu": "Aktionen · {{name}}"
   },
   "stopRow": {
     "arrival": "Ankunft {{time}} / {{distance}} km",
@@ -84,7 +88,8 @@
     "shareStepTitle": "Nachricht {{index}} von {{count}}",
     "shareStepMessage": "Auf \"Teilen\" tippen, um die Nachricht fuer {{name}} per WhatsApp zu senden, dann den Kontakt auswaehlen.",
     "shareStepConfirm": "Teilen",
-    "shareStepCancel": "Abbrechen"
+    "shareStepCancel": "Abbrechen",
+    "removeFromRoute": "Aus Route entfernen"
   },
   "errors": {
     "locationNotFound": "Dieser Ort konnte nicht gefunden werden.",
@@ -101,5 +106,35 @@
     "title": "Keine Kunden",
     "message": "Fuer diese Route sind keine Kunden ausgewaehlt."
   },
-  "retry": "Erneut versuchen"
+  "retry": "Erneut versuchen",
+  "manualOrder": {
+    "positionHint": "Tippen, um die Position zu ändern",
+    "moveUp": "Nach oben",
+    "moveDown": "Nach unten",
+    "dialogTitle": "{{name}} verschieben",
+    "dialogMessage": "Aktuell Position {{position}} von {{count}}. Neue Position eingeben:",
+    "dialogConfirm": "Verschieben",
+    "active": "Eigene Reihenfolge",
+    "reset": "Automatisch sortieren",
+    "hint": "Tippe auf die Nummer oder die Pfeile, um die Reihenfolge selbst festzulegen."
+  },
+  "reorderSheet": {
+    "open": "Kundenliste & Reihenfolge ({{count}})",
+    "title": "Verbleibende Kunden ({{count}})",
+    "current": "Aktuelles Ziel"
+  },
+  "sortMode": {
+    "title": "Wie soll sortiert werden?",
+    "optimized": "Kürzeste Route",
+    "nearest": "Nächste zuerst",
+    "farthest": "Weiteste zuerst",
+    "city": "Nach Stadt",
+    "manual": "Eigene Reihenfolge",
+    "optimizedHint": "Die App berechnet die schnellste Reihenfolge. Du kannst danach jeden Kunden mit Nummer oder Pfeilen verschieben.",
+    "nearestHint": "Kunden nahe am Startpunkt zuerst, dann immer weiter weg.",
+    "farthestHint": "Erst zum weitesten Kunden fahren, dann Richtung Startpunkt zurück.",
+    "cityHint": "Stadt für Stadt – die nächste Stadt zuerst, innerhalb der Stadt auf kurzem Weg.",
+    "manualHint": "Deine eigene Reihenfolge ist aktiv. Tippe eine andere Sortierung, um sie zu ersetzen.",
+    "changeSelection": "Auswahl ändern"
+  }
 }

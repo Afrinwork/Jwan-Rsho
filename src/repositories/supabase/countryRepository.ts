@@ -2,7 +2,7 @@ import { AppError } from "@/src/errors/AppError";
 import { errorMessages } from "@/src/errors/errorMessages";
 import { buildCountryCreateData, buildCountryUpdateData, CountryWrite } from "@/src/repositories/countryRepositoryData";
 import { toCamelCase, toSnakeCase } from "@/src/repositories/supabase/caseMapping";
-import { requireCurrentUserId, requireSupabase } from "@/src/repositories/supabase/repositoryContext";
+import { requireCurrentUserId, requireSupabase, resolveOwnerScope } from "@/src/repositories/supabase/repositoryContext";
 import { Country } from "@/src/types/country";
 import type { Database } from "@/src/types/supabase";
 import { generateUuid } from "@/src/utils/uuid";
@@ -40,7 +40,7 @@ export const countryRepository = {
   },
 
   async getCountries() {
-    const ownerId = requireCurrentUserId();
+    const { ownerId } = resolveOwnerScope();
     const { data, error } = await requireSupabase().from("countries").select("*").eq("owner_id", ownerId);
     if (error) throw error;
     return sortCountries((data ?? []).map((row) => toCamelCase<Country>(row)));

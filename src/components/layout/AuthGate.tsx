@@ -1,5 +1,6 @@
 import { PropsWithChildren, useEffect } from "react";
 import { useRouter, useSegments } from "expo-router";
+import { StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { LoadingView } from "@/src/components/ui/LoadingView";
@@ -12,15 +13,6 @@ export function AuthGate({ children }: PropsWithChildren) {
   const router = useRouter();
   const segments = useSegments();
 
-  // Computed during render (not in the effect below) so `children` can
-  // never mount for even one frame while a redirect is pending -- e.g. a
-  // device with a stale/missing session landing back on an app screen
-  // instead of login. Rendering that screen's data hooks even briefly
-  // throws (they require an authenticated user), which used to crash to
-  // the error boundary instead of just showing the login screen a moment
-  // later. The actual navigation still has to happen in an effect (React
-  // doesn't allow navigating during render), but nothing that needs a
-  // session gets a chance to run before it does.
   const redirectTo = authLoading
     ? null
     : resolveAuthRedirect({
@@ -37,9 +29,26 @@ export function AuthGate({ children }: PropsWithChildren) {
     }
   }, [redirectTo, router]);
 
-  if (authLoading || redirectTo) {
+  // Only the very first session check holds the navigator back (authLoading
+  // is true once, at startup). After that the navigator must NEVER be
+  // unmounted for a redirect: router.replace() needs it mounted, and
+  // unmounting it made it remount on the same route and redirect again,
+  // forever ("Maximum update depth exceeded"). Screens that need a session
+  // or a manager role are guarded with Stack/Tabs.Protected in the layouts
+  // instead, so they can't render in the meantime; this just covers the
+  // screen until the redirect lands.
+  if (authLoading) {
     return <LoadingView label={t("checkingSession")} />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      {redirectTo ? (
+        <View style={StyleSheet.absoluteFill}>
+          <LoadingView label={t("checkingSession")} />
+        </View>
+      ) : null}
+    </>
+  );
 }

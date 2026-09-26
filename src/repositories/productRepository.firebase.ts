@@ -15,7 +15,7 @@ import {
 import { AppError } from "@/src/errors/AppError";
 import { errorMessages } from "@/src/errors/errorMessages";
 import { buildProductCreateData, buildProductUpdateData, ProductWrite } from "@/src/repositories/productRepositoryData";
-import { mapSnapshot, requireCurrentUserId, requireDb } from "@/src/repositories/repositoryContext.firebase";
+import { mapSnapshot, requireCurrentUserId, requireDb, resolveOwnerScope } from "@/src/repositories/repositoryContext.firebase";
 import { Product } from "@/src/types/product";
 
 export const productRepository = {
@@ -52,7 +52,7 @@ export const productRepository = {
   },
 
   async getProducts() {
-    const ownerId = requireCurrentUserId();
+    const { ownerId } = resolveOwnerScope();
     const productQuery = query(collection(requireDb(), "products"), where("ownerId", "==", ownerId));
     return sortProducts((await getDocs(productQuery)).docs.map((value) => mapSnapshot<Product>(value)));
   },

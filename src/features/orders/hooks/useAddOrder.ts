@@ -18,6 +18,9 @@ import { geocodingService } from "@/src/services/geocodingService";
 import { formatError } from "@/src/utils/formatError";
 import { guardAsync } from "@/src/utils/guardAsync";
 import { isOrderAlreadyExistsError } from "@/src/features/orders/services/orderIdempotencyService";
+import { isDriver } from "@/src/features/auth/permissions";
+import { buildDriverOrderNote } from "@/src/features/orders/services/driverOrderNote";
+import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 
 const defaultValues: AddOrderFormValues = {
   customerId: "",
@@ -27,6 +30,7 @@ const defaultValues: AddOrderFormValues = {
 
 export function useAddOrder() {
   const { t } = useTranslation("orders");
+  const currentUser = useCurrentUser();
   const [customerMode, setCustomerMode] = useState<CustomerMode>("new");
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -70,12 +74,16 @@ export function useAddOrder() {
     setSuccessMessage(null);
 
     try {
+      // Marks a driver-created order for the admin (see buildDriverOrderNote).
+      const driverNote = isDriver(currentUser) ? { note: buildDriverOrderNote(currentUser?.displayName ?? currentUser?.email) } : {};
       const payload: CreateOrderInput & { customer?: CustomerWrite; id?: string; newCustomerId?: string; requestId?: string } =
         customerMode === "existing"
-          ? { customerId: values.customerId, items: values.items, id: draftIds.orderId, requestId: draftIds.orderId }
+          ? { customerId: values.customerId, items: values.items, id: draftIds.orderId, requestId: draftIds.orderId, ...driverNote }
           : {
+              ...driverNote,
               customer: {
                 ...customerSchema.parse(values.customer),
+                ...(isDriver(currentUser) ? { assignedDriverId: currentUser!.uid } : {}),
                 ...(await buildCustomerCoordinates(values.customer)),
               },
               items: values.items,

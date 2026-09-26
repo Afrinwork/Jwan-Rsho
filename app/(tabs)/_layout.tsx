@@ -70,11 +70,17 @@ export default function TabsLayout() {
         };
       }}
     >
-      <Tabs.Screen name="overview" options={{ href: isCurrentUserDriver ? null : undefined, title: t("tabs.overview") }} />
+      {/* Guarded (not just hidden via href: null) so a driver can't land on
+          them at all — the map becomes their first/initial tab instead. */}
+      <Tabs.Protected guard={!isCurrentUserDriver}>
+        <Tabs.Screen name="overview" options={{ title: t("tabs.overview") }} />
+      </Tabs.Protected>
       <Tabs.Screen name="map" options={{ title: t("tabs.map") }} />
-      <Tabs.Screen name="add" options={{ href: isCurrentUserDriver ? null : undefined, title: t("tabs.add") }} />
-      <Tabs.Screen name="customers" options={{ href: isCurrentUserDriver ? null : undefined, title: t("tabs.customers") }} />
-      <Tabs.Screen name="management" options={{ href: isCurrentUserDriver ? null : undefined, title: t("tabs.management") }} />
+      <Tabs.Screen name="add" options={{ title: t("tabs.add") }} />
+      <Tabs.Protected guard={!isCurrentUserDriver}>
+        <Tabs.Screen name="customers" options={{ title: t("tabs.customers") }} />
+        <Tabs.Screen name="management" options={{ title: t("tabs.management") }} />
+      </Tabs.Protected>
       <Tabs.Screen name="settings" options={{ title: t("tabs.settings") }} />
     </Tabs>
   );

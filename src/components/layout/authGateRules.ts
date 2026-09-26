@@ -17,7 +17,10 @@ export function resolveAuthRedirect({
 }: ResolveAuthRedirectInput): typeof routes.login | typeof routes.overview | typeof routes.map | null {
   const inAuthGroup = firstSegment === "(auth)";
   const inAdminArea = firstSegment === "admin";
-  const isDriverTab = firstSegment === "(tabs)" && (secondSegment === "map" || secondSegment === "settings");
+  // Must match the tabs app/(tabs)/_layout.tsx shows a driver — a visible
+  // tab that isn't listed here redirects on every tap.
+  const isDriverTab =
+    firstSegment === "(tabs)" && (secondSegment === "map" || secondSegment === "add" || secondSegment === "settings");
   const isDriverRoute = firstSegment === "map" || firstSegment === "customer" || firstSegment === "order";
 
   if (!isAuthenticated && !inAuthGroup) {

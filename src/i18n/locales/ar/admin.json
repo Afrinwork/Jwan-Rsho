@@ -80,7 +80,19 @@
   "driverMap": {
     "progress": "{{open}} مفتوحة · {{completed}} منجزة اليوم",
     "lastUpdate": "آخر إرسال {{time}} · {{address}}",
-    "noLocation": "لم يرسل السائق موقعًا بعد"
+    "noLocation": "لم يرسل السائق موقعًا بعد",
+    "orderTitle": "قائمة السائق",
+    "orderManual": "قائمة السائق (ترتيب مخصص)",
+    "orderHint": "اضغط على الرقم أو الأسهم – سيرى السائق الترتيب الجديد فورًا.",
+    "citiesTitle": "إظهار/إخفاء المدن للسائق",
+    "noCity": "بدون مدينة",
+    "hideStop": "إخفاء عن السائق",
+    "showStop": "إظهار للسائق مرة أخرى",
+    "hiddenTitle": "مخفي عن السائق ({{count}})",
+    "nothingChanged": "لم يتم تغيير أي شيء – لا يوجد طلب مفتوح لهذا السائق هنا.",
+    "tripActive": "في الطريق · متبقٍ {{count}} توقفات · التالي: {{name}}",
+    "tripInactive": "لم تبدأ رحلة حاليًا",
+    "panelToggle": "التفاصيل والقائمة والإخفاء · {{count}} توقفات · {{hidden}} مخفية"
   },
   "adminDashboard": {
     "title": "المسؤولون",

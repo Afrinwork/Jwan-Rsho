@@ -101,3 +101,21 @@ test("WhatsApp template text is prepended as-is, with no placeholder substitutio
 
   assert.ok(message.startsWith("Hallo, hier ist die Auswahl:\n\n--------------\n\nName: Ahmad Ali"));
 });
+
+test("components are rendered in the chosen order, not a fixed one", () => {
+  const customer = {
+    fullName: "Anna",
+    address: "Hauptstr 1",
+    phone: "0151",
+    city: "Berlin",
+    items: [{ productName: "Käse", quantity: 2, unit: "kg" }],
+  };
+  const message = buildSelectionShareMessage([customer], [], { components: ["orders", "name", "phone"] });
+  assert.equal(message, ["Bestellung:", "Käse: 2 kg", "Name: Anna", "Telefon: 0151"].join("\n"));
+});
+
+test("multi-line blocks get a blank line before them unless they open the block", () => {
+  const customer = { fullName: "Anna", address: "", phone: "", city: "", items: [] };
+  const message = buildSelectionShareMessage([customer], [], { components: ["thankYou", "name", "orders"] });
+  assert.equal(message, ["Danke fuer Ihre Bestellung.", "Name: Anna", "", "Bestellung:", "Keine offene Bestellung"].join("\n"));
+});

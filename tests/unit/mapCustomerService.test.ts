@@ -282,3 +282,15 @@ test("invariant: every customer with an open order ends up in exactly one of mar
   assert.equal(markers.some((value) => value.id === "c4"), false);
   assert.equal(needsCheck.some((value) => value.id === "c4"), false);
 });
+
+test("map markers flag customers whose assigned open orders are all hidden from the driver", () => {
+  const customer = (id: string) => ({ id, fullName: id, address: "Str 1", city: "Berlin", country: "DE", phone: "", latitude: 52.5, longitude: 13.4 }) as never;
+  const order = (id: string, customerId: string, hiddenFromDriver?: boolean) =>
+    ({ id, customerId, status: "open", assignedDriverId: "d1", hiddenFromDriver, ownerId: "o", orderedAt: "", createdAt: "", updatedAt: "" }) as never;
+  const markers = buildMapCustomerMarkers(
+    [customer("hidden"), customer("mixed"), customer("visible")],
+    [order("o1", "hidden", true), order("o2", "mixed", true), order("o3", "mixed", false), order("o4", "visible")],
+  );
+  const flags = Object.fromEntries(markers.map((marker) => [marker.id, marker.hiddenFromDriver === true]));
+  assert.deepEqual(flags, { hidden: true, mixed: false, visible: false });
+});

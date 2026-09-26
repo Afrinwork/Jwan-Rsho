@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { isDriver } from "@/src/features/auth/permissions";
+import { driverNameFromOrderNote } from "@/src/features/orders/services/driverOrderNote";
 import { customerRepository } from "@/src/repositories/customerRepository";
 import { orderRepository } from "@/src/repositories/orderRepository";
 import { buildMapCustomerMarkers, getCustomersNeedingAddressCheck, hasValidCoordinates } from "@/src/features/map/services/mapCustomerService";
@@ -149,26 +150,33 @@ export function useMapCustomers(): MapCustomersState {
   // the mount-time load above — a harmless, one-time extra read traded for
   // keeping loadCustomers()'s existing one-shot fetch untouched.
   //
-  // For a driver specifically, also surfaces a brief on-screen notice when
-  // orders they didn't already know about show up — this is what actually
-  // tells them "something new was assigned to you" without requiring a real
-  // push notification. Only meaningful for a driver: an admin/super_admin
-  // would just be notified about their own actions.
+  // Also surfaces a brief on-screen notice when orders nobody on this
+  // screen knew about show up: for a driver, "something new was assigned to
+  // you"; for an admin/super_admin, "one of your drivers added an order"
+  // (their own new orders aren't announced — they just made them). A
+  // driver's order often lands on an EXISTING customer's pin, so without
+  // this notice nothing on the map would visibly change.
   useEffect(() => {
     knownOrderIdsRef.current = null;
 
     const unsubscribe = orderRepository.subscribeToOpenOrders(
       (orders) => {
-        if (isCurrentUserDriver) {
-          const previousIds = knownOrderIdsRef.current;
-          if (previousIds) {
-            const newCount = orders.filter((value) => !previousIds.has(value.id)).length;
-            if (newCount > 0) {
-              setNewAssignmentMessage(t("screen.newAssignment", { count: newCount }));
+        const previousIds = knownOrderIdsRef.current;
+        if (previousIds) {
+          const fresh = orders.filter((value) => !previousIds.has(value.id));
+          if (isCurrentUserDriver && fresh.length > 0) {
+            setNewAssignmentMessage(t("screen.newAssignment", { count: fresh.length }));
+          }
+          if (!isCurrentUserDriver) {
+            const driverNames = fresh.map((value) => driverNameFromOrderNote(value.note)).filter((name): name is string => name !== null);
+            if (driverNames.length > 0) {
+              setNewAssignmentMessage(
+                t("screen.newDriverOrder", { count: driverNames.length, names: [...new Set(driverNames.filter(Boolean))].join(", ") || "–" }),
+              );
             }
           }
-          knownOrderIdsRef.current = new Set(orders.map((value) => value.id));
         }
+        knownOrderIdsRef.current = new Set(orders.map((value) => value.id));
 
         void loadCustomers();
       },

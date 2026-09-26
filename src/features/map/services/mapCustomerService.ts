@@ -13,6 +13,7 @@ export function countOpenOrdersByCustomerId(orders: Order[]) {
 
 export function buildMapCustomerMarkers(customers: Customer[], orders: Order[]) {
   const openOrderCountByCustomerId = countOpenOrdersByCustomerId(orders);
+  const hiddenFromDriverIds = customersHiddenFromDriver(orders);
 
   const markers = customers
     .filter((value) => openOrderCountByCustomerId.has(value.id))
@@ -32,9 +33,22 @@ export function buildMapCustomerMarkers(customers: Customer[], orders: Order[]) 
       city: value.city,
       region: value.region ?? "",
       hasStreetAddress: hasStreetAddress(value),
+      ...(hiddenFromDriverIds.has(value.id) ? { hiddenFromDriver: true } : {}),
     }));
 
   return spreadOutDuplicateCoordinates(markers);
+}
+
+// A customer counts as hidden from their driver when they have assigned
+// open orders and every one of those is hidden.
+function customersHiddenFromDriver(orders: Order[]) {
+  const visible = new Set<string>();
+  const hidden = new Set<string>();
+  for (const order of orders) {
+    if (order.status !== "open" || !order.assignedDriverId) continue;
+    (order.hiddenFromDriver ? hidden : visible).add(order.customerId);
+  }
+  return new Set([...hidden].filter((id) => !visible.has(id)));
 }
 
 // City-only addresses (no street) all geocode to the exact same point — the

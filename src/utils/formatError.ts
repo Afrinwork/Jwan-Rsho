@@ -32,6 +32,12 @@ const postgrestCodeMap: Record<string, string> = {
   PGRST116: errorMessages.dataNotFound,
   "23505": errorMessages.duplicateProduct,
   "42501": errorMessages.forbidden,
+  // Undefined column/table — the app is newer than the database schema
+  // (a migration hasn't been applied yet). Retrying never helps here.
+  "42703": errorMessages.databaseOutdated,
+  "42P01": errorMessages.databaseOutdated,
+  PGRST204: errorMessages.databaseOutdated,
+  PGRST205: errorMessages.databaseOutdated,
 };
 
 const postgrestMessageMap: Record<string, string> = {

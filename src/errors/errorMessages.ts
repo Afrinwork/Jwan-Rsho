@@ -23,4 +23,5 @@ export const errorMessages = {
   regionInUse: t("errors:regionInUse"),
   cityInUse: t("errors:cityInUse"),
   invalidForm: t("errors:invalidForm"),
+  databaseOutdated: t("errors:databaseOutdated"),
 };

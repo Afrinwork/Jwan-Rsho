@@ -65,6 +65,7 @@ export function OrderDetailsScreen({ orderId }: OrderDetailsScreenProps) {
             <Text style={styles.meta}>{t("details.statusLabel")} {statusLabel}</Text>
             <Text style={styles.meta}>{t("details.dateLabel")} {formatDate(order.orderedAt)}</Text>
             <Text style={styles.meta}>{t("details.customerIdLabel")} {order.customerId}</Text>
+            {order.note ? <Text style={styles.meta}>{t("details.noteLabel")} {order.note}</Text> : null}
           </View>
           <View style={styles.card}>
             <Text style={styles.section}>{t("items.sectionTitle")}</Text>

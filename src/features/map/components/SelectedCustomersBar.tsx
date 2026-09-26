@@ -27,6 +27,14 @@ type SelectedCustomersBarProps = {
   onShareByEmail: () => void;
   onAssignDriver?: () => void;
   assigningDriver?: boolean;
+  // Owner-only: hide/show the selected customers' assigned open orders
+  // from their driver (not deleted, not unassigned).
+  onHideForDriver?: () => void;
+  onShowForDriver?: () => void;
+  changingDriverVisibility?: boolean;
+  hiddenForDriverCount?: number;
+  driverVisibilityMessage?: string | null;
+  driverVisibilityError?: string | null;
   onDeleteSelected: () => void;
   inline?: boolean;
 };
@@ -68,6 +76,12 @@ export function SelectedCustomersBar(props: SelectedCustomersBarProps) {
       </View>
       {props.shareError ? <ErrorState message={props.shareError} /> : null}
       {props.deleteError ? <ErrorState message={props.deleteError} /> : null}
+      {props.driverVisibilityError ? <ErrorState message={props.driverVisibilityError} /> : null}
+      {props.driverVisibilityMessage ? (
+        <AppText color="success" variant="caption">
+          {props.driverVisibilityMessage}
+        </AppText>
+      ) : null}
       {open ? (
         <AppCard contentStyle={styles.menu} frosted style={props.inline ? styles.inlineMenu : undefined}>
           <AppText variant="label">{t("selectedBar.count", { count: props.selectedCount })}</AppText>
@@ -77,6 +91,11 @@ export function SelectedCustomersBar(props: SelectedCustomersBarProps) {
               orders: props.previewOpenOrderCount ?? 0,
             })}
           </AppText>
+          {props.hiddenForDriverCount ? (
+            <AppText color="warning" variant="caption">
+              {t("selectedBar.hiddenForDriverCount", { count: props.hiddenForDriverCount })}
+            </AppText>
+          ) : null}
           <View style={styles.actions}>
             <View style={styles.actionButton}>
               <AppButton
@@ -106,6 +125,28 @@ export function SelectedCustomersBar(props: SelectedCustomersBarProps) {
                   label={t("selectedBar.assignDriver")}
                   loading={props.assigningDriver}
                   onPress={props.onAssignDriver}
+                  size="compact"
+                  variant="secondary"
+                />
+              </View>
+            ) : null}
+            {props.onHideForDriver ? (
+              <View style={styles.actionButton}>
+                <AppButton
+                  label={t("selectedBar.hideForDriver")}
+                  loading={props.changingDriverVisibility}
+                  onPress={props.onHideForDriver}
+                  size="compact"
+                  variant="secondary"
+                />
+              </View>
+            ) : null}
+            {props.onShowForDriver && props.hiddenForDriverCount ? (
+              <View style={styles.actionButton}>
+                <AppButton
+                  label={t("selectedBar.showForDriver")}
+                  loading={props.changingDriverVisibility}
+                  onPress={props.onShowForDriver}
                   size="compact"
                   variant="secondary"
                 />

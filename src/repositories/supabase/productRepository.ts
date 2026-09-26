@@ -2,7 +2,7 @@ import { AppError } from "@/src/errors/AppError";
 import { errorMessages } from "@/src/errors/errorMessages";
 import { buildProductCreateData, buildProductUpdateData, ProductWrite } from "@/src/repositories/productRepositoryData";
 import { toCamelCase, toSnakeCase } from "@/src/repositories/supabase/caseMapping";
-import { requireCurrentUserId, requireSupabase } from "@/src/repositories/supabase/repositoryContext";
+import { requireCurrentUserId, requireSupabase, resolveOwnerScope } from "@/src/repositories/supabase/repositoryContext";
 import { Product } from "@/src/types/product";
 import type { Database } from "@/src/types/supabase";
 import { generateUuid } from "@/src/utils/uuid";
@@ -61,7 +61,7 @@ export const productRepository = {
   },
 
   async getProducts() {
-    const ownerId = requireCurrentUserId();
+    const { ownerId } = resolveOwnerScope();
     const { data, error } = await requireSupabase().from("products").select("*").eq("owner_id", ownerId);
     if (error) throw error;
     return sortProducts((data ?? []).map((row) => toCamelCase<Product>(row)));

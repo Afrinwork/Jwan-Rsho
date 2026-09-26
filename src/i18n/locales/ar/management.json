@@ -68,7 +68,12 @@
     "previewSampleEta": "14:20",
     "save": "حفظ النص",
     "saved": "تم حفظ نص واتساب.",
-    "notAllowed": "هذا القسم متاح للمسؤولين فقط."
+    "notAllowed": "هذا القسم متاح للمسؤولين فقط.",
+    "componentsOrderHint": "في الأعلى تظهر العناصر بالترتيب الذي تظهر به في الرسالة. حرّكها بالأسهم، واحذفها بـ ✕.",
+    "componentsAvailable": "إضافة عناصر أخرى",
+    "moveUp": "إلى الأعلى",
+    "moveDown": "إلى الأسفل",
+    "removeComponent": "إزالة"
   },
   "workspaceTabs": {
     "customers": "العملاء",

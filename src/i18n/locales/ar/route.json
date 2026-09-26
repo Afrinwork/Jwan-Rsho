@@ -50,11 +50,15 @@
     "startNavigation": "ابدأ الرحلة",
     "endNavigation": "إنهاء الرحلة",
     "tripComplete": "الرحلة مكتملة",
+    "newStops": {
+      "title": "تمت إضافة {{count}} طلبات جديدة إلى المسار"
+    },
     "summary": {
       "completed": "{{count}} تم إنجازه",
       "skipped": "{{count}} تم تخطيه",
       "duration": "المدة الإجمالية: {{duration}}"
-    }
+    },
+    "actionsMenu": "الإجراءات · {{name}}"
   },
   "stopRow": {
     "arrival": "الوصول {{time}} / {{distance}} كم",
@@ -84,7 +88,8 @@
     "shareStepTitle": "رسالة {{index}} من {{count}}",
     "shareStepMessage": "اضغط \"مشاركة\" لإرسال رسالة {{name}} عبر واتساب، ثم اختر جهة الاتصال.",
     "shareStepConfirm": "مشاركة",
-    "shareStepCancel": "إيقاف"
+    "shareStepCancel": "إيقاف",
+    "removeFromRoute": "إزالة من المسار"
   },
   "errors": {
     "locationNotFound": "تعذر العثور على هذا الموقع.",
@@ -101,5 +106,35 @@
     "title": "لا يوجد زبائن",
     "message": "لم يتم تحديد أي زبائن لهذا المسار."
   },
-  "retry": "إعادة المحاولة"
+  "retry": "إعادة المحاولة",
+  "manualOrder": {
+    "positionHint": "اضغط لتغيير الترتيب",
+    "moveUp": "إلى الأعلى",
+    "moveDown": "إلى الأسفل",
+    "dialogTitle": "نقل {{name}}",
+    "dialogMessage": "الترتيب الحالي {{position}} من {{count}}. أدخل الترتيب الجديد:",
+    "dialogConfirm": "نقل",
+    "active": "ترتيب مخصص",
+    "reset": "ترتيب تلقائي",
+    "hint": "اضغط على الرقم أو الأسهم لتحديد الترتيب بنفسك."
+  },
+  "reorderSheet": {
+    "open": "قائمة الزبائن والترتيب ({{count}})",
+    "title": "الزبائن المتبقون ({{count}})",
+    "current": "الوجهة الحالية"
+  },
+  "sortMode": {
+    "title": "كيف تريد الترتيب؟",
+    "optimized": "أقصر طريق",
+    "nearest": "الأقرب أولاً",
+    "farthest": "الأبعد أولاً",
+    "city": "حسب المدينة",
+    "manual": "ترتيب مخصص",
+    "optimizedHint": "يحسب التطبيق أسرع ترتيب. يمكنك بعدها نقل أي زبون بالرقم أو الأسهم.",
+    "nearestHint": "الزبائن القريبون من نقطة الانطلاق أولاً، ثم الأبعد فالأبعد.",
+    "farthestHint": "القيادة أولاً إلى أبعد زبون، ثم العودة باتجاه نقطة الانطلاق.",
+    "cityHint": "مدينة تلو الأخرى – أقرب مدينة أولاً، وداخل المدينة بأقصر طريق.",
+    "manualHint": "ترتيبك المخصص مفعّل. اختر ترتيباً آخر لاستبداله.",
+    "changeSelection": "تغيير الاختيار"
+  }
 }

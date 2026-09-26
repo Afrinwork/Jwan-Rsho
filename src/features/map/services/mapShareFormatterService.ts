@@ -49,10 +49,14 @@ export function buildSelectionShareMessage(
 
   // `components`, when given, is the single source of truth (including
   // for address) -- the older includeAddress flag only still matters for
-  // callers that never pass components at all.
-  const components = new Set(
-    options.components ?? DEFAULT_COMPONENTS.filter((component) => component !== "address" || (options.includeAddress ?? true)),
-  );
+  // callers that never pass components at all. Its ORDER is the order the
+  // blocks appear in each customer's section (set in the WhatsApp template
+  // editor); duplicates are ignored.
+  const components = [
+    ...new Set(
+      options.components ?? DEFAULT_COMPONENTS.filter((component) => component !== "address" || (options.includeAddress ?? true)),
+    ),
+  ];
   const lines: string[] = [];
   const template = options.messageTemplate?.trim() ?? "";
   if (template) {
@@ -72,39 +76,45 @@ export function buildSelectionShareMessage(
 function pushCustomerBlock(
   lines: string[],
   customer: SelectionShareCustomer,
-  components: Set<WhatsappMessageComponent>,
+  components: WhatsappMessageComponent[],
 ) {
-  if (components.has("name")) {
-    lines.push(`Name: ${customer.fullName}`);
-  }
+  const blockStart = lines.length;
+  // Multi-line blocks (orders, thank-you) are set off by a blank line —
+  // except when they open the customer's section.
+  const pushSpacer = () => {
+    if (lines.length > blockStart) lines.push("");
+  };
 
-  if (components.has("address")) {
-    const addressLine = [customer.address, customer.city].filter((part) => part.trim()).join(", ");
-    if (addressLine) {
-      lines.push(`Adresse: ${addressLine}`);
+  for (const component of components) {
+    switch (component) {
+      case "name":
+        lines.push(`Name: ${customer.fullName}`);
+        break;
+      case "address": {
+        const addressLine = [customer.address, customer.city].filter((part) => part.trim()).join(", ");
+        if (addressLine) lines.push(`Adresse: ${addressLine}`);
+        break;
+      }
+      case "phone":
+        if (customer.phone.trim()) lines.push(`Telefon: ${customer.phone}`);
+        break;
+      case "eta":
+        if (customer.etaLabel) lines.push(`Ungefaehre Ankunft: ${customer.etaLabel}`);
+        break;
+      case "orders":
+        pushSpacer();
+        lines.push("Bestellung:");
+        if (customer.items.length) {
+          customer.items.forEach((item) => lines.push(formatItemLine(item)));
+        } else {
+          lines.push("Keine offene Bestellung");
+        }
+        break;
+      case "thankYou":
+        pushSpacer();
+        lines.push(THANK_YOU_MESSAGE);
+        break;
     }
-  }
-
-  if (components.has("phone") && customer.phone.trim()) {
-    lines.push(`Telefon: ${customer.phone}`);
-  }
-
-  if (components.has("eta") && customer.etaLabel) {
-    lines.push(`Ungefaehre Ankunft: ${customer.etaLabel}`);
-  }
-
-  if (components.has("orders")) {
-    lines.push("", "Bestellung:");
-
-    if (customer.items.length) {
-      customer.items.forEach((item) => lines.push(formatItemLine(item)));
-    } else {
-      lines.push("Keine offene Bestellung");
-    }
-  }
-
-  if (components.has("thankYou")) {
-    lines.push("", THANK_YOU_MESSAGE);
   }
 }
 

@@ -78,7 +78,19 @@
   "driverMap": {
     "progress": "{{open}} offen · {{completed}} heute erledigt",
     "lastUpdate": "Zuletzt gemeldet um {{time}} · {{address}}",
-    "noLocation": "Noch kein Standort vom Fahrer gemeldet"
+    "noLocation": "Noch kein Standort vom Fahrer gemeldet",
+    "orderTitle": "Liste des Fahrers",
+    "orderManual": "Liste des Fahrers (eigene Reihenfolge)",
+    "orderHint": "Tippe auf die Nummer oder die Pfeile – der Fahrer sieht die neue Reihenfolge sofort.",
+    "citiesTitle": "Städte für den Fahrer ein-/ausblenden",
+    "noCity": "Ohne Stadt",
+    "hideStop": "Für den Fahrer ausblenden",
+    "showStop": "Für den Fahrer wieder einblenden",
+    "hiddenTitle": "Für den Fahrer ausgeblendet ({{count}})",
+    "nothingChanged": "Es wurde nichts geändert – für diesen Fahrer gibt es dort keine offene Bestellung.",
+    "tripActive": "Unterwegs · noch {{count}} Stopps · als Nächstes: {{name}}",
+    "tripInactive": "Gerade keine Fahrt gestartet",
+    "panelToggle": "Details, Liste & Ausblenden · {{count}} Stopps · {{hidden}} ausgeblendet"
   },
   "adminDashboard": {
     "title": "Admins",

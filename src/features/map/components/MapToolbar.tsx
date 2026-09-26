@@ -50,11 +50,13 @@ export function MapToolbar(props: MapToolbarProps) {
       ) : (
         <View style={[styles.statusRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <AppText color="muted" variant="caption">
-              {t("toolbar.diagnostics", {
-                openOrders: props.openOrdersCount,
-                customers: props.customersCount,
-                markers: props.filteredCount,
-              })}
+              {!props.customersError && props.openOrdersCount === 0
+                ? t("toolbar.noOpenOrders")
+                : t("toolbar.diagnostics", {
+                    openOrders: props.openOrdersCount,
+                    customers: props.customersCount,
+                    markers: props.filteredCount,
+                  })}
             </AppText>
             {props.needsAddressCheckCount > 0 ? (
               <Pressable onPress={props.onOpenAddressCheck}>

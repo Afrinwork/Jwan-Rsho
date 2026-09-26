@@ -14,7 +14,7 @@ import {
 import { AppError } from "@/src/errors/AppError";
 import { errorMessages } from "@/src/errors/errorMessages";
 import { buildCountryCreateData, buildCountryUpdateData, CountryWrite } from "@/src/repositories/countryRepositoryData";
-import { mapSnapshot, requireCurrentUserId, requireDb } from "@/src/repositories/repositoryContext.firebase";
+import { mapSnapshot, requireCurrentUserId, requireDb, resolveOwnerScope } from "@/src/repositories/repositoryContext.firebase";
 import { Country } from "@/src/types/country";
 
 export const countryRepository = {
@@ -35,7 +35,7 @@ export const countryRepository = {
   },
 
   async getCountries() {
-    const ownerId = requireCurrentUserId();
+    const { ownerId } = resolveOwnerScope();
     const countryQuery = query(collection(requireDb(), "countries"), where("ownerId", "==", ownerId));
     return sortCountries((await getDocs(countryQuery)).docs.map((value) => mapSnapshot<Country>(value)));
   },
