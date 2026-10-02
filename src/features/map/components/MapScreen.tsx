@@ -43,6 +43,8 @@ import { formatError } from "@/src/utils/formatError";
 
 const TAB_BAR_CLEARANCE = 68 + 14 + spacing.sm;
 
+const MAP_REFOCUS_MAX_AGE_MS = 60_000;
+
 export function MapScreen() {
   const { t: actionT } = useTranslation("map");
   const mapRef = useRef<AppMapViewHandle | null>(null);
@@ -67,6 +69,7 @@ export function MapScreen() {
     customersCount,
     newAssignmentMessage,
     reload: reloadCustomers,
+    refreshIfStale,
   } = useMapCustomers();
   const { filters, filteredMarkers, countryOptions, cityOptions, resetFilters, selectCity, selectCountry } = useMapFilters(markers);
   const [visibleRegion, setVisibleRegion] = useState(region);
@@ -108,15 +111,17 @@ export function MapScreen() {
 
   useFocusEffect(useCallback(() => {
     // useMapCustomers() already loads once on mount — reloading again on this
-    // very first focus fired a second, redundant Firestore load in parallel.
-    // Only later refocuses (coming back from another screen) should reload.
+    // very first focus fired a second, redundant load in parallel. Later
+    // refocuses only reload when the data is older than a minute: the live
+    // subscription keeps it current in between, so a full reload on every
+    // return to the map was pure extra traffic.
     if (hasFocusedOnceRef.current) {
-      void reloadCustomers();
+      void refreshIfStale(MAP_REFOCUS_MAX_AGE_MS);
     } else {
       hasFocusedOnceRef.current = true;
     }
     if (selectedCustomerId) void reloadDetails();
-  }, [reloadCustomers, reloadDetails, selectedCustomerId]));
+  }, [refreshIfStale, reloadDetails, selectedCustomerId]));
 
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextState) => {

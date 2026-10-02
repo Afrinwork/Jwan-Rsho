@@ -24,3 +24,5 @@ scripts/migration/transformed/
 
 expo-env.d.ts
 # @end expo-cli
+# Local database backups (customer data, password hashes)
+backups/

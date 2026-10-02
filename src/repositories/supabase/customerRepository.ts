@@ -27,6 +27,10 @@ function toCustomer(row: Record<string, unknown>): Customer {
   };
 }
 
+// Ids per "id in (...)" request — customer ids are up to 36 chars, so this
+// keeps the URL well under common proxy limits.
+const CUSTOMER_ID_CHUNK_SIZE = 150;
+
 export const customerRepository = {
   async createCustomer(input: CustomerWrite) {
     const { ownerId } = resolveOwnerScope();
@@ -102,18 +106,28 @@ export const customerRepository = {
     return sortCustomers((data ?? []).map((row) => toCustomer(row)));
   },
 
-  // Fetches only the given customer ids, filtered client-side against the
-  // owner-scoped list rather than an `id in (...)` query -- kept
-  // consistent with the Firestore version's reasoning (a stale id that no
-  // longer belongs to the current owner should be silently dropped, not
-  // cause the whole query to fail), even though Postgres RLS itself
-  // wouldn't reject an "in" query the way Firestore's rules could.
+  // Fetches only the given customer ids (owner/driver scoped, so a stale
+  // id that no longer belongs to the caller is silently dropped), in
+  // chunks to keep each request URL short. Loading the whole customer list
+  // just to pick a few out of it was the map's biggest data cost.
   async getCustomersByIds(ids: string[]) {
-    const uniqueIds = new Set(ids);
-    if (uniqueIds.size === 0) return [];
+    const uniqueIds = [...new Set(ids)];
+    if (uniqueIds.length === 0) return [];
 
-    const customers = await this.getCustomers();
-    return sortCustomers(customers.filter((value) => uniqueIds.has(value.id)));
+    const { ownerId, driverId } = resolveOwnerScope();
+    const rows: Record<string, unknown>[] = [];
+    for (let index = 0; index < uniqueIds.length; index += CUSTOMER_ID_CHUNK_SIZE) {
+      let queryBuilder = requireSupabase()
+        .from("customers")
+        .select("*")
+        .eq("owner_id", ownerId)
+        .in("id", uniqueIds.slice(index, index + CUSTOMER_ID_CHUNK_SIZE));
+      if (driverId) queryBuilder = queryBuilder.eq("assigned_driver_id", driverId);
+      const { data, error } = await queryBuilder;
+      if (error) throw error;
+      rows.push(...(data ?? []));
+    }
+    return sortCustomers(rows.map((row) => toCustomer(row)));
   },
 
   async getCustomersByNormalizedCity(normalizedCity: string) {

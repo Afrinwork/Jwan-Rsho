@@ -10,16 +10,23 @@ import { CustomerNeedingAddressCheck, MapCustomerMarker } from "@/src/features/m
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 import { geocodingService } from "@/src/services/geocodingService";
 import { Customer } from "@/src/types/customer";
+import { Order } from "@/src/types/order";
 import { formatError } from "@/src/utils/formatError";
 
 // Self-heal for customers whose address failed to geocode earlier (a
 // transient network blip, a temporary rate limit, ...) and so have no
 // coordinates — geocoding only ever ran once, at creation/edit time, so a
 // one-off failure otherwise left them permanently invisible on the map even
-// though they have an open order. Retried on every map load; best effort,
-// silent on failure so it never blocks the normal marker list above.
+// though they have an open order. Best effort, silent on failure so it
+// never blocks the normal marker list above. Each customer is tried once
+// per app session — with live refresh the map reloads on every order
+// change, and re-geocoding an address that just failed on every single
+// reload only hammers the (free, rate-limited) geocoder for nothing.
+const geocodeAttemptedIds = new Set<string>();
+
 async function healMissingCoordinates(customers: Customer[]): Promise<Customer[]> {
-  const missing = customers.filter((customer) => !hasValidCoordinates(customer));
+  const missing = customers.filter((customer) => !hasValidCoordinates(customer) && !geocodeAttemptedIds.has(customer.id));
+  missing.forEach((customer) => geocodeAttemptedIds.add(customer.id));
 
   if (!missing.length) {
     return customers;
@@ -72,9 +79,13 @@ type MapCustomersState = {
   customersCount: number;
   newAssignmentMessage: string | null;
   reload: () => Promise<void>;
+  refreshIfStale: (maxAgeMs: number) => Promise<void>;
 };
 
 const isDev = typeof __DEV__ === "undefined" || __DEV__;
+// A burst of order changes (e.g. completing a stop touches several rows)
+// arrives as several realtime events — coalesced into one reload.
+const LIVE_RELOAD_DEBOUNCE_MS = 600;
 
 export function useMapCustomers(): MapCustomersState {
   const { t } = useTranslation("map");
@@ -95,14 +106,18 @@ export function useMapCustomers(): MapCustomersState {
   // snapshot never counts as "new" — only orders that show up afterwards do.
   const knownOrderIdsRef = useRef<Set<string> | null>(null);
 
-  const loadCustomers = useCallback(async () => {
+  const lastLoadedAtRef = useRef(0);
+
+  // `knownOpenOrders`: the open orders the live subscription just fetched —
+  // reused instead of requesting the very same rows a second time.
+  const loadCustomers = useCallback(async (knownOpenOrders?: Order[]) => {
     const requestId = ++requestIdRef.current;
     const startedAt = isDev ? Date.now() : 0;
     if (isDev) console.log(`[Map] load started (request ${requestId})`);
     setError(null);
 
     try {
-      const openOrders = await orderRepository.getOpenOrders();
+      const openOrders = knownOpenOrders ?? (await orderRepository.getOpenOrders());
       const uniqueCustomerIds = [...new Set(openOrders.map((value) => value.customerId))];
       const customers = await customerRepository.getCustomersByIds(uniqueCustomerIds);
 
@@ -118,6 +133,7 @@ export function useMapCustomers(): MapCustomersState {
       setNeedsAddressCheck(nextNeedsAddressCheck);
       setOpenOrdersCount(openOrders.length);
       setCustomersCount(uniqueCustomerIds.length);
+      lastLoadedAtRef.current = Date.now();
 
       if (isDev) {
         console.log(
@@ -145,10 +161,10 @@ export function useMapCustomers(): MapCustomersState {
   // server-side (a new customer/order assigned to this driver, one
   // completed elsewhere, ...), silently reload so the map stays current
   // without a manual pull-to-refresh or leaving and reopening the screen.
-  // The initial fire (which onSnapshot always sends immediately with the
-  // current matching orders) triggers a redundant first reload alongside
-  // the mount-time load above — a harmless, one-time extra read traded for
-  // keeping loadCustomers()'s existing one-shot fetch untouched.
+  // The subscription's initial fire only seeds the known ids — the
+  // mount-time load above already covers it, a second full load would just
+  // double the traffic. Later fires are debounced and reuse the orders the
+  // subscription already fetched.
   //
   // Also surfaces a brief on-screen notice when orders nobody on this
   // screen knew about show up: for a driver, "something new was assigned to
@@ -158,27 +174,34 @@ export function useMapCustomers(): MapCustomersState {
   // this notice nothing on the map would visibly change.
   useEffect(() => {
     knownOrderIdsRef.current = null;
+    let reloadTimer: ReturnType<typeof setTimeout> | null = null;
 
     const unsubscribe = orderRepository.subscribeToOpenOrders(
       (orders) => {
         const previousIds = knownOrderIdsRef.current;
-        if (previousIds) {
-          const fresh = orders.filter((value) => !previousIds.has(value.id));
-          if (isCurrentUserDriver && fresh.length > 0) {
-            setNewAssignmentMessage(t("screen.newAssignment", { count: fresh.length }));
-          }
-          if (!isCurrentUserDriver) {
-            const driverNames = fresh.map((value) => driverNameFromOrderNote(value.note)).filter((name): name is string => name !== null);
-            if (driverNames.length > 0) {
-              setNewAssignmentMessage(
-                t("screen.newDriverOrder", { count: driverNames.length, names: [...new Set(driverNames.filter(Boolean))].join(", ") || "–" }),
-              );
-            }
+        if (!previousIds) {
+          knownOrderIdsRef.current = new Set(orders.map((value) => value.id));
+          return;
+        }
+        const fresh = orders.filter((value) => !previousIds.has(value.id));
+        if (isCurrentUserDriver && fresh.length > 0) {
+          setNewAssignmentMessage(t("screen.newAssignment", { count: fresh.length }));
+        }
+        if (!isCurrentUserDriver) {
+          const driverNames = fresh.map((value) => driverNameFromOrderNote(value.note)).filter((name): name is string => name !== null);
+          if (driverNames.length > 0) {
+            setNewAssignmentMessage(
+              t("screen.newDriverOrder", { count: driverNames.length, names: [...new Set(driverNames.filter(Boolean))].join(", ") || "–" }),
+            );
           }
         }
         knownOrderIdsRef.current = new Set(orders.map((value) => value.id));
 
-        void loadCustomers();
+        if (reloadTimer) clearTimeout(reloadTimer);
+        reloadTimer = setTimeout(() => {
+          reloadTimer = null;
+          void loadCustomers(orders);
+        }, LIVE_RELOAD_DEBOUNCE_MS);
       },
       () => {
         // Best-effort: a live-refresh failure (e.g. a transient permission
@@ -189,13 +212,27 @@ export function useMapCustomers(): MapCustomersState {
       },
     );
 
-    return unsubscribe;
+    return () => {
+      if (reloadTimer) clearTimeout(reloadTimer);
+      unsubscribe();
+    };
   }, [isCurrentUserDriver, loadCustomers, t]);
 
   const reload = useCallback(async () => {
     setIsLoading(true);
     await loadCustomers();
   }, [loadCustomers]);
+
+  // For screen refocus: the live subscription already keeps the data
+  // current, so only reload if the last successful load is old (e.g. the
+  // app was in the background and may have missed events).
+  const refreshIfStale = useCallback(
+    async (maxAgeMs: number) => {
+      if (Date.now() - lastLoadedAtRef.current < maxAgeMs) return;
+      await loadCustomers();
+    },
+    [loadCustomers],
+  );
 
   return {
     error,
@@ -206,5 +243,6 @@ export function useMapCustomers(): MapCustomersState {
     customersCount,
     newAssignmentMessage,
     reload,
+    refreshIfStale,
   };
 }
