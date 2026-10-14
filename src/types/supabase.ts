@@ -9,6 +9,75 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      debt_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string
+          debt_id: string
+          id: string
+          owner_id: string
+          paid_on: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by: string
+          debt_id: string
+          id?: string
+          owner_id: string
+          paid_on?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string
+          debt_id?: string
+          id?: string
+          owner_id?: string
+          paid_on?: string
+        }
+        Relationships: []
+      }
+      debts: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string
+          customer_id: string | null
+          customer_name: string
+          id: string
+          note: string | null
+          owner_id: string
+          since: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by: string
+          customer_id?: string | null
+          customer_name: string
+          id?: string
+          note?: string | null
+          owner_id: string
+          since?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string
+          customer_id?: string | null
+          customer_name?: string
+          id?: string
+          note?: string | null
+          owner_id?: string
+          since?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cities: {
         Row: {
           created_at: string

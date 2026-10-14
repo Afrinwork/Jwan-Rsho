@@ -25,6 +25,12 @@ export function ManagementScreen() {
         </AnimatedEntrance>
         <AnimatedEntrance delay={30} style={styles.menu}>
           <ManagementMenuButton
+            icon="debts"
+            onPress={() => router.push(routes.managementDebts)}
+            subtitle={t("menu.debts.subtitle")}
+            title={t("menu.debts.title")}
+          />
+          <ManagementMenuButton
             icon="products"
             onPress={() => router.push(routes.managementProducts)}
             subtitle={t("menu.products.subtitle")}

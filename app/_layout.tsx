@@ -72,6 +72,7 @@ export default function RootLayout() {
               <Stack.Screen name="management/drivers" options={{ title: t("stack.drivers") }} />
               <Stack.Screen name="management/admins" options={{ title: t("stack.admins") }} />
               <Stack.Screen name="management/whatsapp" options={{ title: t("stack.whatsappTemplate") }} />
+              <Stack.Screen name="management/debts" options={{ title: t("stack.debts") }} />
               <Stack.Screen name="management/driver-map" options={{ title: t("stack.driverMap") }} />
               <Stack.Screen name="cities/index" options={{ title: t("stack.cities") }} />
               <Stack.Screen name="city/[city]" options={{ title: t("stack.city") }} />

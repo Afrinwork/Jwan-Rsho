@@ -3,6 +3,7 @@ import { ActivityIndicator, I18nManager, Pressable, StyleSheet, View } from "rea
 
 import { AppCard } from "@/src/components/ui/AppCard";
 import { AppText } from "@/src/components/ui/AppText";
+import { DebtStatusBox } from "@/src/features/debts/components/DebtStatusBox";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { spacing } from "@/src/theme/spacing";
 import { Customer } from "@/src/types/customer";
@@ -31,6 +32,7 @@ export function ManagementCustomerCard(props: ManagementCustomerCardProps) {
           <AppText color="muted" numberOfLines={1} variant="caption">
             {formatAddress([props.customer.address, props.customer.city])}
           </AppText>
+          <DebtStatusBox customerId={props.customer.id} />
         </View>
         <Pressable
           disabled={props.deleting}

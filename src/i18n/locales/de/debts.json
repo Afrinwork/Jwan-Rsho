@@ -1,0 +1,57 @@
+{
+  "loading": "Schulden werden geladen...",
+  "add": "➕ Neue Schuld",
+  "total": "Gesamt offen",
+  "since": "seit {{date}}",
+  "partlyPaid": "{{paid}} von {{amount}} bezahlt",
+  "paidSection": "Komplett bezahlt ({{count}})",
+  "note": "Notiz",
+  "amount": "Betrag",
+  "paidTotal": "Bezahlt",
+  "balance": "Saldo",
+  "addPayment": "➕ Zahlung",
+  "payRest": "Alles bezahlt ✅",
+  "paymentsTitle": "Zahlungen ({{count}})",
+  "paymentEditHint": "Tippen, um die Zahlung zu ändern oder zu löschen",
+  "addPaymentTitle": "Neue Zahlung",
+  "editPaymentTitle": "Zahlung bearbeiten",
+  "deletePayment": "Zahlung löschen",
+  "deletePaymentMessage": "Die Zahlung über {{amount}} vom {{date}} wird gelöscht.",
+  "editOrNote": "Bearbeiten / Notiz",
+  "delete": "Schuld löschen",
+  "deleteTitle": "Schuld löschen?",
+  "deleteMessage": "Die Schuld von {{name}} ({{amount}}) wird mit allen Zahlungen endgültig gelöscht.",
+  "deleteConfirm": "Ja, löschen",
+  "addTitle": "Neue Schuld",
+  "editTitle": "Schuld bearbeiten",
+  "changeCustomer": "Ändern",
+  "freeTextHint": "Kein Kunde mit diesem Namen – der Name wird so gespeichert.",
+  "save": "Speichern",
+  "cancel": "Abbrechen",
+  "close": "Schließen",
+  "fields": {
+    "customer": "Kunde",
+    "customerSearch": "Name, Telefon oder Stadt suchen",
+    "amount": "Schuldbetrag (€)",
+    "since": "Datum",
+    "paymentAmount": "Bezahlter Betrag (€)",
+    "paidOn": "Bezahlt am",
+    "note": "Notiz",
+    "notePlaceholder": "z. B. zahlt nach dem 15. des Monats"
+  },
+  "errors": {
+    "name": "Bitte einen Kunden wählen oder einen Namen eingeben.",
+    "amount": "Bitte einen gültigen Betrag eingeben, z. B. 85 oder 85,50.",
+    "since": "Datum bitte so eingeben: 14.10.2026"
+  },
+  "empty": {
+    "title": "Keine offenen Schulden",
+    "message": "Tippe auf „Neue Schuld“, um die erste einzutragen.",
+    "customerMessage": "Dieser Kunde hat keine offenen Schulden."
+  },
+  "box": {
+    "balance": "Saldo: {{amount}}",
+    "paid": "✅ Bezahlt",
+    "hint": "Tippen, um die Schulden dieses Kunden zu sehen"
+  }
+}

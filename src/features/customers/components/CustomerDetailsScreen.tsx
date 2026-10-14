@@ -10,6 +10,7 @@ import { LoadingView } from "@/src/components/ui/LoadingView";
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
 
 import { CustomerDetailsHeader } from "@/src/features/customers/components/CustomerDetailsHeader";
+import { DebtStatusBox } from "@/src/features/debts/components/DebtStatusBox";
 import { CustomerOrderSection } from "@/src/features/customers/components/CustomerOrderSection";
 import { useCustomerDetails } from "@/src/features/customers/hooks/useCustomerDetails";
 
@@ -34,6 +35,7 @@ export function CustomerDetailsScreen(props: CustomerDetailsScreenProps) {
   return (
     <ScreenContainer>
       <CustomerDetailsHeader address={customer.address} city={customer.city} fullName={customer.fullName} phone={customer.phone} />
+      <DebtStatusBox customerId={customer.id} />
       {error ? <ErrorState message={error} /> : null}
       <CustomerOrderSection orders={openOrders} title={t("orderStatus.open")} />
       <CustomerOrderSection orders={historyOrders} title={t("details.orderHistory")} />

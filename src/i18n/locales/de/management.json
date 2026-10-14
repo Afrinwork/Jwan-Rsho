@@ -33,6 +33,10 @@
       "title": "Fahrer",
       "subtitle": "Live-Uebersicht deiner Fahrer: offene und heute erledigte Bestellungen."
     },
+    "debts": {
+      "title": "Schuldenbuch",
+      "subtitle": "Wer schuldet wie viel seit wann – mit Gesamtsumme."
+    },
     "whatsapp": {
       "title": "WhatsApp-Text",
       "subtitle": "Automatischen Text fuer markierte Kundenauswahlen bearbeiten."

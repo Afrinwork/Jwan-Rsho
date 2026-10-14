@@ -8,6 +8,7 @@ import deCommon from "@/src/i18n/locales/de/common.json";
 import deCountries from "@/src/i18n/locales/de/countries.json";
 import deCustomers from "@/src/i18n/locales/de/customers.json";
 import deErrors from "@/src/i18n/locales/de/errors.json";
+import deDebts from "@/src/i18n/locales/de/debts.json";
 import deManagement from "@/src/i18n/locales/de/management.json";
 import deMap from "@/src/i18n/locales/de/map.json";
 import deNavigation from "@/src/i18n/locales/de/navigation.json";
@@ -26,6 +27,7 @@ import arCommon from "@/src/i18n/locales/ar/common.json";
 import arCountries from "@/src/i18n/locales/ar/countries.json";
 import arCustomers from "@/src/i18n/locales/ar/customers.json";
 import arErrors from "@/src/i18n/locales/ar/errors.json";
+import arDebts from "@/src/i18n/locales/ar/debts.json";
 import arManagement from "@/src/i18n/locales/ar/management.json";
 import arMap from "@/src/i18n/locales/ar/map.json";
 import arNavigation from "@/src/i18n/locales/ar/navigation.json";
@@ -49,6 +51,7 @@ const resources = {
     cities: deCities,
     countries: deCountries,
     customers: deCustomers,
+    debts: deDebts,
     management: deManagement,
     map: deMap,
     orders: deOrders,
@@ -68,6 +71,7 @@ const resources = {
     cities: arCities,
     countries: arCountries,
     customers: arCustomers,
+    debts: arDebts,
     management: arManagement,
     map: arMap,
     orders: arOrders,

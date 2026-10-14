@@ -3,6 +3,7 @@ import {
   Box20Regular,
   Building20Regular,
   ClipboardBulletList20Regular,
+  Money20Regular,
   MapPin20Regular,
   Person20Regular,
   VehicleTruckProfile20Regular,
@@ -19,7 +20,7 @@ type ManagementMenuButtonProps = {
   title: string;
   subtitle: string;
   onPress: () => void;
-  icon?: "products" | "countries" | "catalog" | "customers" | "cities" | "drivers";
+  icon?: "products" | "countries" | "catalog" | "customers" | "cities" | "drivers" | "debts";
 };
 
 export function ManagementMenuButton(props: ManagementMenuButtonProps) {
@@ -67,6 +68,10 @@ function renderIcon(icon: ManagementMenuButtonProps["icon"], color: string) {
 
   if (icon === "cities") {
     return <MapPin20Regular color={color} />;
+  }
+
+  if (icon === "debts") {
+    return <Money20Regular color={color} />;
   }
 
   if (icon === "drivers") {

@@ -1,0 +1,57 @@
+{
+  "loading": "جارٍ تحميل الديون...",
+  "add": "➕ دين جديد",
+  "total": "المجموع",
+  "since": "منذ {{date}}",
+  "partlyPaid": "اندفع {{paid}} من {{amount}}",
+  "paidSection": "مدفوع بالكامل ({{count}})",
+  "note": "ملاحظة",
+  "amount": "المبلغ",
+  "paidTotal": "مدفوع",
+  "balance": "الباقي",
+  "addPayment": "➕ دفعة",
+  "payRest": "اندفع الكل ✅",
+  "paymentsTitle": "الدفعات ({{count}})",
+  "paymentEditHint": "اضغط لتعديل الدفعة أو حذفها",
+  "addPaymentTitle": "دفعة جديدة",
+  "editPaymentTitle": "تعديل الدفعة",
+  "deletePayment": "حذف الدفعة",
+  "deletePaymentMessage": "سيتم حذف الدفعة {{amount}} بتاريخ {{date}}.",
+  "editOrNote": "تعديل / ملاحظة",
+  "delete": "حذف الدين",
+  "deleteTitle": "حذف الدين؟",
+  "deleteMessage": "سيتم حذف دين {{name}} ({{amount}}) مع كل دفعاته نهائياً.",
+  "deleteConfirm": "نعم، احذف",
+  "addTitle": "دين جديد",
+  "editTitle": "تعديل الدين",
+  "changeCustomer": "تغيير",
+  "freeTextHint": "لا يوجد زبون بهذا الاسم – سيتم حفظ الاسم كما هو.",
+  "save": "حفظ",
+  "cancel": "إلغاء",
+  "close": "إغلاق",
+  "fields": {
+    "customer": "الزبون",
+    "customerSearch": "ابحث بالاسم أو الهاتف أو المدينة",
+    "amount": "مبلغ الدين (€)",
+    "since": "التاريخ",
+    "paymentAmount": "المبلغ المدفوع (€)",
+    "paidOn": "تاريخ الدفع",
+    "note": "ملاحظة",
+    "notePlaceholder": "مثال: بدو يدفع بعد ١٥ الشهر"
+  },
+  "errors": {
+    "name": "اختر زبوناً أو اكتب اسماً.",
+    "amount": "اكتب مبلغاً صحيحاً، مثال 85 أو 85,50.",
+    "since": "اكتب التاريخ بهذا الشكل: 14.10.2026"
+  },
+  "empty": {
+    "title": "لا توجد ديون مفتوحة",
+    "message": "اضغط على «دين جديد» لتسجيل أول دين.",
+    "customerMessage": "هذا الزبون ليس عليه دين مفتوح."
+  },
+  "box": {
+    "balance": "الباقي: {{amount}}",
+    "paid": "✅ مدفوع",
+    "hint": "اضغط لعرض ديون هذا الزبون"
+  }
+}
