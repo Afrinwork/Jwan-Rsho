@@ -14,6 +14,9 @@ type RouteSortModePickerProps = {
   // picking any preset replaces it.
   isManual: boolean;
   onChange: (mode: RouteSortMode) => void;
+  // "Another route": every tap shows the next variant (1-based number).
+  variantNumber: number;
+  onAnotherRoute: () => void;
 };
 
 // "How should the route be ordered?" — picked before the trip starts,
@@ -55,11 +58,19 @@ export function RouteSortModePicker(props: RouteSortModePickerProps) {
         {ROUTE_SORT_MODES.map((mode) =>
           chip(mode, t(`sortMode.${mode}`), !props.isManual && props.value === mode, () => props.onChange(mode)),
         )}
+        {chip(
+          "alternative",
+          !props.isManual && props.value === "alternative"
+            ? `${t("sortMode.alternative")} ${props.variantNumber}`
+            : t("sortMode.alternative"),
+          !props.isManual && props.value === "alternative",
+          props.onAnotherRoute,
+        )}
       </View>
       <View style={styles.hintRow}>
         {props.isManual ? <ArrowReset20Regular color={colors.mutedText} /> : null}
         <AppText color="muted" style={styles.hint} variant="caption">
-          {props.isManual ? t("sortMode.manualHint") : t(`sortMode.${props.value}Hint`)}
+          {props.isManual ? t("sortMode.manualHint") : t(`sortMode.${props.value}Hint`, { number: props.variantNumber })}
         </AppText>
       </View>
     </View>

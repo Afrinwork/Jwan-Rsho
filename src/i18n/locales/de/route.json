@@ -31,6 +31,8 @@
     "lastStopAuto": "Automatisch"
   },
   "live": {
+    "newRoute": "🔀 Neue Route",
+    "reoptimizeRest": "🔄 Beste Reihenfolge",
     "startMarker": "Startpunkt",
     "stopProgress": "Stopp {{index}} von {{count}}",
     "distanceRemaining": "Noch {{distance}} km",
@@ -111,12 +113,13 @@
     "positionHint": "Tippen, um die Position zu ändern",
     "moveUp": "Nach oben",
     "moveDown": "Nach unten",
+    "dragHandle": "Zum Verschieben ziehen",
     "dialogTitle": "{{name}} verschieben",
     "dialogMessage": "Aktuell Position {{position}} von {{count}}. Neue Position eingeben:",
     "dialogConfirm": "Verschieben",
     "active": "Eigene Reihenfolge",
     "reset": "Automatisch sortieren",
-    "hint": "Tippe auf die Nummer oder die Pfeile, um die Reihenfolge selbst festzulegen."
+    "hint": "Kunden gedrückt halten und ziehen oder auf die Nummer tippen, um die Reihenfolge festzulegen."
   },
   "reorderSheet": {
     "open": "Kundenliste & Reihenfolge ({{count}})",
@@ -129,11 +132,13 @@
     "nearest": "Nächste zuerst",
     "farthest": "Weiteste zuerst",
     "city": "Nach Stadt",
+    "alternative": "🔀 Andere Route",
     "manual": "Eigene Reihenfolge",
-    "optimizedHint": "Die App berechnet die schnellste Reihenfolge. Du kannst danach jeden Kunden mit Nummer oder Pfeilen verschieben.",
-    "nearestHint": "Kunden nahe am Startpunkt zuerst, dann immer weiter weg.",
+    "optimizedHint": "Die App berechnet die schnellste Reihenfolge. Du kannst danach jeden Kunden per Ziehen oder Nummer verschieben.",
+    "nearestHint": "Vom Startpunkt zum nächstgelegenen Kunden, von dort immer zum nächsten Kunden in der Nähe.",
     "farthestHint": "Erst zum weitesten Kunden fahren, dann Richtung Startpunkt zurück.",
     "cityHint": "Stadt für Stadt – die nächste Stadt zuerst, innerhalb der Stadt auf kurzem Weg.",
+    "alternativeHint": "Route Nr. {{number}}. Jeder Tipp auf „Andere Route“ berechnet eine neue Route für dieselben Kunden.",
     "manualHint": "Deine eigene Reihenfolge ist aktiv. Tippe eine andere Sortierung, um sie zu ersetzen.",
     "changeSelection": "Auswahl ändern"
   }

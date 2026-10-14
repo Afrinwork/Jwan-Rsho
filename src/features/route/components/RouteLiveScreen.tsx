@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
-import { useRouter } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -24,10 +24,14 @@ import { useMovementAnchor } from "@/src/features/route/hooks/useMovementAnchor"
 import { useRouteLiveNavigation } from "@/src/features/route/hooks/useRouteLiveNavigation";
 import { useRoutePolyline } from "@/src/features/route/hooks/useRoutePolyline";
 import { useRouteOrder } from "@/src/features/route/hooks/useRouteOrder";
-import { moveIdToPosition } from "@/src/features/route/services/routeManualOrderService";
+import { activeTripStorage } from "@/src/features/route/services/activeTripStorage";
+import { fetchRoadDistanceMatrix, RouteDistanceMatrix } from "@/src/features/route/services/routeDistanceMatrixService";
+import { alternativeRouteOrder, optimizedRemainingOrder } from "@/src/features/route/services/routeVariantService";
+import { RouteOrigin } from "@/src/features/route/types/routeTypes";
+import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
+import { moveIdToPosition, reorderKnownInPlace } from "@/src/features/route/services/routeManualOrderService";
 import { formatDistanceKm, formatDurationHM, formatEtaTime } from "@/src/features/route/utils/routeFormat";
 import { AppMapView } from "@/src/features/map/components/AppMapView";
-import { ContactMethodSheet } from "@/src/features/map/components/ContactMethodSheet";
 import { MapCustomerSheet } from "@/src/features/map/components/MapCustomerSheet";
 import { useMapActions } from "@/src/features/map/hooks/useMapActions";
 import { useMapCustomerDetails } from "@/src/features/map/hooks/useMapCustomerDetails";
@@ -43,6 +47,9 @@ import { spacing } from "@/src/theme/spacing";
 // Remaining km/duration/ETA are recalculated from the live position only
 // after this much movement (one Directions request per recalculation).
 const LIVE_ORIGIN_MIN_METERS = 500;
+// "New route" tries this many variants for one that differs from the
+// current order — only runs out with a single possible order.
+const MAX_NEW_ROUTE_ATTEMPTS = 12;
 
 type RouteLiveScreenProps = {
   orderedIds: string[];
@@ -55,6 +62,8 @@ type RouteLiveScreenProps = {
   // silently switching to "now". Falls back to the real current time when
   // absent (e.g. deep-linked straight into this screen).
   initialDepartureTime: Date | null;
+  // Completed/skipped stops of a trip reopened after the app was closed.
+  restoredState?: { handledIds: string[]; skippedIds: string[] };
 };
 
 export function RouteLiveScreen(props: RouteLiveScreenProps) {
@@ -87,7 +96,34 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
   const stopNumberById = useMemo(() => new Map(markers.map((marker, index) => [marker.id, index + 1])), [markers]);
   const live = useLiveLocation();
   const polylineOrigin = props.initialOrigin ?? live.coordinate;
-  const navigation = useRouteLiveNavigation(markers, live.coordinate);
+  const navigation = useRouteLiveNavigation(markers, live.coordinate, props.restoredState);
+
+  // Keeps the trip on the device so it survives the app being closed in the
+  // background (see activeTripStorage) — MapScreen reopens it on the next
+  // start. Nothing is written while the markers are still loading, so an
+  // empty first render can't overwrite the stored trip.
+  const userId = currentUser?.uid ?? null;
+  const storedOrderKey = markers.map((marker) => marker.id).join(",");
+  useEffect(() => {
+    if (!userId || isLoading || !storedOrderKey) return;
+    void activeTripStorage.save({
+      userId,
+      orderedIds: storedOrderKey.split(","),
+      handledIds: [...navigation.handledIds],
+      skippedIds: [...navigation.skippedIds],
+      originLat: props.initialOrigin?.latitude,
+      originLng: props.initialOrigin?.longitude,
+      departureTime: props.initialDepartureTime?.toISOString(),
+    });
+  }, [userId, isLoading, storedOrderKey, navigation.handledIds, navigation.skippedIds, props.initialOrigin, props.initialDepartureTime]);
+
+  // Leaving the trip on purpose (close button, back gesture) ends it. The OS
+  // killing the app doesn't fire this, so that trip stays resumable.
+  const stackNavigation = useNavigation();
+  useEffect(
+    () => stackNavigation.addListener("beforeRemove", () => void activeTripStorage.clear()),
+    [stackNavigation],
+  );
   const [reorderSheetVisible, setReorderSheetVisible] = useState(false);
   // Bottom action panel starts collapsed so the map stays visible.
   const [actionsOpen, setActionsOpen] = useState(false);
@@ -133,6 +169,90 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
     reorderPending(nextIds);
     void routeOrder.save(nextIds);
   }
+
+  // Re-sorting the remaining stops from where the driver is right now (real
+  // driving distances when available): "re-optimize the rest" picks the best
+  // order, e.g. after a detour; "new route" shows a different sensible order
+  // on every tap, for any number of stops.
+  const [resorting, setResorting] = useState<"optimize" | "variant" | null>(null);
+  const variantIndexRef = useRef(0);
+  const pendingIdsRef = useRef<string[]>([]);
+  useEffect(() => {
+    pendingIdsRef.current = navigation.pendingMarkers.map((marker) => marker.id);
+  });
+
+  async function resortRemaining(
+    kind: "optimize" | "variant",
+    orderFor: (origin: RouteOrigin, points: MapCustomerMarker[], roadMatrix: RouteDistanceMatrix | null) => string[],
+  ) {
+    const from = live.coordinate ?? remainingRouteOrigin;
+    const points = navigation.pendingMarkers;
+    if (!from || points.length < 2) return;
+
+    setResorting(kind);
+    try {
+      const origin = { latitude: from.latitude, longitude: from.longitude, label: "" };
+      const roadMatrix = await fetchRoadDistanceMatrix(origin, points);
+      const orderedIds = orderFor(origin, points, roadMatrix);
+      // A stop may have been completed/added while the distances loaded.
+      const pendingNow = pendingIdsRef.current;
+      const stillPending = new Set(pendingNow);
+      const nextIds = [
+        ...orderedIds.filter((id) => stillPending.has(id)),
+        ...pendingNow.filter((id) => !orderedIds.includes(id)),
+      ];
+      if (nextIds.some((id, index) => id !== pendingNow[index])) {
+        reorderPending(nextIds);
+        void routeOrder.save(nextIds);
+      }
+    } finally {
+      setResorting(null);
+    }
+  }
+
+  function reoptimizeRemaining() {
+    return resortRemaining("optimize", (origin, points, roadMatrix) =>
+      optimizedRemainingOrder(origin, points, roadMatrix).map((marker) => marker.id),
+    );
+  }
+
+  // Each tap moves on to the next variant that differs from the order the
+  // driver has right now (with two stops that simply alternates).
+  function showNewRoute() {
+    return resortRemaining("variant", (origin, points, roadMatrix) => {
+      const current = points.map((marker) => marker.id).join(",");
+      for (let attempt = 0; attempt < MAX_NEW_ROUTE_ATTEMPTS; attempt += 1) {
+        const ids = alternativeRouteOrder(origin, points, variantIndexRef.current, roadMatrix).map((marker) => marker.id);
+        variantIndexRef.current += 1;
+        if (ids.join(",") !== current) return ids;
+      }
+      return points.map((marker) => marker.id);
+    });
+  }
+
+  // A re-sort saved from elsewhere mid-drive (the admin editing this driver's
+  // list in DriverLiveMapScreen) must reach the trip too — otherwise the
+  // driver keeps the order the trip started with while the admin's list
+  // says otherwise. The driver's own re-sorts come back here as well, but
+  // already match the pending order, so they change nothing.
+  // The saved order as it was when this screen opened is only the baseline:
+  // the trip already starts in the order chosen on the list screen, and an
+  // old list from an earlier day must not scramble it.
+  const baselineSavedIdsRef = useRef<string[] | null | undefined>(undefined);
+  useEffect(() => {
+    if (!routeOrder.loaded) return;
+    if (baselineSavedIdsRef.current === undefined) {
+      baselineSavedIdsRef.current = routeOrder.savedIds;
+      return;
+    }
+    if (!routeOrder.savedIds) return;
+    const pendingIds = navigation.pendingMarkers.map((marker) => marker.id);
+    const nextIds = reorderKnownInPlace(pendingIds, routeOrder.savedIds);
+    if (nextIds !== pendingIds) reorderPending(nextIds);
+    // Only a change of the saved order re-sorts — completing a stop or a
+    // mid-drive addition alone must not.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [routeOrder.loaded, routeOrder.savedIds]);
 
   useEffect(() => {
     currentStopIdRef.current = navigation.currentMarker?.id ?? null;
@@ -387,6 +507,32 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
                 variant="secondary"
               />
             ) : null}
+            {navigation.pendingMarkers.length > 1 ? (
+              <View style={styles.actionRow}>
+                <View style={styles.actionButton}>
+                  <AppButton
+                    disabled={resorting !== null}
+                    label={t("live.newRoute")}
+                    loading={resorting === "variant"}
+                    onPress={() => void showNewRoute()}
+                    size="compact"
+                    variant="secondary"
+                  />
+                </View>
+                {navigation.pendingMarkers.length > 2 ? (
+                  <View style={styles.actionButton}>
+                    <AppButton
+                      disabled={resorting !== null}
+                      label={t("live.reoptimizeRest")}
+                      loading={resorting === "optimize"}
+                      onPress={() => void reoptimizeRemaining()}
+                      size="compact"
+                      variant="secondary"
+                    />
+                  </View>
+                ) : null}
+              </View>
+            ) : null}
             <View style={styles.actionRow}>
               <View style={styles.actionButton}>
                 <AppButton
@@ -451,6 +597,7 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
         onPressPosition={setMoveStopId}
         pendingMarkers={navigation.pendingMarkers}
         stopNumberById={stopNumberById}
+        etaById={polyline.etaById}
         visible={reorderSheetVisible && moveStopId === null}
       />
       <RouteMoveStopDialog
@@ -483,6 +630,8 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
         error={sheetDetails.error}
         loading={sheetDetails.isLoading}
         onCall={() => void sheetActions.callCustomer()}
+        onCallPhone={() => void sheetActions.callByPhone()}
+        onCallWhatsapp={() => void sheetActions.callByWhatsapp()}
         onClose={closeSheet}
         onComplete={isSelectedCurrentStop ? () => setSheetCompleteConfirmVisible(true) : undefined}
         onEdit={() => {
@@ -508,12 +657,6 @@ export function RouteLiveScreen(props: RouteLiveScreenProps) {
           !sheetSkipConfirmVisible &&
           !navigation.arrivalPromptVisible
         }
-      />
-      <ContactMethodSheet
-        onCallPhone={() => void sheetActions.callByPhone()}
-        onCallWhatsapp={() => void sheetActions.callByWhatsapp()}
-        onClose={sheetActions.closeContactSheet}
-        visible={sheetActions.contactSheetVisible}
       />
       <ConfirmDialog
         message={t("map:sheet.completeConfirmMessage")}

@@ -1,12 +1,7 @@
-import {
-  ArrowDown20Regular,
-  ArrowReset20Regular,
-  ArrowUp20Regular,
-  Eye20Regular,
-  EyeOff20Regular,
-} from "@fluentui/react-native-icons";
+import { ArrowReset20Regular, Eye20Regular, EyeOff20Regular, ReOrderDotsVertical20Regular } from "@fluentui/react-native-icons";
 import { ReactNode } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import { NestedReorderableList, ScrollViewContainer, useIsActive, useReorderableDrag } from "react-native-reorderable-list";
 import { useTranslation } from "react-i18next";
 
 import { AppText } from "@/src/components/ui/AppText";
@@ -33,7 +28,7 @@ type DriverStopOrderListProps = {
 };
 
 // The driver's own list as the admin sees it in the driver view — same
-// sorting controls as the driver's route list (tap the number / arrows),
+// sorting controls as the driver's route list (tap the number / drag a row),
 // plus hiding stops (one by one or a whole city) from the driver without
 // deleting them. Every change goes to the DRIVER's data and reaches their
 // app live.
@@ -56,7 +51,7 @@ export function DriverStopOrderList(props: DriverStopOrderListProps) {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollViewContainer contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       {props.cities.length > 1 ? (
         <View style={styles.section}>
           <AppText color="muted" variant="label">
@@ -107,36 +102,24 @@ export function DriverStopOrderList(props: DriverStopOrderListProps) {
         {t("driverMap.orderHint")}
       </AppText>
 
-      {props.markers.map((item, index) => (
-        <View key={item.id} style={[styles.row, { borderColor: colors.border }]}>
-          <Pressable
-            accessibilityHint={t("route:manualOrder.positionHint")}
-            accessibilityRole="button"
-            hitSlop={8}
-            onPress={() => props.onPressPosition(item.id)}
-            style={[styles.index, { backgroundColor: colors.primaryMuted, borderColor: colors.primary }]}
-          >
-            <AppText color="primary" variant="label">
-              {index + 1}
-            </AppText>
-          </Pressable>
-          <View style={styles.rowText}>
-            <AppText numberOfLines={1} variant="bodyMedium">
-              {item.title}
-            </AppText>
-            <AppText color="muted" numberOfLines={1} variant="caption">
-              {item.description}
-            </AppText>
-          </View>
-          {index > 0
-            ? iconButton(t("route:manualOrder.moveUp"), () => props.onMove(item.id, index), <ArrowUp20Regular color={colors.primary} />)
-            : null}
-          {index < props.markers.length - 1
-            ? iconButton(t("route:manualOrder.moveDown"), () => props.onMove(item.id, index + 2), <ArrowDown20Regular color={colors.primary} />)
-            : null}
-          {iconButton(t("driverMap.hideStop"), () => props.onToggleHidden(item.id, true), <EyeOff20Regular color={colors.mutedText} />)}
-        </View>
-      ))}
+      <NestedReorderableList
+        data={props.markers}
+        dragEnabled={!props.busy}
+        keyExtractor={(item) => item.id}
+        onReorder={({ from, to }) => {
+          const moved = props.markers[from];
+          if (moved && from !== to) props.onMove(moved.id, to + 1);
+        }}
+        renderItem={({ item, index }) => (
+          <OrderRow
+            hideButton={iconButton(t("driverMap.hideStop"), () => props.onToggleHidden(item.id, true), <EyeOff20Regular color={colors.mutedText} />)}
+            marker={item}
+            number={index + 1}
+            onPressPosition={() => props.onPressPosition(item.id)}
+          />
+        )}
+        scrollEnabled={false}
+      />
 
       {props.hiddenMarkers.length ? (
         <View style={styles.section}>
@@ -158,7 +141,54 @@ export function DriverStopOrderList(props: DriverStopOrderListProps) {
           ))}
         </View>
       ) : null}
-    </ScrollView>
+    </ScrollViewContainer>
+  );
+}
+
+type OrderRowProps = {
+  marker: MapCustomerMarker;
+  number: number;
+  hideButton: ReactNode;
+  onPressPosition: () => void;
+};
+
+// Hold the row (or touch the handle) and drag it to a new position.
+function OrderRow(props: OrderRowProps) {
+  const { t } = useTranslation("admin");
+  const colors = useThemeColors();
+  const drag = useReorderableDrag();
+  const isActive = useIsActive();
+
+  return (
+    <Pressable
+      delayLongPress={250}
+      onLongPress={drag}
+      style={[styles.row, { borderColor: colors.border, backgroundColor: isActive ? colors.primaryMuted : colors.surface }]}
+    >
+      <Pressable
+        accessibilityHint={t("route:manualOrder.positionHint")}
+        accessibilityRole="button"
+        hitSlop={8}
+        onPress={props.onPressPosition}
+        style={[styles.index, { backgroundColor: colors.primaryMuted, borderColor: colors.primary }]}
+      >
+        <AppText color="primary" variant="label">
+          {props.number}
+        </AppText>
+      </Pressable>
+      <View style={styles.rowText}>
+        <AppText numberOfLines={1} variant="bodyMedium">
+          {props.marker.title}
+        </AppText>
+        <AppText color="muted" numberOfLines={1} variant="caption">
+          {props.marker.description}
+        </AppText>
+      </View>
+      {props.hideButton}
+      <Pressable accessibilityLabel={t("route:manualOrder.dragHandle")} hitSlop={8} onPressIn={drag} style={styles.dragHandle}>
+        <ReOrderDotsVertical20Regular color={colors.mutedText} />
+      </Pressable>
+    </Pressable>
   );
 }
 
@@ -203,6 +233,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   rowText: { flex: 1, gap: 2 },
+  dragHandle: { width: 34, height: 34, alignItems: "center", justifyContent: "center" },
   moveButton: {
     width: 34,
     height: 34,

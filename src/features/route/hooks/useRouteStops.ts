@@ -13,6 +13,7 @@ import {
   nearestNeighborOrder,
 } from "@/src/features/route/services/routeDirectionsService";
 import { applyManualOrder } from "@/src/features/route/services/routeManualOrderService";
+import { fetchRoadDistanceMatrix, RouteDistanceMatrix } from "@/src/features/route/services/routeDistanceMatrixService";
 import { presetRouteOrder, RouteSortMode } from "@/src/features/route/services/routeSortModeService";
 import { RouteComputationStatus, RouteOrigin, RoutePoint, RouteStop } from "@/src/features/route/types/routeTypes";
 import { useMapCustomers } from "@/src/features/map/hooks/useMapCustomers";
@@ -64,7 +65,7 @@ function toRouteStops(
 
 // `manualOrderIds` (set once the driver moved a stop by hand) switches off
 // every automatic optimization: the stops are timed in exactly that order
-// and lastStopId is ignored, since the manual order already decides it.
+// (the picked last stop is still moved to the end afterwards).
 // Stops the saved/manual order knows keep exactly that order; any others
 // (never sorted by hand yet) follow nearest-neighbor from the last of them
 // instead of landing at the end in arbitrary order.
@@ -77,12 +78,22 @@ function manualPreOrder(origin: RouteOrigin, points: RoutePoint[], manualOrderId
   return [...fixed, ...nearestNeighborOrder(lastFixed ? { ...lastFixed, label: "" } : origin, rest)];
 }
 
+// Moves the pinned last stop to the end of a fixed order.
+function pinLast(points: RoutePoint[] | null, lastStopId: string | undefined) {
+  const pinned = lastStopId ? points?.find((point) => point.id === lastStopId) : undefined;
+  return points && pinned ? [...points.filter((point) => point.id !== lastStopId), pinned] : points;
+}
+
 export function useRouteStops(
   selectedIds: string[],
   origin: RouteOrigin | null,
   departureDate: Date,
   sortMode: RouteSortMode,
   manualOrderIds: string[] | null = null,
+  // Pinned as the very last stop in every sort mode (null = no pin).
+  lastStopId: string | null = null,
+  // Which "another route" variant to show (sortMode "alternative" only).
+  variantIndex = 0,
 ) {
   const { markers, isLoading: customersLoading, error: customersError, reload } = useMapCustomers();
   const selectedMarkers = useMemo(() => {
@@ -119,17 +130,38 @@ export function useRouteStops(
 
     // A fixed order (hand-made, or one of the preset sort modes) is timed
     // exactly as given; only "optimized" lets the providers re-sort.
-    const fixedOrder = manualOrderIds
-      ? manualPreOrder(origin, points, manualOrderIds)
-      : presetRouteOrder(sortMode, origin, selectedMarkers.map((marker) => ({ id: marker.id, latitude: marker.latitude, longitude: marker.longitude, city: marker.city })))?.map(({ id, latitude, longitude }) => ({ id, latitude, longitude })) ?? null;
-    const preOrderedPoints = fixedOrder ?? nearestNeighborOrder(origin, points);
-    const fallbackStops = buildCumulativeStops(buildFallbackLegs(origin, preOrderedPoints), departureDate);
-    setStops(toRouteStops(fallbackStops, markerById, true));
+    const sortable = selectedMarkers.map((marker) => ({ id: marker.id, latitude: marker.latitude, longitude: marker.longitude, city: marker.city }));
+    const pinnedLastId = lastStopId && markerById.has(lastStopId) ? lastStopId : undefined;
+    const buildFixedOrder = (matrix: RouteDistanceMatrix | null) =>
+      pinLast(
+        manualOrderIds
+          ? manualPreOrder(origin, points, manualOrderIds)
+          : presetRouteOrder(sortMode, origin, sortable, variantIndex, matrix)?.map(({ id, latitude, longitude }) => ({ id, latitude, longitude })) ?? null,
+        pinnedLastId,
+      );
+    // Preset modes sort by straight-line distance first so the list shows up
+    // instantly, then again by real driving distance once that has loaded.
+    const usesRoadMatrix = !manualOrderIds && sortMode !== "optimized";
+    let fixedOrder = buildFixedOrder(null);
+    let preOrderedPoints = fixedOrder ?? nearestNeighborOrder(origin, points, pinnedLastId);
+    const showPreview = () =>
+      setStops(toRouteStops(buildCumulativeStops(buildFallbackLegs(origin, preOrderedPoints), departureDate), markerById, true));
+    showPreview();
     setStatus("loading");
     setError(null);
 
     const timeoutId = setTimeout(() => {
       void (async () => {
+        if (usesRoadMatrix) {
+          const roadMatrix = await fetchRoadDistanceMatrix(origin, sortable);
+          if (requestIdRef.current !== requestId) return;
+          if (roadMatrix) {
+            fixedOrder = buildFixedOrder(roadMatrix);
+            preOrderedPoints = fixedOrder ?? preOrderedPoints;
+            showPreview();
+          }
+        }
+
         function applyLegs(legs: Awaited<ReturnType<typeof computeRouteLegs>>) {
           if (requestIdRef.current !== requestId) return;
           const confirmedStops = buildCumulativeStops(legs, departureDate);
@@ -149,10 +181,10 @@ export function useRouteStops(
         // preOrderedPoints' order instead of being re-sorted.
         const computeGoogleLegs = fixedOrder
           ? async () => (await fetchRoutePolyline(origin, preOrderedPoints, googleDirectionsApiKey)).legs
-          : () => computeRouteLegs(origin, points, departureDate, googleDirectionsApiKey);
+          : () => computeRouteLegs(origin, points, departureDate, googleDirectionsApiKey, pinnedLastId);
         const computeOsrmLegs = fixedOrder
           ? async () => (await fetchOsrmRoutePolyline(origin, preOrderedPoints)).legs
-          : () => computeOsrmTripLegs(origin, points);
+          : () => computeOsrmTripLegs(origin, points, pinnedLastId);
         let googleErrorMessage: string | null = null;
 
         try {
@@ -184,7 +216,7 @@ export function useRouteStops(
     }, RECOMPUTE_DEBOUNCE_MS);
 
     return () => clearTimeout(timeoutId);
-  }, [origin, departureDate, selectedMarkers, markerById, sortMode, manualOrderIds]);
+  }, [origin, departureDate, selectedMarkers, markerById, sortMode, manualOrderIds, lastStopId, variantIndex]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   return {

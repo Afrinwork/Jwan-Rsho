@@ -16,7 +16,7 @@ test("optimized leaves the order to the routing providers", () => {
   assert.equal(presetRouteOrder("optimized", origin, points), null);
 });
 
-test("nearest sorts by distance from the start, farthest the other way round", () => {
+test("nearest chains outward from the start, farthest starts far away and works back", () => {
   assert.deepEqual(presetRouteOrder("nearest", origin, points)?.map((p) => p.id), ["hannover-near", "hannover-mid", "berlin-near", "berlin-far"]);
   assert.deepEqual(presetRouteOrder("farthest", origin, points)?.map((p) => p.id), ["berlin-far", "berlin-near", "hannover-mid", "hannover-near"]);
 });
@@ -32,4 +32,17 @@ test("city keeps a city together even when another city's stop is geographically
     { id: "a2", latitude: 0, longitude: 3, city: "A" },
   ];
   assert.deepEqual(presetRouteOrder("city", { latitude: 0, longitude: 0, label: "" }, mixed)?.map((p) => p.id), ["a1", "a2", "b1"]);
+});
+
+test("nearest goes on to the closest remaining stop instead of zigzagging across the start", () => {
+  // west1/east1 are equally far from the start but on opposite sides.
+  const start = { latitude: 0, longitude: 0, label: "" };
+  const line = [
+    { id: "east1", latitude: 0, longitude: 1 },
+    { id: "west1", latitude: 0, longitude: -1.01 },
+    { id: "east2", latitude: 0, longitude: 1.5 },
+    { id: "west2", latitude: 0, longitude: -1.5 },
+  ];
+  assert.deepEqual(presetRouteOrder("nearest", start, line)?.map((p) => p.id), ["east1", "east2", "west1", "west2"]);
+  assert.deepEqual(presetRouteOrder("farthest", start, line)?.map((p) => p.id), ["east2", "east1", "west1", "west2"]);
 });

@@ -30,6 +30,17 @@ export function applyManualOrder<T extends Pick<RoutePoint, "id">>(points: T[], 
   return [...ordered, ...points.filter((point) => !orderedIds.has(point.id))];
 }
 
+// Re-sorts the ids the saved order knows into that order, within the slots
+// they already occupy; ids it doesn't know (e.g. a stop added mid-drive)
+// stay exactly where they are. Returns the same array when nothing changes.
+export function reorderKnownInPlace(ids: string[], savedIds: string[]): string[] {
+  const rank = new Map(savedIds.map((id, index) => [id, index]));
+  const known = ids.filter((id) => rank.has(id)).sort((left, right) => rank.get(left)! - rank.get(right)!);
+  let nextKnown = 0;
+  const next = ids.map((id) => (rank.has(id) ? known[nextKnown++] : id));
+  return next.some((id, index) => id !== ids[index]) ? next : ids;
+}
+
 export const MAX_SAVED_ROUTE_ORDER_IDS = 2000;
 
 // A saved list covers every customer the person ever sorted, not just the

@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
-import { FlatList, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import ReorderableList from "react-native-reorderable-list";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
@@ -12,6 +13,8 @@ import { ErrorState } from "@/src/components/ui/ErrorState";
 import { LoadingView } from "@/src/components/ui/LoadingView";
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
 import { routeT } from "@/src/features/route/i18n/routeT";
+import { AppText } from "@/src/components/ui/AppText";
+import { RouteLastStopDropdown } from "@/src/features/route/components/RouteLastStopDropdown";
 import { RouteMoveStopDialog } from "@/src/features/route/components/RouteMoveStopDialog";
 import { RouteSelectionActionsBar } from "@/src/features/route/components/RouteSelectionActionsBar";
 import { RouteSelectionBar } from "@/src/features/route/components/RouteSelectionBar";
@@ -59,7 +62,7 @@ export function RouteScreen(props: RouteScreenProps) {
   // "Automatisch sortieren" clears it. Updates live from the other side.
   // Picked before the trip starts (point 6: don't jump straight into the
   // trip after drawing) — see routeSortModeService for what each does.
-  const [sortMode, setSortMode] = useState<RouteSortMode>("optimized");
+  const [sortMode, setSortMode] = useState<RouteSortMode>("nearest");
   // Stops taken out of this route here ("Aus Route entfernen") — the map
   // selection itself is left alone, "Auswahl ändern" goes back to it.
   const [removedIds, setRemovedIds] = useState<string[]>([]);
@@ -69,11 +72,19 @@ export function RouteScreen(props: RouteScreenProps) {
   }, [props.selectedIds, removedIds]);
   const currentUserId = useCurrentUser()?.uid ?? null;
   const routeOrder = useRouteOrder(currentUserId);
+  // A saved hand-made order only counts when it covers every stop of this
+  // route (moving a stop saves the whole route, so a route sorted by hand
+  // always does). One that only knows some of them is left over from other
+  // days' routes: applying it kept those stops in their old order and
+  // appended the rest, which sent the trip back and forth across the map.
   const manualOrderIds = useMemo(() => {
-    const selected = new Set(routeIds);
-    return routeOrder.savedIds?.some((id) => selected.has(id)) ? routeOrder.savedIds : null;
+    const saved = routeOrder.savedIds ? new Set(routeOrder.savedIds) : null;
+    return saved && routeIds.length && routeIds.every((id) => saved.has(id)) ? routeOrder.savedIds : null;
   }, [routeOrder.savedIds, routeIds]);
   const [moveStopId, setMoveStopId] = useState<string | null>(null);
+  const [lastStopId, setLastStopId] = useState<string | null>(null);
+  // "Another route" — bumped on every tap of that chip.
+  const [variantIndex, setVariantIndex] = useState(0);
 
   const { stops, status, error, customersLoading, reload } = useRouteStops(
     routeIds,
@@ -81,6 +92,13 @@ export function RouteScreen(props: RouteScreenProps) {
     departureDate,
     sortMode,
     manualOrderIds,
+    lastStopId,
+    variantIndex,
+  );
+  // "N. Name" in the current stop order, matching the numbers in the list.
+  const lastStopOptions = useMemo(
+    () => stops.map((stop, index) => ({ id: stop.marker.id, name: `${index + 1}. ${stop.marker.title}` })),
+    [stops],
   );
   const { ordersByCustomerId } = useRouteOrderItems(routeIds);
   const selection = useRouteSelection(stops);
@@ -105,6 +123,16 @@ export function RouteScreen(props: RouteScreenProps) {
   function changeSortMode(mode: RouteSortMode) {
     if (manualOrderIds) void routeOrder.clear();
     setSortMode(mode);
+  }
+
+  // First tap switches to the alternative routes, every further tap shows
+  // the next one.
+  function showAnotherRoute() {
+    if (sortMode === "alternative" && !manualOrderIds) {
+      setVariantIndex((current) => current + 1);
+      return;
+    }
+    changeSortMode("alternative");
   }
 
   function removeSelectedFromRoute() {
@@ -146,10 +174,14 @@ export function RouteScreen(props: RouteScreenProps) {
   return (
     <AppErrorBoundary>
     <ScreenContainer contentStyle={styles.screenContent}>
-      <FlatList
+      <ReorderableList
         contentContainerStyle={styles.content}
         data={stops}
         keyExtractor={(item) => item.marker.id}
+        onReorder={({ from, to }) => {
+          const moved = stops[from];
+          if (moved && from !== to) moveStop(moved.marker.id, to + 1);
+        }}
         ListEmptyComponent={
           !error && status !== "loading" ? <EmptyState message={t("empty.message")} title={t("empty.title")} /> : null
         }
@@ -173,7 +205,23 @@ export function RouteScreen(props: RouteScreenProps) {
             </AnimatedEntrance>
             {stops.length > 1 ? (
               <AnimatedEntrance delay={70}>
-                <RouteSortModePicker isManual={manualOrderIds !== null} onChange={changeSortMode} value={sortMode} />
+                <RouteSortModePicker
+                  isManual={manualOrderIds !== null}
+                  onAnotherRoute={showAnotherRoute}
+                  onChange={changeSortMode}
+                  value={sortMode}
+                  variantNumber={variantIndex + 1}
+                />
+              </AnimatedEntrance>
+            ) : null}
+            {stops.length > 1 ? (
+              <AnimatedEntrance delay={80}>
+                <View style={styles.lastStopRow}>
+                  <AppText color="muted" variant="label">
+                    {t("startCard.lastStopLabel")}
+                  </AppText>
+                  <RouteLastStopDropdown onChange={setLastStopId} options={lastStopOptions} value={lastStopId} />
+                </View>
               </AnimatedEntrance>
             ) : null}
             <AnimatedEntrance delay={90}>
@@ -205,11 +253,9 @@ export function RouteScreen(props: RouteScreenProps) {
             {routeOrder.error ? <ErrorState message={routeOrder.error} /> : null}
           </View>
         }
-        renderItem={({ item, index }) => (
-          <AnimatedEntrance>
+        renderItem={({ item }) => (
+          <AnimatedEntrance style={styles.item}>
             <RouteStopRow
-              onMoveDown={index < stops.length - 1 ? () => moveStop(item.marker.id, index + 2) : undefined}
-              onMoveUp={index > 0 ? () => moveStop(item.marker.id, index) : undefined}
               onPressPosition={() => setMoveStopId(item.marker.id)}
               onNavigate={() =>
                 void navigationService.openDefaultNavigation({
@@ -293,9 +339,11 @@ export function RouteScreen(props: RouteScreenProps) {
 
 const styles = StyleSheet.create({
   list: { flex: 1 },
-  content: { gap: spacing.sm, paddingBottom: spacing.xl },
+  // No `gap` here: the drag list measures its cells, so spacing lives in them.
+  content: { paddingBottom: spacing.xl },
+  item: { paddingBottom: spacing.sm },
   screenContent: { paddingTop: 0 },
-  header: { gap: spacing.sm, marginBottom: spacing.xs },
+  header: { gap: spacing.sm, marginBottom: spacing.md },
   footer: {
     flexDirection: "row",
     gap: spacing.sm,
@@ -304,4 +352,5 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   footerButton: { flex: 1 },
+  lastStopRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
 });

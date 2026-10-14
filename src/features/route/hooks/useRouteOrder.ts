@@ -26,6 +26,8 @@ export function useRouteOrder(userId: string | null) {
   // The person's trip in progress, if any (only drivers publish one).
   const [trip, setTrip] = useState<ActiveTrip | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // False until the first saved order (or "none") has arrived.
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
@@ -37,6 +39,7 @@ export function useRouteOrder(userId: string | null) {
           (order) => {
             setSavedIds(order?.customerIds.length ? order.customerIds : null);
             setTrip(order?.trip ?? null);
+            setLoaded(true);
             setError(null);
           },
           (subscribeError) => setError(formatError(subscribeError).message),
@@ -91,5 +94,5 @@ export function useRouteOrder(userId: string | null) {
     [userId],
   );
 
-  return { savedIds, trip, error, save, clear, saveTrip };
+  return { savedIds, loaded, trip, error, save, clear, saveTrip };
 }

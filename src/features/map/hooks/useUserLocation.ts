@@ -18,6 +18,25 @@ const DEFAULT_DELTA = {
   longitudeDelta: 0.08,
 };
 
+const CURRENT_POSITION_TIMEOUT_MS = 8000;
+
+// Resolves to null when the promise has not settled within timeoutMs.
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T | null> {
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => resolve(null), timeoutMs);
+    promise.then(
+      (value) => {
+        clearTimeout(timeoutId);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timeoutId);
+        reject(error);
+      },
+    );
+  });
+}
+
 function toRegion(location: Location.LocationObject): MapRegion {
   return {
     latitude: location.coords.latitude,
@@ -54,12 +73,28 @@ export function useUserLocation(): UserLocationState {
         return;
       }
 
-      const currentLocation = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
+      // On Android getCurrentPositionAsync can wait forever without a GPS fix
+      // (seen on Samsung phones indoors), which kept the map stuck on the
+      // loading screen. Show the last known position right away, cap the fresh
+      // lookup, and let the watch below refine the position later.
+      const lastKnownLocation = await Location.getLastKnownPositionAsync().catch(() => null);
 
       setHasPermission(true);
-      setRegion(toRegion(currentLocation));
+      if (lastKnownLocation) {
+        setRegion(toRegion(lastKnownLocation));
+        setIsLoading(false);
+      }
+
+      const currentLocation = await withTimeout(
+        Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }).catch((currentError) => {
+          // A last known position is good enough; only fail without one.
+          if (lastKnownLocation) return null;
+          throw currentError;
+        }),
+        CURRENT_POSITION_TIMEOUT_MS,
+      );
+
+      if (currentLocation) setRegion(toRegion(currentLocation));
     } catch (loadError) {
       setHasPermission(false);
       setRegion(FALLBACK_REGION);

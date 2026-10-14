@@ -22,7 +22,6 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [completingOrder, setCompletingOrder] = useState(false);
-  const [contactSheetVisible, setContactSheetVisible] = useState(false);
 
   const callCustomer = useCallback(() => {
     if (!details?.customer.phone) {
@@ -32,16 +31,12 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
 
     setActionError(null);
     setActionSuccess(null);
-    setContactSheetVisible(true);
   }, [details, t]);
-
-  const closeContactSheet = useCallback(() => setContactSheetVisible(false), []);
 
   const callByPhone = useCallback(async () => {
     if (!details?.customer.phone) return;
 
     try {
-      setContactSheetVisible(false);
       setActionError(null);
       setActionSuccess(null);
       await phoneService.call(details.customer.phone);
@@ -54,7 +49,6 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
     if (!details?.customer.phone) return;
 
     try {
-      setContactSheetVisible(false);
       setActionError(null);
       setActionSuccess(null);
       await phoneService.openWhatsapp(details.customer.phone);
@@ -190,12 +184,10 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
     actionError,
     actionSuccess,
     completingOrder,
-    contactSheetVisible,
     products,
     callCustomer,
     callByPhone,
     callByWhatsapp,
-    closeContactSheet,
     completeOpenOrder,
     openNavigationMenu,
     openNavigationApp,

@@ -14,7 +14,6 @@ import { SuccessState } from "@/src/components/ui/SuccessState";
 import { spacing } from "@/src/constants/spacing";
 import { AddressCheckSheet } from "@/src/features/map/components/AddressCheckSheet";
 import { AppMapView } from "@/src/features/map/components/AppMapView";
-import { ContactMethodSheet } from "@/src/features/map/components/ContactMethodSheet";
 import { CustomerMarker } from "@/src/features/map/components/CustomerMarker";
 import { DriverAssignSheet } from "@/src/features/map/components/DriverAssignSheet";
 import { DriverLiveStatusSheet } from "@/src/features/map/components/DriverLiveStatusSheet";
@@ -387,6 +386,8 @@ export function MapScreen() {
         loading={detailsLoading}
         onAssignDriver={canAssignDrivers && selectedCustomerId ? () => openDriverAssignment([selectedCustomerId]) : undefined}
         onCall={() => void mapActions.callCustomer()}
+        onCallPhone={() => void mapActions.callByPhone()}
+        onCallWhatsapp={() => void mapActions.callByWhatsapp()}
         onClose={() => {
           setSelectedCustomerId(null);
           setCompleteConfirmVisible(false);
@@ -425,12 +426,6 @@ export function MapScreen() {
         sending={driverLiveStatus.sending}
         success={driverLiveStatus.success}
         visible={driverLiveStatus.visible}
-      />
-      <ContactMethodSheet
-        onCallPhone={() => void mapActions.callByPhone()}
-        onCallWhatsapp={() => void mapActions.callByWhatsapp()}
-        onClose={mapActions.closeContactSheet}
-        visible={mapActions.contactSheetVisible}
       />
       <AddressCheckSheet
         customers={needsAddressCheck}

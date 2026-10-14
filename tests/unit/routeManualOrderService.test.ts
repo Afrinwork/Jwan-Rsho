@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { applyManualOrder, mergeRouteOrder, moveIdToPosition } from "@/src/features/route/services/routeManualOrderService";
+import { applyManualOrder, mergeRouteOrder, moveIdToPosition, reorderKnownInPlace } from "@/src/features/route/services/routeManualOrderService";
 
 const ids = Array.from({ length: 16 }, (_, index) => `c${index + 1}`);
 
@@ -41,4 +41,19 @@ test("mergeRouteOrder puts the newly sorted ids first and keeps the rest of the 
 test("mergeRouteOrder caps the saved list size", () => {
   const saved = Array.from({ length: 2500 }, (_, index) => `s${index}`);
   assert.equal(mergeRouteOrder(saved, ["a"]).length, 2000);
+});
+
+test("reorderKnownInPlace applies an order saved elsewhere (stop 21 moved last)", () => {
+  const pending = ["c2", "c18", "c21", "c19", "c20"];
+  const saved = ["c2", "c18", "c19", "c20", "c21", "c99"];
+  assert.deepEqual(reorderKnownInPlace(pending, saved), ["c2", "c18", "c19", "c20", "c21"]);
+});
+
+test("reorderKnownInPlace keeps ids the saved order doesn't know in their slot", () => {
+  assert.deepEqual(reorderKnownInPlace(["b", "new", "a"], ["a", "b"]), ["a", "new", "b"]);
+});
+
+test("reorderKnownInPlace returns the same array when the order already matches", () => {
+  const pending = ["a", "b", "c"];
+  assert.equal(reorderKnownInPlace(pending, ["a", "b", "c"]), pending);
 });

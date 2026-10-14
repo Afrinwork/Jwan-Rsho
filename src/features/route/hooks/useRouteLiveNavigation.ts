@@ -8,13 +8,18 @@ import { formatError } from "@/src/utils/formatError";
 
 const ARRIVAL_THRESHOLD_KM = 0.12;
 
-export function useRouteLiveNavigation(markers: MapCustomerMarker[], liveCoordinate: { latitude: number; longitude: number } | null) {
-  const [handledIds, setHandledIds] = useState<Set<string>>(new Set());
+export function useRouteLiveNavigation(
+  markers: MapCustomerMarker[],
+  liveCoordinate: { latitude: number; longitude: number } | null,
+  // Restored from a trip resumed after the app was closed (activeTripStorage).
+  initialState?: { handledIds: string[]; skippedIds: string[] },
+) {
+  const [handledIds, setHandledIds] = useState<Set<string>>(() => new Set(initialState?.handledIds));
   // Subset of handledIds that were skipped rather than completed — an order
   // that couldn't be delivered still needs to stay visibly distinct on the
   // map (see RouteStopMarker/routeStopMarkerStyleService) so the driver
   // knows which stops still need a revisit vs. which are actually done.
-  const [skippedIds, setSkippedIds] = useState<Set<string>>(new Set());
+  const [skippedIds, setSkippedIds] = useState<Set<string>>(() => new Set(initialState?.skippedIds));
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const [completingArrival, setCompletingArrival] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);

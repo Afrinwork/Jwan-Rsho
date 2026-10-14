@@ -4,12 +4,16 @@ import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { SuccessState } from "@/src/components/ui/SuccessState";
+import { DebtStatusBox } from "@/src/features/debts/components/DebtStatusBox";
 import { CustomerMapCard } from "@/src/features/map/components/CustomerMapCard";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { LoadingView } from "@/src/components/ui/LoadingView";
 import { spacing } from "@/src/constants/spacing";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { MapCustomerDetails } from "@/src/features/map/types/mapTypes";
+
+// Long enough for the slide-out animation to finish before the next screen.
+const MODAL_CLOSE_DELAY_MS = 350;
 
 type MapCustomerSheetProps = {
   visible: boolean;
@@ -23,7 +27,10 @@ type MapCustomerSheetProps = {
   onEdit: () => void;
   onComplete?: () => void;
   completing?: boolean;
+  // Called when the customer has no phone number, so the caller can report it.
   onCall: () => void;
+  onCallPhone: () => void;
+  onCallWhatsapp: () => void;
   onNavigate: () => void;
   onShare: () => void;
   onShareOrder: () => void;
@@ -54,6 +61,8 @@ export function MapCustomerSheet({
   onComplete,
   completing,
   onCall,
+  onCallPhone,
+  onCallWhatsapp,
   onNavigate,
   onShare,
   onShareOrder,
@@ -65,6 +74,10 @@ export function MapCustomerSheet({
   const colors = useThemeColors();
   const { t } = useTranslation("map");
   const [showMore, setShowMore] = useState(false);
+  // The call options render inline: iOS cannot present a second Modal on top
+  // of this one, which left an invisible overlay that froze the screen.
+  const [showContact, setShowContact] = useState(false);
+  const hasPhone = Boolean(details?.customer.phone);
 
   return (
     <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
@@ -84,6 +97,15 @@ export function MapCustomerSheet({
           {!loading && !error && details ? (
             <ScrollView contentContainerStyle={styles.content}>
               <CustomerMapCard details={details} />
+              <DebtStatusBox
+                customerId={details.customer.id}
+                onOpen={(openDebts) => {
+                  // This sheet is a Modal: navigating while it is still up
+                  // would leave it on top of the debt page.
+                  onClose();
+                  setTimeout(openDebts, MODAL_CLOSE_DELAY_MS);
+                }}
+              />
               {actionError ? <ErrorState message={actionError} /> : null}
               {actionSuccess ? <SuccessState message={actionSuccess} /> : null}
               <View style={styles.actions}>
@@ -109,7 +131,18 @@ export function MapCustomerSheet({
                 {showMore ? (
                   <View style={styles.moreActions}>
                     <AppButton label={t("common.edit")} onPress={onEdit} size="compact" variant="secondary" />
-                    <AppButton label={details.customer.phone ? t("sheet.callPhone") : t("sheet.phoneMissing")} onPress={onCall} size="compact" variant="secondary" />
+                    <AppButton
+                      label={hasPhone ? t("sheet.callPhone") : t("sheet.phoneMissing")}
+                      onPress={hasPhone ? () => setShowContact((current) => !current) : onCall}
+                      size="compact"
+                      variant="secondary"
+                    />
+                    {hasPhone && showContact ? (
+                      <View style={styles.contactOptions}>
+                        <AppButton label={t("contactSheet.callPhone")} onPress={onCallPhone} size="compact" />
+                        <AppButton label={t("contactSheet.callWhatsapp")} onPress={onCallWhatsapp} size="compact" />
+                      </View>
+                    ) : null}
                     <AppButton label={t("sheet.shareViaWhatsapp")} onPress={onShareOrder} size="compact" variant="secondary" />
                     <AppButton label={t("sheet.shareLocation")} onPress={onShare} size="compact" variant="secondary" />
                     {onAssignDriver ? <AppButton label={t("sheet.assignDriver")} onPress={onAssignDriver} size="compact" variant="secondary" /> : null}
@@ -164,5 +197,9 @@ const styles = StyleSheet.create({
   },
   moreActions: {
     gap: spacing.sm,
+  },
+  contactOptions: {
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
   },
 });

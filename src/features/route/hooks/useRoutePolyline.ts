@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 
 import { googleDirectionsApiKey } from "@/src/config/googleDirectionsEnv";
 import {
+  buildCumulativeStops,
+  buildFallbackLegs,
   fetchOsrmRoutePolyline,
   fetchRoutePolyline,
   FALLBACK_AVERAGE_SPEED_KMH,
@@ -22,6 +24,10 @@ type RoutePolylineState = {
   currentLegEta: Date | null;
   currentLegDurationMinutes: number | null;
   currentLegDistanceKm: number | null;
+  // Approximate arrival time per remaining stop (same cumulative estimate as
+  // the list screen, incl. the per-stop service buffer). Recomputed whenever
+  // the remaining stops or their order change.
+  etaById: Map<string, Date>;
 };
 
 const EMPTY_STATE: RoutePolylineState = {
@@ -29,7 +35,12 @@ const EMPTY_STATE: RoutePolylineState = {
   currentLegEta: null,
   currentLegDurationMinutes: null,
   currentLegDistanceKm: null,
+  etaById: new Map(),
 };
+
+function toEtaById(legs: { point: RoutePoint; distanceKm: number; durationSec: number }[], anchorMs: number) {
+  return new Map(buildCumulativeStops(legs, new Date(anchorMs)).map((stop) => [stop.id, stop.cumulativeEta]));
+}
 
 // Fetches the road-following polyline for the remaining stops from the given
 // origin. Re-fetches whenever the origin or the remaining-stop set changes —
@@ -88,6 +99,7 @@ export function useRoutePolyline(origin: RouteLatLng | null, orderedPoints: Rout
           ? Math.round(firstLeg.durationSec / 60)
           : straightLineFallback.currentLegDurationMinutes,
         currentLegDistanceKm: firstLeg ? firstLeg.distanceKm : straightLineDistanceKm,
+        etaById: toEtaById(result.legs.length ? result.legs : buildFallbackLegs({ ...origin!, label: "" }, orderedPoints), etaAnchorMs),
       });
     }
 
@@ -112,7 +124,12 @@ export function useRoutePolyline(origin: RouteLatLng | null, orderedPoints: Rout
       }
 
       if (!cancelled) {
-        setState({ ...EMPTY_STATE, coordinates: [origin, ...orderedPoints], ...straightLineFallback });
+        setState({
+          ...EMPTY_STATE,
+          coordinates: [origin, ...orderedPoints],
+          ...straightLineFallback,
+          etaById: toEtaById(buildFallbackLegs({ ...origin, label: "" }, orderedPoints), etaAnchorMs),
+        });
       }
     })();
 
