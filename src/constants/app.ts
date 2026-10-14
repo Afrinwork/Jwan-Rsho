@@ -1,4 +1,4 @@
 export const appConfig = {
-  name: "Rsho",
+  name: "Rasho SmartPlan",
   version: "1.0.0",
 };
