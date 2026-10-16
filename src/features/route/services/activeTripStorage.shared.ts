@@ -8,9 +8,9 @@ export type StoredActiveTrip = {
   orderedIds: string[];
   handledIds: string[];
   skippedIds: string[];
-  originLat?: number;
-  originLng?: number;
-  departureTime?: string;
+  // Set when the trip was started for a drawn selection only; absent =
+  // every customer on the map is part of the trip.
+  scopeIds?: string[] | null;
   savedAt: string;
 };
 

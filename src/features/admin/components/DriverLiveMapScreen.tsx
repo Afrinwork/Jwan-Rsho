@@ -13,7 +13,11 @@ import { DriverPositionPin } from "@/src/features/admin/components/DriverPositio
 import { DriverCityVisibility, DriverStopOrderList } from "@/src/features/admin/components/DriverStopOrderList";
 import { useDriverAssignedMarkers } from "@/src/features/admin/hooks/useDriverAssignedMarkers";
 import { useDriverOpenCustomerIds } from "@/src/features/admin/hooks/useDriverOpenCustomerIds";
+import { AppButton } from "@/src/components/ui/AppButton";
 import { RouteMoveStopDialog } from "@/src/features/route/components/RouteMoveStopDialog";
+import { fetchRoadDistanceMatrix } from "@/src/features/route/services/routeDistanceMatrixService";
+import { presetRouteOrder } from "@/src/features/route/services/routeSortModeService";
+import { alternativeRouteOrder, optimizedRemainingOrder } from "@/src/features/route/services/routeVariantService";
 import { RoutePolyline } from "@/src/features/route/components/RoutePolyline";
 import { RouteStopMarker } from "@/src/features/route/components/RouteStopMarker";
 import { useRouteOrder } from "@/src/features/route/hooks/useRouteOrder";
@@ -101,13 +105,7 @@ export function DriverLiveMapScreen(props: DriverLiveMapScreenProps) {
   }
   const isManualOrder = routeOrder.savedIds !== null && markers.some((marker) => routeOrder.savedIds?.includes(marker.id));
   const [moveStopId, setMoveStopId] = useState<string | null>(null);
-  const moveStopIndex = moveStopId ? markers.findIndex((marker) => marker.id === moveStopId) : -1;
 
-  function moveStop(customerId: string, position: number) {
-    const currentIds = markers.map((marker) => marker.id);
-    const nextIds = moveIdToPosition(currentIds, customerId, position);
-    if (nextIds !== currentIds) void routeOrder.save(nextIds);
-  }
 
   // The driver's trip in progress (mirrored by their RouteLiveScreen): the
   // remaining stops in the order they're driving them, and the next one.
@@ -130,6 +128,55 @@ export function DriverLiveMapScreen(props: DriverLiveMapScreenProps) {
     ],
     [props.location, tripMarkers],
   );
+  // The list follows the driver's real driving order while a trip is
+  // running — numbered like the pins — so a move here changes exactly that
+  // and reaches the driver's trip live; the rest of the stops follow.
+  const listMarkers = useMemo(() => {
+    if (!tripMarkers.length) return markers;
+    const visibleIds = new Set(markers.map((marker) => marker.id));
+    const driving = tripMarkers.filter((marker) => visibleIds.has(marker.id));
+    const drivingIds = new Set(driving.map((marker) => marker.id));
+    return [...driving, ...markers.filter((marker) => !drivingIds.has(marker.id))];
+  }, [markers, tripMarkers]);
+  const moveStopIndex = moveStopId ? listMarkers.findIndex((marker) => marker.id === moveStopId) : -1;
+
+  function moveStop(customerId: string, position: number) {
+    const currentIds = listMarkers.map((marker) => marker.id);
+    const nextIds = moveIdToPosition(currentIds, customerId, position);
+    if (nextIds !== currentIds) void routeOrder.save(nextIds);
+  }
+
+  // Full control from here: re-sort the driver's stops from the driver's last
+  // known position; the driver's trip follows live (saved order).
+  const [resorting, setResorting] = useState<"variant" | "optimize" | "nearest" | null>(null);
+  const variantIndexRef = useRef(0);
+  async function resortForDriver(kind: "variant" | "optimize" | "nearest") {
+    const stops = tripMarkers.length ? listMarkers.filter((marker) => tripIds.has(marker.id)) : listMarkers;
+    const from = props.location ?? stops[0];
+    if (!from || stops.length < 2) return;
+    setResorting(kind);
+    try {
+      const origin = { latitude: from.latitude, longitude: from.longitude, label: "" };
+      const roadMatrix = await fetchRoadDistanceMatrix(origin, stops);
+      let ordered = stops;
+      if (kind === "optimize") ordered = optimizedRemainingOrder(origin, stops, roadMatrix);
+      else if (kind === "nearest") ordered = presetRouteOrder("nearest", origin, stops, 0, roadMatrix) ?? stops;
+      else {
+        const current = stops.map((marker) => marker.id).join(",");
+        for (let attempt = 0; attempt < 12; attempt += 1) {
+          ordered = alternativeRouteOrder(origin, stops, variantIndexRef.current, roadMatrix);
+          variantIndexRef.current += 1;
+          if (ordered.map((marker) => marker.id).join(",") !== current) break;
+        }
+      }
+      const orderedIds = ordered.map((marker) => marker.id);
+      const rest = listMarkers.map((marker) => marker.id).filter((id) => !orderedIds.includes(id));
+      await routeOrder.save([...orderedIds, ...rest]);
+    } finally {
+      setResorting(null);
+    }
+  }
+
   // Everything but the map starts collapsed, so the map gets the screen.
   const [panelOpen, setPanelOpen] = useState(false);
 
@@ -228,13 +275,29 @@ export function DriverLiveMapScreen(props: DriverLiveMapScreenProps) {
               {error ? <ErrorState message={error} /> : null}
               {routeOrder.error ? <ErrorState message={routeOrder.error} /> : null}
               {visibilityError ? <ErrorState message={visibilityError} /> : null}
+              {listMarkers.length > 1 ? (
+                <View style={styles.resortRow}>
+                  {(["variant", "optimize", "nearest"] as const).map((kind) => (
+                    <View key={kind} style={styles.resortButton}>
+                      <AppButton
+                        disabled={resorting !== null}
+                        label={t(kind === "variant" ? "route:live.newRoute" : kind === "optimize" ? "route:live.reoptimizeRest" : "route:sortMode.nearest")}
+                        loading={resorting === kind}
+                        onPress={() => void resortForDriver(kind)}
+                        size="compact"
+                        variant="secondary"
+                      />
+                    </View>
+                  ))}
+                </View>
+              ) : null}
               {orderedMarkers.length ? (
                 <DriverStopOrderList
                   busy={visibilityBusy}
                   cities={cities}
                   hiddenMarkers={hiddenMarkers}
                   isManualOrder={isManualOrder}
-                  markers={markers}
+                  markers={listMarkers}
                   onMove={moveStop}
                   onPressPosition={setMoveStopId}
                   onReset={() => void routeOrder.clear()}
@@ -255,7 +318,7 @@ export function DriverLiveMapScreen(props: DriverLiveMapScreenProps) {
             if (moveStopId) moveStop(moveStopId, position);
             setMoveStopId(null);
           }}
-          stop={moveStopIndex === -1 ? null : { name: markers[moveStopIndex].title, position: moveStopIndex + 1 }}
+          stop={moveStopIndex === -1 ? null : { name: listMarkers[moveStopIndex].title, position: moveStopIndex + 1 }}
           totalCount={markers.length}
         />
       </View>
@@ -264,6 +327,8 @@ export function DriverLiveMapScreen(props: DriverLiveMapScreenProps) {
 }
 
 const styles = StyleSheet.create({
+  resortRow: { flexDirection: "row", gap: spacing.xs },
+  resortButton: { flex: 1 },
   screen: { flex: 1 },
   overlay: { position: "absolute", left: 0, right: 0, top: 0, paddingHorizontal: spacing.sm, paddingTop: spacing.xs },
   statusPill: {

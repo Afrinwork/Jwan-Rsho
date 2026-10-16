@@ -13,7 +13,6 @@ import { useTranslation } from "react-i18next";
 
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { isDriver } from "@/src/features/auth/permissions";
-import { useResumeActiveTrip } from "@/src/features/route/hooks/useResumeActiveTrip";
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 import { typography } from "@/src/theme/typography";
 
@@ -36,8 +35,6 @@ export default function TabsLayout() {
   const { t } = useTranslation("navigation");
   const currentUser = useCurrentUser();
   const isCurrentUserDriver = isDriver(currentUser);
-  // A trip still running when the app was closed reopens on start.
-  useResumeActiveTrip();
 
   return (
     <Tabs

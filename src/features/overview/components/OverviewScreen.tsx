@@ -84,6 +84,7 @@ export function OverviewScreen() {
           accent="success"
           caption={t("stats.completedOrders.caption")}
           icon={CheckmarkCircle20Regular}
+          onPress={() => router.push(routes.completedOrders)}
           title={t("stats.completedOrders.title")}
           value={String(stats.completedOrders)}
         />

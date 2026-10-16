@@ -28,6 +28,7 @@
     "order": "الطلب",
     "route": "المسار",
     "openOrders": "الطلبات المفتوحة",
+    "completedOrders": "الطلبات المكتملة",
     "forgotPassword": "إعادة تعيين كلمة المرور"
   }
 }

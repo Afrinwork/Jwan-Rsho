@@ -28,6 +28,7 @@
     "order": "Bestellung",
     "route": "Route",
     "openOrders": "Offene Bestellungen",
+    "completedOrders": "Erledigte Bestellungen",
     "forgotPassword": "Passwort vergessen"
   }
 }

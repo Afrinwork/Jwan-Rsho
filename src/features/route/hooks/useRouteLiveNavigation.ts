@@ -84,6 +84,13 @@ export function useRouteLiveNavigation(
     setSkippedIds((current) => new Set(current).add(currentMarker.id));
   }, [currentMarker]);
 
+  // Brings back the completed/skipped stops of a trip stored on the device,
+  // once that has loaded (the map keeps its trip from the first render on).
+  const restore = useCallback((state: { handledIds: string[]; skippedIds: string[] }) => {
+    setHandledIds(new Set(state.handledIds));
+    setSkippedIds(new Set(state.skippedIds));
+  }, []);
+
   const skipToMarker = useCallback((customerId: string) => {
     const targetIndex = markers.findIndex((marker) => marker.id === customerId);
     if (targetIndex === -1) return;
@@ -155,6 +162,7 @@ export function useRouteLiveNavigation(
     dismissArrival,
     skipStop,
     skipToMarker,
+    restore,
     reactivateStop,
   };
 }

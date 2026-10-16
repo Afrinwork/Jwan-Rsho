@@ -18,6 +18,7 @@ import { CustomerMarker } from "@/src/features/map/components/CustomerMarker";
 import { DriverAssignSheet } from "@/src/features/map/components/DriverAssignSheet";
 import { DriverLiveStatusSheet } from "@/src/features/map/components/DriverLiveStatusSheet";
 import { MapCustomerSheet } from "@/src/features/map/components/MapCustomerSheet";
+import { MapCategoryBar, type MapCategory } from "@/src/features/map/components/MapCategoryBar";
 import { MapFilters } from "@/src/features/map/components/MapFilters";
 import { MapSelectionToolbar } from "@/src/features/map/components/MapSelectionToolbar";
 import { MapToolbar } from "@/src/features/map/components/MapToolbar";
@@ -35,6 +36,11 @@ import { useMapCustomerSelection } from "@/src/features/map/hooks/useMapCustomer
 import { useMapFilters } from "@/src/features/map/hooks/useMapFilters";
 import { mapClusteringService } from "@/src/features/map/services/mapClusteringService";
 import { useUserLocation } from "@/src/features/map/hooks/useUserLocation";
+import { MapTripPanel } from "@/src/features/route/components/MapTripPanel";
+import { RoutePolyline } from "@/src/features/route/components/RoutePolyline";
+import { RouteStopMarker } from "@/src/features/route/components/RouteStopMarker";
+import { useMapTrip } from "@/src/features/route/hooks/useMapTrip";
+import { routeT } from "@/src/features/route/i18n/routeT";
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 import { AppMapViewHandle } from "@/src/features/map/types/mapViewTypes";
 import { orderRepository } from "@/src/repositories/orderRepository";
@@ -58,6 +64,7 @@ export function MapScreen() {
   const [deleteSelectedConfirmStep, setDeleteSelectedConfirmStep] = useState(1);
   const [addressCheckVisible, setAddressCheckVisible] = useState(false);
   const [assignmentCustomerIds, setAssignmentCustomerIds] = useState<string[] | null>(null);
+  const [activeCategory, setActiveCategory] = useState<MapCategory | null>(null);
   const { error, hasPermission, isLoading, region, reload } = useUserLocation();
   const {
     error: customersError,
@@ -91,6 +98,39 @@ export function MapScreen() {
   const drawingPaused = customerSelection.selection.polygonPaused;
   const mapGesturesEnabled = !drawingSelection || drawingPaused;
   const filterKey = `${filters.country}\u0000${filters.city}`;
+  // The trip is always running (like IBI): every customer on the map — the
+  // country/city filter decides which — is a numbered stop. Drawing only
+  // selects customers for the selection actions, it doesn't change the route.
+  const trip = useMapTrip(filteredMarkers, !customersLoading, hasPermission ? region : null);
+  const tripNavigation = trip.navigation;
+  const isSelectedCurrentStop = selectedCustomerId !== null && selectedCustomerId === tripNavigation.currentMarker?.id;
+  const isSelectedPendingFutureStop =
+    selectedCustomerId !== null &&
+    !isSelectedCurrentStop &&
+    tripNavigation.pendingMarkers.some((marker) => marker.id === selectedCustomerId);
+  const canReactivateSelected = selectedCustomerId !== null && tripNavigation.handledIds.has(selectedCustomerId);
+  const [skipConfirmVisible, setSkipConfirmVisible] = useState(false);
+  const selectedCount = customerSelection.selection.selectedIds.length;
+  const pendingTripCount = tripNavigation.pendingMarkers.length;
+  // Customers on the map that aren't on the route right now (the trip was
+  // started for a drawn selection): plain pins, no number.
+  const offRouteMarkers = useMemo(() => {
+    if (!trip.ready) return [];
+    const onRoute = new Set(trip.orderedMarkers.map((marker) => marker.id));
+    return filteredMarkers.filter((marker) => !onRoute.has(marker.id));
+  }, [trip.ready, trip.orderedMarkers, filteredMarkers]);
+
+  function startTripForSelection() {
+    trip.startForSelection(customerSelection.selection.selectedIds);
+    customerSelection.resetSelection();
+    setActiveCategory("trip");
+  }
+
+  function handleStopPress(marker: (typeof filteredMarkers)[number]) {
+    if (customerSelection.selection.activeTool === "single") return customerSelection.selection.handleMarkerPress(marker);
+    if (customerSelection.selection.activeTool !== "none") return;
+    setSelectedCustomerId(marker.id);
+  }
   const clusterItems = useMemo(
     () => mapClusteringService.buildClusterItems({ markers: filteredMarkers, region: visibleRegion }),
     [filteredMarkers, visibleRegion],
@@ -162,7 +202,9 @@ export function MapScreen() {
 
   async function handleConfirmComplete() {
     setCompleteConfirmVisible(false);
-    const completed = await mapActions.completeOpenOrder();
+    // The stop being driven to right now goes through the trip, so the
+    // remaining route continues from this customer.
+    const completed = isSelectedCurrentStop ? await tripNavigation.confirmArrival() : await mapActions.completeOpenOrder();
     if (!completed) return;
     setSelectedCustomerId(null);
     await reloadCustomers();
@@ -256,72 +298,103 @@ export function MapScreen() {
         userLocationCoordinate={hasPermission ? region : null}
         zoomEnabled={mapGesturesEnabled}
       >
-        {clusterItems.map((item) => {
-          if (item.type === "cluster") {
-            return null;
-          }
-
-          const marker = item.marker;
-
-          return (
-            <CustomerMarker
-              key={item.id}
-              marker={marker}
-              onPress={() => {
-                if (customerSelection.selection.activeTool === "single") return customerSelection.selection.handleMarkerPress(marker);
-                if (customerSelection.selection.activeTool !== "none") return;
-                setSelectedCustomerId(marker.id);
-              }}
-              selected={selectedIdSet.has(marker.id)}
-            />
-          );
-        })}
+        {trip.ready ? (
+          <>
+            {trip.lineCoordinates.length >= 2 ? <RoutePolyline coordinates={trip.lineCoordinates} /> : null}
+            {trip.orderedMarkers.map((marker, index) => (
+              <RouteStopMarker
+                active={marker.id === tripNavigation.currentMarker?.id}
+                inactive={tripNavigation.handledIds.has(marker.id)}
+                key={marker.id}
+                label={String(index + 1)}
+                marker={marker}
+                onPress={() => handleStopPress(marker)}
+                selected={selectedIdSet.has(marker.id)}
+                skipped={tripNavigation.skippedIds.has(marker.id)}
+              />
+            ))}
+            {offRouteMarkers.map((marker) => (
+              <CustomerMarker
+                key={marker.id}
+                marker={marker}
+                onPress={() => handleStopPress(marker)}
+                selected={selectedIdSet.has(marker.id)}
+              />
+            ))}
+          </>
+        ) : (
+          clusterItems.map((item) =>
+            item.type === "cluster" ? null : (
+              <CustomerMarker
+                key={item.id}
+                marker={item.marker}
+                onPress={() => handleStopPress(item.marker)}
+                selected={selectedIdSet.has(item.marker.id)}
+              />
+            ),
+          )
+        )}
         <PolygonSelectionOverlay confirmedPolygon={customerSelection.selection.polygonConfirmed} draftPoints={customerSelection.selection.polygonPoints} />
       </AppMapView>
 
       <SafeAreaView edges={["top"]} pointerEvents="box-none" style={styles.topOverlay}>
         <View style={styles.topOverlayContent}>
           <AnimatedEntrance>
-            <MapToolbar
-              customersCount={customersCount}
-              customersError={customersError}
-              customersLoading={customersLoading}
-              filteredCount={filteredMarkers.length}
-              locationError={error}
-              locationPermissionDenied={!hasPermission}
-              needsAddressCheckCount={needsAddressCheck.length}
-              onOpenAddressCheck={() => setAddressCheckVisible(true)}
-              onRetryCustomers={() => void reloadCustomers()}
-              onRetryLocation={() => void reload()}
-              openOrdersCount={openOrdersCount}
+            <MapCategoryBar
+              activeCategory={activeCategory}
+              filterActive={Boolean(filters.country || filters.city)}
+              onChange={setActiveCategory}
+              selectedCount={selectedCount}
+              tripCount={pendingTripCount}
+              warningCount={needsAddressCheck.length + (error || customersError ? 1 : 0)}
             />
           </AnimatedEntrance>
-          {isCurrentUserDriver ? (
-            <AppButton label={t("driverStatus.open")} onPress={driverLiveStatus.open} size="compact" variant="secondary" />
+          {activeCategory === "overview" ? (
+            <AnimatedEntrance delay={40}>
+              <View style={styles.categoryContent}>
+                <MapToolbar
+                  customersCount={customersCount}
+                  customersError={customersError}
+                  customersLoading={customersLoading}
+                  filteredCount={filteredMarkers.length}
+                  locationError={error}
+                  locationPermissionDenied={!hasPermission}
+                  needsAddressCheckCount={needsAddressCheck.length}
+                  onOpenAddressCheck={() => setAddressCheckVisible(true)}
+                  onRetryCustomers={() => void reloadCustomers()}
+                  onRetryLocation={() => void reload()}
+                  openOrdersCount={openOrdersCount}
+                />
+                {isCurrentUserDriver ? (
+                  <AppButton label={t("driverStatus.open")} onPress={driverLiveStatus.open} size="compact" variant="secondary" />
+                ) : null}
+                {newAssignmentMessage ? <SuccessState message={newAssignmentMessage} /> : null}
+              </View>
+            </AnimatedEntrance>
           ) : null}
-          {newAssignmentMessage ? <SuccessState message={newAssignmentMessage} /> : null}
+          {activeCategory === "filters" ? (
+            <AnimatedEntrance delay={40}>
+              <View style={styles.categoryContent}>
+                <MapFilters
+                  cityOptions={cityOptions}
+                  countryOptions={countryOptions}
+                  filters={filters}
+                  onCityChange={selectCity}
+                  onCountryChange={selectCountry}
+                  onReset={resetFilters}
+                />
+              </View>
+            </AnimatedEntrance>
+          ) : null}
+          {activeCategory === "selection" || drawingSelection ? (
           <AnimatedEntrance delay={40}>
+            <View style={styles.categoryContent}>
             <MapSelectionToolbar
               activeTool={customerSelection.selection.activeTool}
               onResetSelection={customerSelection.resetSelection}
               onSelectTool={customerSelection.selection.selectTool}
-              rightSlot={
-                <View style={styles.inlineControls}>
-                  <MapFilters
-                    cityOptions={cityOptions}
-                    countryOptions={countryOptions}
-                    filters={filters}
-                    inline
-                    onCityChange={selectCity}
-                    onCountryChange={selectCountry}
-                    onReset={resetFilters}
-                  />
-                </View>
-              }
             />
-          </AnimatedEntrance>
-          {!drawingSelection ? (
-            <AnimatedEntrance delay={80}>
+            {!drawingSelection ? (
               <SelectedCustomersBar
                 deleteError={customerSelection.deleteError}
                 deleting={customerSelection.deleting}
@@ -341,10 +414,8 @@ export function MapScreen() {
                   setDeleteSelectedConfirmStep(1);
                   setDeleteSelectedConfirmVisible(true);
                 }}
-                onOpenRoute={() =>
-                  router.push({ pathname: "/map/route", params: { ids: customerSelection.selection.selectedIds.join(",") } })
-                }
                 onShare={() => void customerSelection.share()}
+                onStartTrip={startTripForSelection}
                 onShareByEmail={() => void customerSelection.shareByEmail()}
                 onViewSelection={customerSelection.openList}
                 loadingSelectionData={customerSelection.totalsLoading}
@@ -354,14 +425,26 @@ export function MapScreen() {
                 shareError={customerSelection.shareError}
                 sharing={customerSelection.sharing}
               />
-            </AnimatedEntrance>
+            ) : null}
+            </View>
+          </AnimatedEntrance>
           ) : null}
         </View>
       </SafeAreaView>
 
       <View pointerEvents="box-none" style={[styles.bottomOverlay, { bottom: insets.bottom + TAB_BAR_CLEARANCE }]}>
+        {/* Also with the selection tools open: after drawing, the trip and its
+            list button stay at hand. */}
+        {!drawingSelection && (activeCategory === "trip" || activeCategory === "selection") ? (
+          <View style={styles.tripPanel}>
+            <MapTripPanel trip={trip} />
+          </View>
+        ) : null}
         <PolygonDrawOverlay
-          onClosePolygon={customerSelection.selection.closePolygon}
+          onClosePolygon={() => {
+            customerSelection.selection.closePolygon();
+            setActiveCategory("selection");
+          }}
           onTogglePause={customerSelection.selection.togglePolygonPause}
           onUndoPolygonPoint={customerSelection.selection.undoPolygonPoint}
           paused={drawingPaused}
@@ -401,7 +484,31 @@ export function MapScreen() {
         onRetry={() => void reloadDetails()}
         onShare={() => void mapActions.shareLocation()}
         onShareOrder={() => void mapActions.shareOrder()}
-        visible={selectedCustomerId !== null && !completeConfirmVisible}
+        onReactivate={
+          canReactivateSelected && selectedCustomerId
+            ? () => {
+                tripNavigation.reactivateStop(selectedCustomerId);
+                setSelectedCustomerId(null);
+              }
+            : undefined
+        }
+        onSkip={isSelectedCurrentStop || isSelectedPendingFutureStop ? () => setSkipConfirmVisible(true) : undefined}
+        onSkipLabel={isSelectedPendingFutureStop ? routeT("live.skipToStop") : undefined}
+        visible={selectedCustomerId !== null && !completeConfirmVisible && !skipConfirmVisible && !tripNavigation.arrivalPromptVisible}
+      />
+      <ConfirmDialog
+        message={actionT("sheet.skipConfirmMessage")}
+        onCancel={() => setSkipConfirmVisible(false)}
+        onConfirm={() => {
+          setSkipConfirmVisible(false);
+          const customerId = selectedCustomerId;
+          setSelectedCustomerId(null);
+          if (!customerId) return;
+          if (customerId === tripNavigation.currentMarker?.id) tripNavigation.skipStop();
+          else tripNavigation.skipToMarker(customerId);
+        }}
+        title={actionT("sheet.skipConfirmTitle")}
+        visible={skipConfirmVisible}
       />
       <DriverAssignSheet
         assigning={driverAssignment.assigning}
@@ -487,14 +594,13 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
     gap: spacing.xs,
   },
-  inlineControls: {
-    flexDirection: "row",
-    gap: spacing.xs,
-    alignItems: "flex-start",
-  },
+  categoryContent: { gap: spacing.xs, maxHeight: 260 },
   bottomOverlay: {
     position: "absolute",
     left: 0,
     right: 0,
+  },
+  tripPanel: {
+    paddingHorizontal: spacing.md,
   },
 });

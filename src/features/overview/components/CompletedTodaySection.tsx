@@ -11,9 +11,13 @@ import { ErrorState } from "@/src/components/ui/ErrorState";
 import { spacing } from "@/src/theme/spacing";
 
 import { CompletedTodayEntryCard } from "@/src/features/overview/components/CompletedTodayEntryCard";
-import { useCompletedTodayOrders } from "@/src/features/overview/hooks/useCompletedTodayOrders";
+import { CompletedOrdersScope, useCompletedTodayOrders } from "@/src/features/overview/hooks/useCompletedTodayOrders";
 
-export function CompletedTodaySection() {
+type CompletedTodaySectionProps = {
+  scope?: CompletedOrdersScope;
+};
+
+export function CompletedTodaySection({ scope = "today" }: CompletedTodaySectionProps) {
   const { t } = useTranslation("overview");
   const {
     entries,
@@ -26,16 +30,18 @@ export function CompletedTodaySection() {
     actionError,
     deleteEntry,
     deleteAll,
-  } = useCompletedTodayOrders();
+  } = useCompletedTodayOrders(scope);
+  // Same section for both lists; only the wording differs.
+  const keyPrefix = scope === "all" ? "completedAll" : "completedToday";
   const [deleteAllConfirmVisible, setDeleteAllConfirmVisible] = useState(false);
 
   return (
     <AppCard contentStyle={styles.card}>
       <View style={styles.header}>
         <View style={styles.headerText}>
-          <AppText variant="subheading">{t("completedToday.title")}</AppText>
+          <AppText variant="subheading">{t(`${keyPrefix}.title`)}</AppText>
           <AppText color="muted" variant="caption">
-            {t("completedToday.count", { count: totalCount })}
+            {t(`${keyPrefix}.count`, { count: totalCount })}
           </AppText>
         </View>
         {totalCount > 0 ? (
@@ -61,7 +67,7 @@ export function CompletedTodaySection() {
       {actionError ? <ErrorState message={actionError} /> : null}
       {totalCount === 0 ? (
         <AppText color="muted" variant="body">
-          {t("completedToday.emptyMessage")}
+          {t(`${keyPrefix}.emptyMessage`)}
         </AppText>
       ) : entries.length === 0 ? (
         <AppText color="muted" variant="body">
@@ -74,6 +80,7 @@ export function CompletedTodaySection() {
               deleting={deletingOrderId === entry.orderId}
               entry={entry}
               key={entry.orderId}
+              showDate={scope === "all"}
               onDelete={() => void deleteEntry(entry.orderId)}
             />
           ))}
@@ -81,13 +88,13 @@ export function CompletedTodaySection() {
       )}
       <ConfirmDialog
         destructive
-        message={t("completedToday.deleteAllConfirmMessage")}
+        message={t(`${keyPrefix}.deleteAllConfirmMessage`)}
         onCancel={() => setDeleteAllConfirmVisible(false)}
         onConfirm={() => {
           setDeleteAllConfirmVisible(false);
           void deleteAll();
         }}
-        title={t("completedToday.deleteAllConfirmTitle")}
+        title={t(`${keyPrefix}.deleteAllConfirmTitle`)}
         visible={deleteAllConfirmVisible}
       />
     </AppCard>

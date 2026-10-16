@@ -31,6 +31,13 @@
     "lastStopAuto": "تلقائي"
   },
   "live": {
+    "scopeActive": "🎯 مسار للمحددين فقط ({{count}})",
+    "showAllCustomers": "كل الزبائن",
+    "showAllConfirm": {
+      "title": "عرض كل الزبائن؟",
+      "message": "سيتم إنهاء المسار الخاص بالزبائن المحددين فقط. بعد ذلك سيظهر جميع الزبائن مجددًا على الخريطة وفي المسار.",
+      "confirm": "عرض كل الزبائن"
+    },
     "newRoute": "🔀 مسار جديد",
     "reoptimizeRest": "🔄 أفضل ترتيب",
     "startMarker": "نقطة الانطلاق",
@@ -60,7 +67,15 @@
       "skipped": "{{count}} تم تخطيه",
       "duration": "المدة الإجمالية: {{duration}}"
     },
-    "actionsMenu": "الإجراءات · {{name}}"
+    "actionsMenu": "الإجراءات · {{name}}",
+    "actionCategories": {
+      "currentStop": "الزبون الحالي · {{name}}",
+      "currentStopHint": "الملاحة أو الإنهاء أو التخطي",
+      "routeOrder": "المسار والترتيب",
+      "routeOrderHint": "تعديل قائمة الزبائن وترتيبهم",
+      "settings": "إعدادات إضافية",
+      "settingsHint": "تحديد آخر زبون وتحديث الموقع"
+    }
   },
   "stopRow": {
     "arrival": "الوصول {{time}} / {{distance}} كم",

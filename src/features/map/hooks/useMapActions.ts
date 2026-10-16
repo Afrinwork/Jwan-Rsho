@@ -17,6 +17,7 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
   const shareIncludeAddress = useAppStore((state) => state.shareIncludeAddress);
   const shareIncludePhone = useAppStore((state) => state.shareIncludePhone);
   const shopName = useAppStore((state) => state.shopName);
+  const preferredNavigationApp = useAppStore((state) => state.preferredNavigationApp);
   const { products } = useProducts();
   const productEmojiById = useMemo(() => new Map(products.map((product) => [product.id, product.emoji])), [products]);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -66,11 +67,12 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
     try {
       setActionError(null);
       setActionSuccess(null);
-      await navigationService.openDefaultNavigation(buildNavigationTarget(details, marker));
+      // Opens the navigation app chosen in Settings directly.
+      await navigationService.openNavigationApp(preferredNavigationApp, buildNavigationTarget(details, marker));
     } catch (navigationError) {
       setActionError(formatError(navigationError).message);
     }
-  }, [details, marker, t]);
+  }, [details, marker, preferredNavigationApp, t]);
 
   const openNavigationApp = useCallback(async (appId: NavigationAppId) => {
     if (!details && !marker) {

@@ -13,8 +13,6 @@ import { SuccessState } from "@/src/components/ui/SuccessState";
 import { AppButton } from "@/src/components/ui/AppButton";
 import { CustomerOpenOrders, useOpenOrdersOverview } from "@/src/features/orders/hooks/useOpenOrdersOverview";
 import { OpenOrdersCustomerCard } from "@/src/features/orders/components/OpenOrdersCustomerCard";
-import { NavigationAppSheet } from "@/src/features/map/components/NavigationAppSheet";
-import { MapNavigationApp, NavigationAppId } from "@/src/features/map/types/mapTypes";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { geocodingService } from "@/src/services/geocodingService";
 import { navigationService } from "@/src/services/navigationService";
@@ -45,8 +43,6 @@ export function OpenOrdersScreen() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCustomerIds, setSelectedCustomerIds] = useState<Set<string>>(new Set());
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-  const [navigationApps, setNavigationApps] = useState<MapNavigationApp[] | null>(null);
-  const [navigationTargetAddress, setNavigationTargetAddress] = useState<string | null>(null);
 
   const filteredGroups = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -101,17 +97,8 @@ export function OpenOrdersScreen() {
       country: group.customer.country,
       region: group.customer.region,
     });
-    const apps = await navigationService.getNavigationApps({ address }, preferredNavigationApp);
-    setNavigationTargetAddress(address);
-    setNavigationApps(apps);
-  }
-
-  function handleSelectNavigationApp(appId: NavigationAppId) {
-    if (navigationTargetAddress) {
-      void navigationService.openNavigationApp(appId, { address: navigationTargetAddress });
-    }
-    setNavigationApps(null);
-    setNavigationTargetAddress(null);
+    // Opens the navigation app chosen in Settings directly.
+    await navigationService.openNavigationApp(preferredNavigationApp, { address });
   }
 
   if (loading) {
@@ -178,15 +165,6 @@ export function OpenOrdersScreen() {
         }}
         title={t("openOrders.deleteConfirmTitle")}
         visible={Boolean(deleteTarget)}
-      />
-      <NavigationAppSheet
-        apps={navigationApps ?? []}
-        onClose={() => {
-          setNavigationApps(null);
-          setNavigationTargetAddress(null);
-        }}
-        onSelect={handleSelectNavigationApp}
-        visible={navigationApps !== null}
       />
     </ScreenContainer>
   );

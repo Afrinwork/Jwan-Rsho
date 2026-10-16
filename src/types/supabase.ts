@@ -712,6 +712,10 @@ export type Database = {
         Args: { p_customer_id: string; p_driver_id: string }
         Returns: undefined
       }
+      complete_order: {
+        Args: { p_order_id: string }
+        Returns: undefined
+      }
       create_order_atomic: {
         Args: {
           p_customer_id: string

@@ -1,4 +1,3 @@
-import { MapDrive20Regular } from "@fluentui/react-native-icons";
 import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { mapT } from "@/src/features/map/i18n/mapT";
@@ -22,7 +21,6 @@ type SelectedCustomersBarProps = {
   previewOpenOrderCount?: number;
   loadingSelectionData?: boolean;
   onViewSelection: () => void;
-  onOpenRoute: () => void;
   onShare: () => void;
   onShareByEmail: () => void;
   onAssignDriver?: () => void;
@@ -36,6 +34,8 @@ type SelectedCustomersBarProps = {
   driverVisibilityMessage?: string | null;
   driverVisibilityError?: string | null;
   onDeleteSelected: () => void;
+  // Route only the selected customers, from the current position.
+  onStartTrip?: () => void;
   inline?: boolean;
 };
 
@@ -66,14 +66,17 @@ export function SelectedCustomersBar(props: SelectedCustomersBarProps) {
             {t("selectedBar.count", { count: props.selectedCount })} {open ? "^" : "v"}
           </AppText>
         </Pressable>
-        <Pressable
-          accessibilityLabel={t("selectedBar.route")}
-          onPress={props.onOpenRoute}
-          style={[styles.routeButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
-        >
-          <MapDrive20Regular color={colors.primary} />
-        </Pressable>
       </View>
+      {props.onStartTrip ? (
+        <View style={styles.startTrip}>
+          <AppButton
+            label={t("selectedBar.startTrip", { count: props.selectedCount })}
+            onPress={props.onStartTrip}
+            size="compact"
+            variant="danger"
+          />
+        </View>
+      ) : null}
       {props.shareError ? <ErrorState message={props.shareError} /> : null}
       {props.deleteError ? <ErrorState message={props.deleteError} /> : null}
       {props.driverVisibilityError ? <ErrorState message={props.driverVisibilityError} /> : null}
@@ -169,6 +172,7 @@ export function SelectedCustomersBar(props: SelectedCustomersBarProps) {
 }
 
 const styles = StyleSheet.create({
+  startTrip: { alignSelf: "stretch" },
   container: { gap: spacing.xs },
   inlineContainer: {
     flexBasis: "auto",
@@ -178,14 +182,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.xs,
-  },
-  routeButton: {
-    width: 36,
-    height: 36,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
   },
   dropdownChip: {
     alignSelf: "flex-start",

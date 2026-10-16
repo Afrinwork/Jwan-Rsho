@@ -57,17 +57,14 @@ export function SettingsScreen() {
           <FormField label={t("fields.newPassword")}>
             <AppInput onChangeText={settings.setNewPassword} secureTextEntry value={settings.newPassword} />
           </FormField>
-        </SettingsSection></AnimatedEntrance>
-        <AnimatedEntrance delay={150}><SettingsSection subtitle={t("theme.label")} title={t("sections.appearance")}>
-          <SettingsChoiceRow
-            label={t("theme.label")}
-            onChange={(value) => settings.setThemeMode(value as "system" | "light" | "dark")}
-            options={[
-              { label: t("theme.system"), value: "system" },
-              { label: t("theme.light"), value: "light" },
-              { label: t("theme.dark"), value: "dark" },
-            ]}
-            value={settings.themeMode}
+          {settings.passwordError ? <ErrorState message={settings.passwordError} /> : null}
+          {settings.passwordSuccess ? <SuccessState message={settings.passwordSuccess} /> : null}
+          <AppButton
+            disabled={!settings.newPassword.trim() || settings.changingPassword}
+            label={t("password.change")}
+            loading={settings.changingPassword}
+            onPress={() => void settings.changePassword()}
+            variant="secondary"
           />
         </SettingsSection></AnimatedEntrance>
         <AnimatedEntrance delay={165}><SettingsSection subtitle={t("language.restartHint")} title={t("sections.language")}>

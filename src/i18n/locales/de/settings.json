@@ -1,6 +1,9 @@
 {
   "loadingLabel": "Einstellungen werden geladen...",
-  "header": { "title": "Einstellungen", "subtitle": "Profil, Teilen und Navigation." },
+  "header": {
+    "title": "Einstellungen",
+    "subtitle": "Profil, Teilen und Navigation."
+  },
   "sections": {
     "profile": "Profil",
     "appearance": "Erscheinungsbild",
@@ -56,5 +59,10 @@
     "deleteAccountMessage": "Dein Konto und alle deine Daten (Kunden, Bestellungen und Einstellungen) werden endgueltig geloescht. Das kann nicht rueckgaengig gemacht werden.",
     "deleteAccountConfirm": "Endgueltig loeschen"
   },
-  "saveSuccess": "Die Einstellungen wurden gespeichert."
+  "saveSuccess": "Die Einstellungen wurden gespeichert.",
+  "password": {
+    "change": "Passwort jetzt ändern",
+    "success": "Passwort wurde geändert.",
+    "tooShort": "Das Passwort muss mindestens {{count}} Zeichen haben."
+  }
 }

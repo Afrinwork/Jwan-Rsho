@@ -13,7 +13,9 @@ import { AppMapViewHandle, LatLng } from "@/src/features/map/types/mapViewTypes"
 // style ever becomes unavailable, OpenFreeMap also publishes the same
 // OpenMapTiles-derived dataset as a self-hostable Docker image — only this
 // constant would need to change, nothing else in the app.
-const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
+// "positron": a light, muted base map -- calmer and more modern than
+// "liberty", and the colored customer pins stand out clearly on it.
+const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
 
 // MapLibre's Camera works in zoom levels, not lat/lng deltas — this is the
 // standard Web-Mercator approximation (doubling the visible span halves the

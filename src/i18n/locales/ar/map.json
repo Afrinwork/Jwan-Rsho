@@ -34,6 +34,12 @@
     "region": "المنطقة",
     "all": "الكل"
   },
+  "categories": {
+    "overview": "نظرة عامة",
+    "filters": "التصفية",
+    "selection": "التحديد",
+    "trip": "الرحلة"
+  },
   "selectionToolbar": {
     "drawingActive": "الرسم نشط",
     "drawPolygon": "رسم مضلع",
@@ -46,6 +52,7 @@
     "resume": "متابعة الرسم"
   },
   "selectedBar": {
+    "startTrip": "▶️ ابدأ الرحلة ({{count}})",
     "count": "تم تحديد {{count}} من الزبائن",
     "summary": "تم تحديد {{customers}} عميلاً · {{orders}} طلبات مفتوحة",
     "view": "عرض",

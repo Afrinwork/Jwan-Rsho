@@ -7,13 +7,11 @@ import { useTranslation } from "react-i18next";
 import { AppProviders } from "@/src/components/layout/AppProviders";
 import { AuthGate } from "@/src/components/layout/AuthGate";
 import { canAccessFullApp } from "@/src/features/auth/permissions";
-import { useAppTheme } from "@/src/hooks/useAppTheme";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { useAuthStore } from "@/src/store/authStore";
 import { typography } from "@/src/theme/typography";
 
 export default function RootLayout() {
-  const theme = useAppTheme();
   const colors = useThemeColors();
   const { t } = useTranslation("navigation");
   const currentUser = useAuthStore((state) => state.currentUser);
@@ -24,7 +22,7 @@ export default function RootLayout() {
   return (
     <AppProviders>
       <AuthGate>
-        <StatusBar style={theme === "dark" ? "light" : "dark"} />
+        <StatusBar style="dark" />
         {/* Keying on the uid forces a full remount on every account switch, so no
             screen can hold onto a customer/order id fetched under a previous
             account — a stale id like that gets denied by Firestore's ownerId
@@ -60,8 +58,7 @@ export default function RootLayout() {
             <Stack.Screen name="customer/[id]" options={{ title: t("stack.customer") }} />
             <Stack.Screen name="customer/edit/[id]" options={{ title: t("stack.customerEdit") }} />
             <Stack.Screen name="order/[id]" options={{ title: t("stack.order") }} />
-            <Stack.Screen name="map/route" options={{ title: t("stack.route") }} />
-            <Stack.Screen name="map/route/live" options={{ headerShown: false }} />
+            <Stack.Screen name="orders/completed" options={{ title: t("stack.completedOrders") }} />
             <Stack.Protected guard={isManager}>
               <Stack.Screen name="admin/create-user" options={{ title: t("stack.createUser") }} />
               <Stack.Screen name="admin/users" options={{ title: t("stack.deleteUsers") }} />

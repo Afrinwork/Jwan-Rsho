@@ -44,5 +44,7 @@ export const AppMapView = forwardRef<AppMapViewHandle, AppMapViewProps>(function
     },
   }));
 
-  return <MapView ref={mapRef} {...props} />;
+  // Muted base map without shop/POI clutter: a calmer, more modern look
+  // that lets the colored customer pins stand out.
+  return <MapView mapType="mutedStandard" ref={mapRef} showsPointsOfInterests={false} {...props} />;
 });

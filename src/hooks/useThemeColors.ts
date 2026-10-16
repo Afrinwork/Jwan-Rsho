@@ -1,7 +1,5 @@
-import { darkColors, lightColors } from "@/src/theme/colors";
-import { useAppTheme } from "@/src/hooks/useAppTheme";
+import { lightColors } from "@/src/theme/colors";
 
 export function useThemeColors() {
-  const theme = useAppTheme();
-  return theme === "dark" ? darkColors : lightColors;
+  return lightColors;
 }

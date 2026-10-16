@@ -10,7 +10,9 @@ import { formatError } from "@/src/utils/formatError";
 import { buildCompletedTodayEntries, filterCompletedTodayEntries } from "@/src/features/overview/services/completedTodayService";
 import { CompletedTodayEntry } from "@/src/features/overview/types/completedTodayTypes";
 
-export function useCompletedTodayOrders() {
+export type CompletedOrdersScope = "today" | "all";
+
+export function useCompletedTodayOrders(scope: CompletedOrdersScope = "today") {
   const { t } = useTranslation("overview");
   const [entries, setEntries] = useState<CompletedTodayEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +26,10 @@ export function useCompletedTodayOrders() {
   useEffect(() => {
     let cancelled = false;
 
-    const unsubscribe = orderDetailsRepository.subscribeToCompletedOrdersTodayWithItems(
+    const subscribe = scope === "all"
+      ? orderDetailsRepository.subscribeToAllCompletedOrdersWithItems.bind(orderDetailsRepository)
+      : orderDetailsRepository.subscribeToCompletedOrdersTodayWithItems.bind(orderDetailsRepository);
+    const unsubscribe = subscribe(
       (orders) => {
         void joinCustomers(orders);
       },
@@ -61,7 +66,7 @@ export function useCompletedTodayOrders() {
       cancelled = true;
       unsubscribe();
     };
-  }, []);
+  }, [scope]);
 
   const filteredEntries = useMemo(() => filterCompletedTodayEntries(entries, searchTerm), [entries, searchTerm]);
 

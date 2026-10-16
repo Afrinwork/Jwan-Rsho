@@ -53,5 +53,12 @@
     "deleteAllConfirmTitle": "حذف جميع الطلبات المُنجزة اليوم؟",
     "deleteAllConfirmMessage": "هل تريد حقًا حذف جميع الطلبات المُنجزة اليوم؟ سيبقى العملاء محفوظين.",
     "deleteAllPartialError": "تعذر حذف {{failedCount}} من أصل {{totalCount}} عناصر. تم تحديث القائمة."
+  },
+  "completedAll": {
+    "title": "جميع الطلبات المكتملة",
+    "count": "{{count}} طلب مكتمل · عند الوصول إلى 200 تُحذف أقدم 100 تلقائيًا",
+    "emptyMessage": "لا توجد طلبات مكتملة بعد.",
+    "deleteAllConfirmTitle": "حذف جميع الطلبات المكتملة؟",
+    "deleteAllConfirmMessage": "هل تريد حقًا حذف جميع الطلبات المكتملة نهائيًا؟ سيبقى العملاء محفوظين."
   }
 }

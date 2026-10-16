@@ -1,11 +1,11 @@
 import { colors } from "@/src/constants/colors";
+import { PIN_GREEN, PIN_YELLOW } from "@/src/features/map/constants/pinColors";
 
 // Fixed hex values (not theme tokens) — these mark a specific route/data
 // state on the map, not app chrome, so they must stay the same in light and
-// dark mode. PIN_IMPRECISE matches CustomerMarker's PIN_YELLOW so "no street
+// dark mode. PIN_YELLOW/PIN_GREEN are shared with CustomerMarker so "no street
 // address on file" means the same color everywhere in the app.
 const PIN_SKIPPED = "#F97316";
-const PIN_IMPRECISE = "#EAB308";
 const PIN_COMPLETED = "#6B7280";
 
 export type RouteStopMarkerStyleInput = {
@@ -44,8 +44,8 @@ export function resolveRouteStopMarkerStyle(input: RouteStopMarkerStyleInput): R
   }
 
   if (input.hasStreetAddress === false) {
-    return { backgroundColor: PIN_IMPRECISE, borderColor: colors.surface, opacity: 1, scale: 1 };
+    return { backgroundColor: PIN_YELLOW, borderColor: colors.surface, opacity: 1, scale: 1 };
   }
 
-  return { backgroundColor: colors.primary, borderColor: colors.surface, opacity: 1, scale: 1 };
+  return { backgroundColor: PIN_GREEN, borderColor: colors.surface, opacity: 1, scale: 1 };
 }

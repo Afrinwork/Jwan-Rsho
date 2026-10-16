@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { Marker } from "react-native-maps";
 
 import { colors } from "@/src/constants/colors";
+import { PIN_GREEN, PIN_SELECTED_BLACK, PIN_YELLOW } from "@/src/features/map/constants/pinColors";
 import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
 
 type CustomerMarkerProps = {
@@ -11,11 +12,6 @@ type CustomerMarkerProps = {
   onPress: () => void;
 };
 
-// Fixed hex values (not theme tokens) — these mark a specific data state on
-// the map, not app chrome, so they must stay the same in light and dark mode.
-const PIN_TEAL = "#0D9488";
-const PIN_YELLOW = "#EAB308";
-const PIN_SELECTED_GRAY = "#6B7280";
 
 // No native Callout here on purpose — tapping already opens the full detail
 // sheet (MapCustomerSheet, via onPress -> selectedCustomerId in MapScreen),
@@ -23,7 +19,7 @@ const PIN_SELECTED_GRAY = "#6B7280";
 // complete actions). A second, separate popup on top of that was redundant
 // and, on top of the camera-follow interaction on the live screen, flaky.
 function CustomerMarkerComponent({ marker, selected, onPress }: CustomerMarkerProps) {
-  const backgroundColor = selected ? PIN_SELECTED_GRAY : marker.hasStreetAddress === false ? PIN_YELLOW : PIN_TEAL;
+  const backgroundColor = selected ? PIN_SELECTED_BLACK : marker.hasStreetAddress === false ? PIN_YELLOW : PIN_GREEN;
 
   return (
     <Marker
@@ -50,6 +46,11 @@ const styles = StyleSheet.create({
     borderColor: colors.surface,
     alignItems: "center",
     justifyContent: "center",
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
   },
   pinSelected: {
     transform: [{ scale: 1.15 }],

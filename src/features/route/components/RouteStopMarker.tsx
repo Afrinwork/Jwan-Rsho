@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { Marker } from "react-native-maps";
 
 import { colors } from "@/src/constants/colors";
+import { PIN_SELECTED_BLACK } from "@/src/features/map/constants/pinColors";
 import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
 import { resolveRouteStopMarkerStyle } from "@/src/features/route/services/routeStopMarkerStyleService";
 
@@ -19,8 +20,11 @@ type RouteStopMarkerProps = {
   // Only meaningful together with inactive=true — see
   // routeStopMarkerStyleService for what this changes.
   skipped?: boolean;
+  // Picked with the map's selection tools (assign driver, share, ...).
+  selected?: boolean;
   onPress: (customerId: string) => void;
 };
+
 
 // No native Callout here on purpose — same reasoning as CustomerMarker (map
 // screen): tapping opens the full detail sheet instead, which has everything
@@ -29,7 +33,7 @@ type RouteStopMarkerProps = {
 // camera-follow re-animates the map on every GPS tick, and animating the map
 // is what dismisses an open Callout on both iOS and Android — it kept
 // closing itself right after being tapped open.
-function RouteStopMarkerComponent({ marker, label, active, inactive, skipped, onPress }: RouteStopMarkerProps) {
+function RouteStopMarkerComponent({ marker, label, active, inactive, skipped, selected, onPress }: RouteStopMarkerProps) {
   const style = resolveRouteStopMarkerStyle({ active, inactive, skipped, hasStreetAddress: marker.hasStreetAddress });
 
   return (
@@ -43,8 +47,8 @@ function RouteStopMarkerComponent({ marker, label, active, inactive, skipped, on
         style={[
           styles.pin,
           {
-            backgroundColor: style.backgroundColor,
-            borderColor: style.borderColor,
+            backgroundColor: selected ? PIN_SELECTED_BLACK : style.backgroundColor,
+            borderColor: selected ? colors.surface : style.borderColor,
             opacity: style.opacity,
             transform: [{ scale: style.scale }],
           },

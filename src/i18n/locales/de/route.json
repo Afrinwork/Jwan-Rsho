@@ -31,6 +31,13 @@
     "lastStopAuto": "Automatisch"
   },
   "live": {
+    "scopeActive": "🎯 Route nur für Auswahl ({{count}})",
+    "showAllCustomers": "Alle Kunden",
+    "showAllConfirm": {
+      "title": "Alle Kunden anzeigen?",
+      "message": "Die Route nur für die ausgewählten Kunden wird beendet. Danach werden wieder alle Kunden auf der Karte und in der Route angezeigt.",
+      "confirm": "Alle Kunden anzeigen"
+    },
     "newRoute": "🔀 Neue Route",
     "reoptimizeRest": "🔄 Beste Reihenfolge",
     "startMarker": "Startpunkt",
@@ -60,7 +67,15 @@
       "skipped": "{{count}} uebersprungen",
       "duration": "Gesamtdauer: {{duration}}"
     },
-    "actionsMenu": "Aktionen · {{name}}"
+    "actionsMenu": "Aktionen · {{name}}",
+    "actionCategories": {
+      "currentStop": "Aktueller Kunde · {{name}}",
+      "currentStopHint": "Navigieren, erledigen oder überspringen",
+      "routeOrder": "Route und Reihenfolge",
+      "routeOrderHint": "Kundenliste und Sortierung anpassen",
+      "settings": "Weitere Einstellungen",
+      "settingsHint": "Letzten Kunden und Standort festlegen"
+    }
   },
   "stopRow": {
     "arrival": "Ankunft {{time}} / {{distance}} km",

@@ -57,4 +57,37 @@ export const orderDetailsRepository = {
       this.getOrdersWithItems(orders).then(onChange).catch(onError);
     }, onError);
   },
+
+  // Same as above for the whole completed history (up to 200 orders), so
+  // items are fetched in a few batched queries instead of one per order.
+  subscribeToAllCompletedOrdersWithItems(
+    onChange: (orders: OrderWithItems[]) => void,
+    onError: (error: unknown) => void,
+  ) {
+    return orderRepository.subscribeToAllCompletedOrders((orders) => {
+      getItemsForOrders(orders).then(onChange).catch(onError);
+    }, onError);
+  },
 };
+
+const ITEM_BATCH_SIZE = 100;
+
+// The orders passed in are already owner/driver scoped by the query that
+// loaded them, so no per-order ownership check is needed here.
+async function getItemsForOrders(orders: Order[]): Promise<OrderWithItems[]> {
+  const itemsByOrderId = new Map<string, OrderItem[]>();
+
+  for (let index = 0; index < orders.length; index += ITEM_BATCH_SIZE) {
+    const ids = orders.slice(index, index + ITEM_BATCH_SIZE).map((value) => value.id);
+    const { data, error } = await requireSupabase().from("order_items").select("*").in("order_id", ids).order("sort_order");
+    if (error) throw error;
+    for (const row of data ?? []) {
+      const orderId = row.order_id as string;
+      const list = itemsByOrderId.get(orderId) ?? [];
+      list.push({ ...toCamelCase<OrderItem>(row), quantity: Number(row.quantity) });
+      itemsByOrderId.set(orderId, list);
+    }
+  }
+
+  return orders.map((value) => ({ ...value, items: itemsByOrderId.get(value.id) ?? [] }));
+}

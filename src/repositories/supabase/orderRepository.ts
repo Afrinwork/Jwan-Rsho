@@ -21,6 +21,17 @@ function isMissingColumnError(error: { code?: string }) {
   return error.code === "42703" || error.code === "PGRST204";
 }
 
+// Completed-order history cap: once this many completed orders are
+// stored, the oldest COMPLETED_ORDERS_PRUNE_COUNT are deleted for good.
+const COMPLETED_ORDERS_LIMIT = 200;
+const COMPLETED_ORDERS_PRUNE_COUNT = 100;
+
+// PostgREST not finding an RPC (PGRST202), or Postgres "undefined
+// function" (42883).
+function isMissingFunctionError(error: { code?: string }) {
+  return error.code === "PGRST202" || error.code === "42883";
+}
+
 function sortOrdersByDateDesc(orders: Order[], field: "orderedAt" | "completedAt" = "orderedAt") {
   return [...orders].sort((left, right) => (right[field] ?? "").localeCompare(left[field] ?? ""));
 }
@@ -178,14 +189,31 @@ export const orderRepository = {
 
   // Completing an order marks it "completed" with a completedAt
   // timestamp instead of deleting it, so it stays in the order history.
+  // Goes through the complete_order RPC (see supabase/migrations), which
+  // also lets the assigned driver complete it -- a driver's plain UPDATE is
+  // blocked by the owner-only orders_update policy -- and trims the
+  // completed history at 200.
   async completeOrder(id: string) {
     const order = await getOwnedOrder(id);
-    const timestamp = new Date().toISOString();
-    const { error } = await requireSupabase()
-      .from("orders")
-      .update({ status: "completed", completed_at: timestamp, updated_at: timestamp })
-      .eq("id", id);
-    if (error) throw error;
+    const { error } = await requireSupabase().rpc("complete_order", { p_order_id: id });
+
+    if (error && isMissingFunctionError(error)) {
+      // Database without the complete_order migration yet: owner-only direct
+      // update. `.select` makes a 0-row update (no permission) a real error
+      // instead of silently "succeeding" while the order stays open.
+      const timestamp = new Date().toISOString();
+      const { data, error: updateError } = await requireSupabase()
+        .from("orders")
+        .update({ status: "completed", completed_at: timestamp, updated_at: timestamp })
+        .eq("id", id)
+        .select("id");
+      if (updateError) throw updateError;
+      if (!data?.length) throw new Error("Order could not be completed.");
+      // Best-effort as well: trimming old history must never fail the completion.
+      await pruneCompletedOrders().catch(() => undefined);
+    } else if (error) {
+      throw error;
+    }
 
     await dailyCompletionTracker.recordCompletion();
     // Best-effort: the driver dashboard's live count is a nice-to-have,
@@ -198,42 +226,27 @@ export const orderRepository = {
   // Live view of today's completed orders (local calendar day), for the
   // Overview "Heute erledigt" section.
   subscribeToCompletedOrdersToday(onChange: (orders: Order[]) => void, onError: (error: unknown) => void) {
-    const client = requireSupabase();
-    const { ownerId } = resolveOwnerScope();
+    return subscribeToCompletedOrders("today", onChange, onError);
+  },
 
-    const fetchAndEmit = async () => {
-      try {
-        const { ownerId: scopedOwnerId, driverId } = resolveOwnerScope();
-        const { startIso, endIsoExclusive } = getLocalDayIsoRange();
-        let queryBuilder = requireSupabase()
-          .from("orders")
-          .select("*")
-          .eq("owner_id", scopedOwnerId)
-          .eq("status", "completed")
-          .gte("completed_at", startIso)
-          .lt("completed_at", endIsoExclusive);
-        if (driverId) queryBuilder = queryBuilder.eq("assigned_driver_id", driverId);
+  // Live view of the whole completed-order history (capped, see
+  // pruneCompletedOrders), for the "Erledigte Bestellungen" screen.
+  subscribeToAllCompletedOrders(onChange: (orders: Order[]) => void, onError: (error: unknown) => void) {
+    return subscribeToCompletedOrders("all", onChange, onError);
+  },
 
-        const { data, error } = await queryBuilder;
-        if (error) throw error;
-        onChange(sortOrdersByDateDesc((data ?? []).map((row) => toCamelCase<Order>(row)), "completedAt"));
-      } catch (error) {
-        onError(error);
-      }
-    };
+  async getCompletedOrdersCount() {
+    const { ownerId, driverId } = resolveOwnerScope();
+    let queryBuilder = requireSupabase()
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("owner_id", ownerId)
+      .eq("status", "completed");
+    if (driverId) queryBuilder = queryBuilder.eq("assigned_driver_id", driverId);
 
-    void fetchAndEmit();
-
-    // Unique per subscription instance -- see subscribeToOpenOrders above
-    // for why a topic shared across concurrent callers breaks.
-    const channel = client
-      .channel(`orders_completed_today:${ownerId}:${generateUuid()}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: `owner_id=eq.${ownerId}` }, () => void fetchAndEmit())
-      .subscribe();
-
-    return () => {
-      void client.removeChannel(channel);
-    };
+    const { count, error } = await queryBuilder;
+    if (error) throw error;
+    return count ?? 0;
   },
 
   // Deletes a single completed order (and its items, via ON DELETE
@@ -336,6 +349,79 @@ export const orderRepository = {
     });
   },
 };
+
+function subscribeToCompletedOrders(
+  scope: "today" | "all",
+  onChange: (orders: Order[]) => void,
+  onError: (error: unknown) => void,
+) {
+  const client = requireSupabase();
+  const { ownerId } = resolveOwnerScope();
+
+  const fetchAndEmit = async () => {
+    try {
+      const { ownerId: scopedOwnerId, driverId } = resolveOwnerScope();
+      let queryBuilder = requireSupabase()
+        .from("orders")
+        .select("*")
+        .eq("owner_id", scopedOwnerId)
+        .eq("status", "completed");
+      if (scope === "today") {
+        const { startIso, endIsoExclusive } = getLocalDayIsoRange();
+        queryBuilder = queryBuilder.gte("completed_at", startIso).lt("completed_at", endIsoExclusive);
+      }
+      if (driverId) queryBuilder = queryBuilder.eq("assigned_driver_id", driverId);
+
+      const { data, error } = await queryBuilder;
+      if (error) throw error;
+      onChange(sortOrdersByDateDesc((data ?? []).map((row) => toCamelCase<Order>(row)), "completedAt"));
+    } catch (error) {
+      onError(error);
+    }
+  };
+
+  void fetchAndEmit();
+
+  // Unique per subscription instance -- see subscribeToOpenOrders above
+  // for why a topic shared across concurrent callers breaks.
+  const channel = client
+    .channel(`orders_completed_${scope}:${ownerId}:${generateUuid()}`)
+    .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: `owner_id=eq.${ownerId}` }, () => void fetchAndEmit())
+    .subscribe();
+
+  return () => {
+    void client.removeChannel(channel);
+  };
+}
+
+// Keeps the completed-order history bounded: at COMPLETED_ORDERS_LIMIT
+// completed orders, the oldest COMPLETED_ORDERS_PRUNE_COUNT (by
+// completed_at) are deleted permanently, items included via ON DELETE CASCADE.
+async function pruneCompletedOrders() {
+  const { ownerId } = resolveOwnerScope();
+  const client = requireSupabase();
+  const { count, error: countError } = await client
+    .from("orders")
+    .select("id", { count: "exact", head: true })
+    .eq("owner_id", ownerId)
+    .eq("status", "completed");
+  if (countError) throw countError;
+  if ((count ?? 0) < COMPLETED_ORDERS_LIMIT) return;
+
+  const { data, error: selectError } = await client
+    .from("orders")
+    .select("id")
+    .eq("owner_id", ownerId)
+    .eq("status", "completed")
+    .order("completed_at", { ascending: true })
+    .limit(COMPLETED_ORDERS_PRUNE_COUNT);
+  if (selectError) throw selectError;
+
+  const ids = (data ?? []).map((row) => row.id as string);
+  if (ids.length === 0) return;
+  const { error: deleteError } = await client.from("orders").delete().in("id", ids).eq("status", "completed");
+  if (deleteError) throw deleteError;
+}
 
 async function deleteOrderById(id: string) {
   await getOwnedOrder(id);

@@ -22,6 +22,7 @@ export function buildCompletedTodayEntries(orders: OrderWithItems[], customers: 
       address: customer.address,
       completedAt: order.completedAt,
       itemCount: order.items.length,
+      items: order.items.map((item) => ({ name: item.productNameSnapshot, quantity: item.quantity, unit: item.unit })),
     });
   }
 

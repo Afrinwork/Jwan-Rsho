@@ -6,4 +6,5 @@ export type CompletedTodayEntry = {
   address: string;
   completedAt: string;
   itemCount: number;
+  items: { name: string; quantity: number; unit: string }[];
 };

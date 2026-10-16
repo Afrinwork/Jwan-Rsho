@@ -53,5 +53,12 @@
     "deleteAllConfirmTitle": "Alle heute erledigten Bestellungen loeschen?",
     "deleteAllConfirmMessage": "Moechtest du wirklich alle heute erledigten Bestellungen loeschen? Die Kunden bleiben gespeichert.",
     "deleteAllPartialError": "{{failedCount}} von {{totalCount}} Eintraegen konnten nicht geloescht werden. Die Liste wurde aktualisiert."
+  },
+  "completedAll": {
+    "title": "Alle erledigten Bestellungen",
+    "count": "{{count}} erledigt · bei 200 werden die ältesten 100 automatisch gelöscht",
+    "emptyMessage": "Noch keine erledigten Bestellungen.",
+    "deleteAllConfirmTitle": "Alle erledigten Bestellungen löschen?",
+    "deleteAllConfirmMessage": "Möchtest du wirklich alle erledigten Bestellungen endgültig löschen? Die Kunden bleiben gespeichert."
   }
 }

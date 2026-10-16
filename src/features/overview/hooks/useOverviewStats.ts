@@ -6,7 +6,6 @@ import { customerRepository } from "@/src/repositories/customerRepository";
 import { orderRepository } from "@/src/repositories/orderRepository";
 import { productRepository } from "@/src/repositories/productRepository";
 import { userRepository } from "@/src/repositories/userRepository";
-import { dailyCompletionTracker } from "@/src/services/dailyCompletionTracker.switch";
 import { Country } from "@/src/types/country";
 import { Customer } from "@/src/types/customer";
 import { Order } from "@/src/types/order";
@@ -42,15 +41,15 @@ export function useOverviewStats() {
 
   const load = useCallback(async () => {
     try {
-      // Completed orders are deleted immediately (see orderRepository.completeOrder),
-      // so "completed" is tracked separately as a rolling 24h count that resets on its own.
+      // Completed orders stay in the history (capped at 200, see orderRepository),
+      // so the card shows the same count as the completed-orders list it opens.
       const [customers, openOrders, countries, products, drivers, completedOrders] = await Promise.all([
         customerRepository.getCustomers(),
         orderRepository.getOpenOrders(),
         countryRepository.getCountries(),
         productRepository.getProducts(),
         userRepository.getOwnDrivers().catch(() => []),
-        dailyCompletionTracker.getCount(),
+        orderRepository.getCompletedOrdersCount(),
       ]);
 
       setStats({ ...buildOverviewStats(customers, openOrders, countries, products), completedOrders, drivers: drivers.length });

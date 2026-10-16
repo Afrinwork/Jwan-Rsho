@@ -34,6 +34,12 @@
     "region": "Region",
     "all": "Alle"
   },
+  "categories": {
+    "overview": "Übersicht",
+    "filters": "Filter",
+    "selection": "Auswahl",
+    "trip": "Tour"
+  },
   "selectionToolbar": {
     "drawingActive": "Malen aktiv",
     "drawPolygon": "Polygon malen",
@@ -46,6 +52,7 @@
     "resume": "Weiter zeichnen"
   },
   "selectedBar": {
+    "startTrip": "▶️ Fahrt starten ({{count}})",
     "count": "{{count}} Kunden ausgewaehlt",
     "summary": "{{customers}} Kunden ausgewaehlt · {{orders}} offene Bestellungen",
     "view": "Ansehen",

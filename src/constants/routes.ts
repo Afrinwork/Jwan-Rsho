@@ -16,6 +16,7 @@ export const routes = {
   managementWhatsapp: "/management/whatsapp",
   managementDebts: "/management/debts",
   managementDriverMap: "/management/driver-map",
+  completedOrders: "/orders/completed",
   customerEditBase: "/customer/edit",
   settings: "/(tabs)/settings",
   adminUsers: "/admin/users",

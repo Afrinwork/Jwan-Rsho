@@ -2,19 +2,22 @@ import { useCallback, useEffect, useState } from "react";
 
 import { AppError } from "@/src/errors/AppError";
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
-import { applyLanguage, AppLanguage } from "@/src/i18n/languageController";
+import { AppLanguage } from "@/src/i18n/languageController";
 import { i18next } from "@/src/i18n/i18n";
 import { defaultAppPreferences, useAppStore } from "@/src/store/appStore";
 import { userPreferencesRepository } from "@/src/repositories/userPreferencesRepository";
 import { formatError } from "@/src/utils/formatError";
 
-// Keeps the actually-rendered app language (i18next + native RTL flag) in
-// sync with `language` — a no-op when it already matches, so this never
-// forces an unnecessary reload.
-function syncLanguage(language: AppLanguage) {
-  if (language !== i18next.language) {
-    void applyLanguage(language);
-  }
+// The language is a per-device choice (cached locally by applyLanguage and
+// restored by bootstrapLanguage), so preferences never override it here --
+// the store just mirrors whatever language the app is actually showing.
+function currentLanguage(): AppLanguage {
+  return i18next.language === "de" ? "de" : "ar";
+}
+
+function resetPreferencesKeepingLanguage(resetPreferences: () => void) {
+  resetPreferences();
+  useAppStore.getState().setLanguage(currentLanguage());
 }
 
 export function useUserPreferences() {
@@ -28,11 +31,7 @@ export function useUserPreferences() {
     setLoading(true);
 
     if (!user) {
-      resetPreferences();
-      // A signed-out device (e.g. after logout on a shared device) has no
-      // user-specific language anymore — fall back to the app default
-      // instead of leaving whatever language the previous session left on.
-      syncLanguage(defaultAppPreferences.language);
+      resetPreferencesKeepingLanguage(resetPreferences);
       setError(null);
       setLoading(false);
       return;
@@ -42,10 +41,9 @@ export function useUserPreferences() {
       const preferences = await userPreferencesRepository.getPreferences();
 
       if (preferences) {
-        const language = preferences.language ?? "ar";
         hydratePreferences({
-          themeMode: preferences.themeMode,
-          language,
+          themeMode: "light",
+          language: currentLanguage(),
           preferredNavigationApp: preferences.preferredNavigationApp,
           shopName: preferences.shopName ?? "",
           shareIncludeAddress: preferences.shareIncludeAddress,
@@ -55,13 +53,8 @@ export function useUserPreferences() {
           whatsappTemplateAr: preferences.whatsappTemplateAr ?? defaultAppPreferences.whatsappTemplateAr,
           whatsappComponents: preferences.whatsappComponents ?? defaultAppPreferences.whatsappComponents,
         });
-
-        // Keeps this device in sync with a language chosen on another
-        // device.
-        syncLanguage(language);
       } else {
-        resetPreferences();
-        syncLanguage(defaultAppPreferences.language);
+        resetPreferencesKeepingLanguage(resetPreferences);
       }
 
       setError(null);
@@ -70,8 +63,7 @@ export function useUserPreferences() {
       // that is an expected transitional state, not a real error, so it's handled
       // here without going through formatError()'s (noisy, dev-only) console.error.
       if (value instanceof AppError && value.code === "auth/unauthenticated") {
-        resetPreferences();
-        syncLanguage(defaultAppPreferences.language);
+        resetPreferencesKeepingLanguage(resetPreferences);
       } else {
         setError(formatError(value).message);
       }
