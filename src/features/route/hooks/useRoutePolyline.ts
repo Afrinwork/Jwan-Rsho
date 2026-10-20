@@ -67,7 +67,7 @@ export function useRoutePolyline(origin: RouteLatLng | null, orderedPoints: Rout
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!origin || !orderedPoints.length) {
-      setState(origin ? { ...EMPTY_STATE, coordinates: [origin] } : EMPTY_STATE);
+      setState(EMPTY_STATE);
       return;
     }
 
@@ -92,8 +92,10 @@ export function useRoutePolyline(origin: RouteLatLng | null, orderedPoints: Rout
       if (cancelled) return;
 
       const firstLeg = result.legs[0] ?? null;
+      // Only a real road geometry is drawn — never a straight line between
+      // stops, which looked like a route but wasn't one.
       setState({
-        coordinates: result.coordinates.length ? result.coordinates : [origin!, ...orderedPoints],
+        coordinates: result.coordinates,
         currentLegEta: firstLeg ? new Date(etaAnchorMs + firstLeg.durationSec * 1000) : straightLineFallback.currentLegEta,
         currentLegDurationMinutes: firstLeg
           ? Math.round(firstLeg.durationSec / 60)
@@ -126,7 +128,6 @@ export function useRoutePolyline(origin: RouteLatLng | null, orderedPoints: Rout
       if (!cancelled) {
         setState({
           ...EMPTY_STATE,
-          coordinates: [origin, ...orderedPoints],
           ...straightLineFallback,
           etaById: toEtaById(buildFallbackLegs({ ...origin, label: "" }, orderedPoints), etaAnchorMs),
         });

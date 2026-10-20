@@ -1,11 +1,11 @@
 import { ReactNode, forwardRef, useImperativeHandle, useRef } from "react";
 import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import { Camera, CameraRef, Map, MapRef } from "@maplibre/maplibre-react-native";
+import { Camera, CameraRef, Map, MapRef, type StyleSpecification } from "@maplibre/maplibre-react-native";
 
 import { UserLocationDot } from "@/src/features/map/components/UserLocationDot.android";
 import { boundsFromCoordinates } from "@/src/features/map/utils/geoBounds";
-import { AppMapViewHandle, LatLng } from "@/src/features/map/types/mapViewTypes";
+import { AppMapViewHandle, LatLng, MapStyleKind } from "@/src/features/map/types/mapViewTypes";
 
 // Free, no-API-key vector style (OpenFreeMap "Liberty") — this is the whole
 // point of this file existing instead of react-native-maps' Google-Maps-on-
@@ -15,7 +15,52 @@ import { AppMapViewHandle, LatLng } from "@/src/features/map/types/mapViewTypes"
 // constant would need to change, nothing else in the app.
 // "positron": a light, muted base map -- calmer and more modern than
 // "liberty", and the colored customer pins stand out clearly on it.
-const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
+const LIGHT_STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
+// "liberty": the colorful street map, closest to Apple's/Google's standard look.
+const STANDARD_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
+
+// Satellite imagery has no free vector style, so these two are raster styles
+// over Esri's public World Imagery tiles (no key needed); "hybrid" adds Esri's
+// road and place-name overlay on top, like Apple's/Google's hybrid map.
+const ESRI_TILES = "https://server.arcgisonline.com/ArcGIS/rest/services";
+const ESRI_ATTRIBUTION = "Esri, Maxar, Earthstar Geographics";
+
+function rasterSource(service: string) {
+  return {
+    type: "raster" as const,
+    tiles: [`${ESRI_TILES}/${service}/MapServer/tile/{z}/{y}/{x}`],
+    tileSize: 256,
+    maxzoom: 19,
+    attribution: ESRI_ATTRIBUTION,
+  };
+}
+
+const SATELLITE_STYLE: StyleSpecification = {
+  version: 8,
+  sources: { imagery: rasterSource("World_Imagery") },
+  layers: [{ id: "imagery", type: "raster", source: "imagery" }],
+};
+
+const HYBRID_STYLE: StyleSpecification = {
+  version: 8,
+  sources: {
+    imagery: rasterSource("World_Imagery"),
+    roads: rasterSource("Reference/World_Transportation"),
+    places: rasterSource("Reference/World_Boundaries_and_Places"),
+  },
+  layers: [
+    { id: "imagery", type: "raster", source: "imagery" },
+    { id: "roads", type: "raster", source: "roads" },
+    { id: "places", type: "raster", source: "places" },
+  ],
+};
+
+const MAP_STYLES: Record<MapStyleKind, string | StyleSpecification> = {
+  light: LIGHT_STYLE_URL,
+  standard: STANDARD_STYLE_URL,
+  satellite: SATELLITE_STYLE,
+  hybrid: HYBRID_STYLE,
+};
 
 // MapLibre's Camera works in zoom levels, not lat/lng deltas — this is the
 // standard Web-Mercator approximation (doubling the visible span halves the
@@ -46,6 +91,7 @@ type AppMapViewProps = {
   // we render a plain marker ourselves from location data the screen already
   // has (see UserLocationDot.android.tsx).
   userLocationCoordinate?: LatLng | null;
+  mapStyleKind?: MapStyleKind;
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;
 };
@@ -62,6 +108,7 @@ export const AppMapView = forwardRef<AppMapViewHandle, AppMapViewProps>(function
     showsCompass,
     showsUserLocation,
     userLocationCoordinate,
+    mapStyleKind = "light",
     style,
     children,
   },
@@ -115,7 +162,7 @@ export const AppMapView = forwardRef<AppMapViewHandle, AppMapViewProps>(function
       <Map
         compass={showsCompass}
         dragPan={scrollEnabled}
-        mapStyle={MAP_STYLE_URL}
+        mapStyle={MAP_STYLES[mapStyleKind]}
         onRegionDidChange={(event) => {
           if (!onRegionChangeComplete) return;
           const { center, zoom } = event.nativeEvent;

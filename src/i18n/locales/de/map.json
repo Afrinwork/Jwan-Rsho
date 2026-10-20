@@ -115,7 +115,7 @@
     "assignDriver": "Fahrer zuweisen",
     "skipStop": "Diesen Stopp ueberspringen",
     "skipConfirmTitle": "Stopp ueberspringen?",
-    "skipConfirmMessage": "Dieser Stopp wird uebersprungen und es geht mit dem naechsten weiter. Der Kunde und seine Bestellung bleiben erhalten, du kannst spaeter erneut vorbeifahren.",
+    "skipConfirmMessage": "Dieser Kunde wird übersprungen und ans Ende der Route gesetzt. Er bleibt offen (orange markiert), seine Bestellung bleibt erhalten.",
     "reactivateStop": "Diesen Stopp wieder aktivieren"
   },
   "driverAssignSheet": {
@@ -171,5 +171,14 @@
     "noOpenOrder": "Keine offene Bestellung",
     "note": "Notiz: {{note}}",
     "defaultSubject": "Kundenauswahl"
+  },
+  "mapStyle": {
+    "title": "Kartenart",
+    "hint": "Wie die Karte aussehen soll",
+    "light": "Schlicht",
+    "standard": "Standard",
+    "satellite": "Satellit",
+    "hybrid": "Hybrid",
+    "recenter": "Zu meinem Standort"
   }
 }

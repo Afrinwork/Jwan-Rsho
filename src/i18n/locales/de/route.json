@@ -49,7 +49,7 @@
       "distance": "km"
     },
     "markComplete": "Als erledigt markieren",
-    "skip": "Ueberspringen",
+    "skip": "Überspringen (bleibt offen)",
     "skipToStop": "Bis hier überspringen",
     "fullNavigationFallback": "Funktioniert die Navigation nicht? In Google Maps oeffnen (alle Kunden)",
     "fullNavigationFallbackShort": "Google Maps",
@@ -74,8 +74,11 @@
       "routeOrder": "Route und Reihenfolge",
       "routeOrderHint": "Kundenliste und Sortierung anpassen",
       "settings": "Weitere Einstellungen",
-      "settingsHint": "Letzten Kunden und Standort festlegen"
-    }
+      "settingsHint": "Letzten Kunden festlegen, Fahrt beenden",
+      "departure": "Abfahrtszeit",
+      "departureHint": "Ankunftszeiten ab dieser Uhrzeit, {{minutes}} Min. pro Kunde"
+    },
+    "departureNow": "Jetzt losfahren"
   },
   "stopRow": {
     "arrival": "Ankunft {{time}} / {{distance}} km",

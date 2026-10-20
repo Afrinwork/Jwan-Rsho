@@ -8,6 +8,7 @@ import { useRouteLiveNavigation } from "@/src/features/route/hooks/useRouteLiveN
 import { useRouteOrder } from "@/src/features/route/hooks/useRouteOrder";
 import { useRoutePolyline } from "@/src/features/route/hooks/useRoutePolyline";
 import { activeTripStorage } from "@/src/features/route/services/activeTripStorage";
+import { TripStartLocation } from "@/src/features/route/services/activeTripStorage.shared";
 import { buildCumulativeStops, buildFallbackLegs, STOP_SERVICE_BUFFER_SEC } from "@/src/features/route/services/routeDirectionsService";
 import { fetchRoadDistanceMatrix, RouteDistanceMatrix } from "@/src/features/route/services/routeDistanceMatrixService";
 import { insertMarkersAfterAnchor } from "@/src/features/route/services/routeLiveReorderService";
@@ -15,6 +16,7 @@ import { moveIdToPosition, reorderKnownInPlace } from "@/src/features/route/serv
 import { presetRouteOrder } from "@/src/features/route/services/routeSortModeService";
 import { alternativeRouteOrder, optimizedRemainingOrder } from "@/src/features/route/services/routeVariantService";
 import { RouteOrigin } from "@/src/features/route/types/routeTypes";
+import { parseTimeInput } from "@/src/features/route/utils/routeFormat";
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 
 // Remaining km/duration/ETA are recalculated from the live position only
@@ -22,7 +24,8 @@ import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 const LIVE_ORIGIN_MIN_METERS = 500;
 // The road-following line and its timings cover the next stops only: one
 // Directions request (Google's waypoint limit) instead of one per 23 stops
-// on every recalculation. Arrival times further out are estimated.
+// on every recalculation. Arrival times further out are estimated, and no
+// line is drawn past these stops (never a straight line between customers).
 const ROAD_ROUTE_STOP_LIMIT = 23;
 // "New route" tries this many variants for one that differs from the
 // current order — only runs out with a single possible order.
@@ -40,6 +43,10 @@ export type TripResortKind = "optimize" | "variant" | "nearest" | "farthest" | "
 //
 // "Start trip" on a drawn selection narrows the trip to those customers
 // (scope); the others stay on the map, just not on the route.
+//
+// The numbered stops are there from the start, but the route line only once
+// the trip is started — until then the driver can still pick the start point
+// and the departure time the planned arrival times are based on.
 export function useMapTrip(mapMarkers: MapCustomerMarker[], ready: boolean, fallbackOrigin: LatLng | null) {
   const currentUser = useCurrentUser();
   const userId = currentUser?.uid ?? null;
@@ -60,6 +67,12 @@ export function useMapTrip(mapMarkers: MapCustomerMarker[], ready: boolean, fall
   // null until the first order is decided (stored trip or a fresh sort).
   const [orderIds, setOrderIds] = useState<string[] | null>(null);
   const [lastStopId, setLastStopId] = useState<string | null>(null);
+  const [started, setStarted] = useState(false);
+  const [startedAt, setStartedAt] = useState<Date | null>(null);
+  // null = start from the GPS position.
+  const [startLocation, setStartLocation] = useState<TripStartLocation | null>(null);
+  // "HH:MM" German time, null = leave now.
+  const [departureTime, setDepartureTime] = useState<string | null>(null);
   const orderedMarkers = useMemo(
     () => (orderIds ?? []).map((id) => markerById.get(id)).filter((marker) => marker !== undefined),
     [orderIds, markerById],
@@ -93,6 +106,10 @@ export function useMapTrip(mapMarkers: MapCustomerMarker[], ready: boolean, fall
       if (stored?.scopeIds) setScopeIds(stored.scopeIds);
       const byId = new Map(markers.map((marker) => [marker.id, marker]));
       if (stored) {
+        setStarted(Boolean(stored.started));
+        if (stored.started) setStartedAt(new Date());
+        setStartLocation(stored.startLocation ?? null);
+        setDepartureTime(stored.departureTime ?? null);
         const kept = stored.orderedIds.map((id) => byId.get(id)).filter((marker) => marker !== undefined);
         const keptIds = new Set(kept.map((marker) => marker.id));
         const fresh = markers.filter((marker) => !keptIds.has(marker.id));
@@ -126,6 +143,8 @@ export function useMapTrip(mapMarkers: MapCustomerMarker[], ready: boolean, fall
   // Starting a trip for a selection (or going back to every customer):
   // a fresh trip — nearest first from where the driver is, nothing done or
   // skipped yet, no pinned last stop.
+  // A selection trip starts right away ("Start trip" on the selection);
+  // going back to every customer is a plan again until started.
   function changeScope(nextScopeIds: string[] | null) {
     const scope = nextScopeIds ? new Set(nextScopeIds) : null;
     const markers = scope ? mapMarkers.filter((marker) => scope.has(marker.id)) : mapMarkers;
@@ -134,7 +153,37 @@ export function useMapTrip(mapMarkers: MapCustomerMarker[], ready: boolean, fall
     lastStopIdRef.current = null;
     variantIndexRef.current = 0;
     restoreNavigation({ handledIds: [], skippedIds: [] });
-    setOrderIds(nearestFirst(markers, live.coordinate ?? startOrigin));
+    setOrderIds(nearestFirst(markers, startLocation ?? live.coordinate ?? startOrigin));
+    setStarted(nextScopeIds !== null);
+    setStartedAt(nextScopeIds !== null ? new Date() : null);
+  }
+
+  function startTrip() {
+    setStarted(true);
+    setStartedAt(new Date());
+  }
+
+  function endTrip() {
+    setStarted(false);
+    setStartedAt(null);
+  }
+
+  // Skipping keeps the customer open: it moves to the end of the route
+  // (before a pinned last stop) and is marked on the map.
+  function skipStop(customerId: string | null = currentStopId) {
+    if (!customerId) return;
+    navigation.markSkipped(customerId);
+    const pendingIds = navigation.pendingMarkers.map((marker) => marker.id);
+    if (pendingIds.length > 1 && pendingIds.includes(customerId)) {
+      applyPendingOrder([...pendingIds.filter((id) => id !== customerId), customerId]);
+    }
+  }
+
+  // A new start point re-sorts the stops nearest-first from there (before
+  // the trip is started; mid-drive the order is left alone).
+  function chooseStartLocation(location: TripStartLocation | null) {
+    setStartLocation(location);
+    if (!started) resort("nearest", location ?? live.coordinate ?? fallbackOrigin);
   }
 
   // New order of the remaining stops; done/skipped ones stay in front.
@@ -194,8 +243,11 @@ export function useMapTrip(mapMarkers: MapCustomerMarker[], ready: boolean, fall
       handledIds: [...navigation.handledIds],
       skippedIds: [...navigation.skippedIds],
       scopeIds,
+      started,
+      startLocation,
+      departureTime,
     });
-  }, [userId, orderKey, navigation.handledIds, navigation.skippedIds, scopeIds]);
+  }, [userId, orderKey, navigation.handledIds, navigation.skippedIds, scopeIds, started, startLocation, departureTime]);
 
   // Mirrors the driver's trip for their admin (driver map): remaining stops
   // in driving order and the next one.
@@ -207,21 +259,24 @@ export function useMapTrip(mapMarkers: MapCustomerMarker[], ready: boolean, fall
   }, [isCurrentUserDriver, orderIds, pendingKey, currentStopId, saveTrip]);
 
   // Remaining km/duration/ETA from where the driver actually is, refreshed
-  // every LIVE_ORIGIN_MIN_METERS of movement.
+  // every LIVE_ORIGIN_MIN_METERS of movement. Before the trip is started, a
+  // chosen start point and departure time replace GPS position and "now".
   const liveAnchor = useMovementAnchor(live.coordinate, LIVE_ORIGIN_MIN_METERS);
-  const remainingRouteOrigin = liveAnchor?.coordinate ?? navigation.legOrigin ?? startOrigin;
+  const planningFromChosenStart = !started && startLocation !== null;
+  const remainingRouteOrigin = planningFromChosenStart
+    ? navigation.legOrigin ?? startLocation
+    : liveAnchor?.coordinate ?? navigation.legOrigin ?? startOrigin;
   const [openedAt] = useState(() => new Date());
-  const etaAnchor = liveAnchor?.at ?? openedAt;
+  const plannedDeparture = useMemo(() => (departureTime ? parseTimeInput(departureTime) : null), [departureTime]);
+  const etaAnchor = started ? liveAnchor?.at ?? startedAt ?? openedAt : plannedDeparture ?? liveAnchor?.at ?? openedAt;
   const nearStops = useMemo(() => navigation.pendingMarkers.slice(0, ROAD_ROUTE_STOP_LIMIT), [navigation.pendingMarkers]);
   const farStops = useMemo(() => navigation.pendingMarkers.slice(ROAD_ROUTE_STOP_LIMIT), [navigation.pendingMarkers]);
   const polyline = useRoutePolyline(remainingRouteOrigin, nearStops, etaAnchor);
 
-  // Stops past the road-routed ones: straight line on the map, estimated
-  // arrival continuing from the last road-routed stop.
-  const lineCoordinates = useMemo(
-    () => [...polyline.coordinates, ...farStops.map((marker) => ({ latitude: marker.latitude, longitude: marker.longitude }))],
-    [polyline.coordinates, farStops],
-  );
+  // The line follows the roads and is only shown once the trip is started.
+  // Stops past the road-routed ones get no line, only an estimated arrival
+  // continuing from the last road-routed stop.
+  const lineCoordinates = started ? polyline.coordinates : [];
   const etaById = useMemo(() => {
     const lastNear = nearStops.at(-1);
     const lastEta = lastNear ? polyline.etaById.get(lastNear.id) : undefined;
@@ -240,8 +295,8 @@ export function useMapTrip(mapMarkers: MapCustomerMarker[], ready: boolean, fall
     pendingIdsRef.current = navigation.pendingMarkers.map((marker) => marker.id);
   });
 
-  async function resort(kind: TripResortKind) {
-    const from = live.coordinate ?? remainingRouteOrigin;
+  async function resort(kind: TripResortKind, fromOverride?: LatLng | null) {
+    const from = fromOverride ?? (planningFromChosenStart ? startLocation : live.coordinate) ?? remainingRouteOrigin;
     const points = navigation.pendingMarkers;
     if (!from || points.length < 2) return;
 
@@ -285,6 +340,14 @@ export function useMapTrip(mapMarkers: MapCustomerMarker[], ready: boolean, fall
     remainingRouteOrigin,
     lastStopId,
     resorting,
+    started,
+    startLocation,
+    departureTime,
+    startTrip,
+    endTrip,
+    skipStop,
+    chooseStartLocation,
+    chooseDepartureTime: setDepartureTime,
     // Number of customers the trip is narrowed to, null = all on the map.
     scopeCount: scopeIds ? stopMarkers.length : null,
     startForSelection: (customerIds: string[]) => changeScope(customerIds),

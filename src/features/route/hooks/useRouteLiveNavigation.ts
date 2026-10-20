@@ -15,10 +15,9 @@ export function useRouteLiveNavigation(
   initialState?: { handledIds: string[]; skippedIds: string[] },
 ) {
   const [handledIds, setHandledIds] = useState<Set<string>>(() => new Set(initialState?.handledIds));
-  // Subset of handledIds that were skipped rather than completed — an order
-  // that couldn't be delivered still needs to stay visibly distinct on the
-  // map (see RouteStopMarker/routeStopMarkerStyleService) so the driver
-  // knows which stops still need a revisit vs. which are actually done.
+  // Skipped stops — NOT in handledIds: a skipped customer stays open and on
+  // the route, only marked on the map (see RouteStopMarker/
+  // routeStopMarkerStyleService) so the driver knows it still needs a visit.
   const [skippedIds, setSkippedIds] = useState<Set<string>>(() => new Set(initialState?.skippedIds));
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const [completingArrival, setCompletingArrival] = useState(false);
@@ -57,6 +56,12 @@ export function useRouteLiveNavigation(
       const orders = await orderDetailsRepository.getOpenOrdersWithItemsByCustomerIds([currentMarker.id]);
       await Promise.all(orders.map((order) => orderRepository.completeOrder(order.id)));
       setHandledIds((current) => new Set(current).add(currentMarker.id));
+      setSkippedIds((current) => {
+        if (!current.has(currentMarker.id)) return current;
+        const next = new Set(current);
+        next.delete(currentMarker.id);
+        return next;
+      });
       setLegOrigin({ latitude: currentMarker.latitude, longitude: currentMarker.longitude });
       return true;
     } catch (error) {
@@ -72,49 +77,30 @@ export function useRouteLiveNavigation(
     setDismissedIds((current) => new Set(current).add(currentMarker.id));
   }, [currentMarker]);
 
-  // Deliberately does NOT touch legOrigin, unlike confirmArrival above — a
-  // skipped stop was never actually visited, so the remaining route must
-  // keep departing from wherever it already was (the last stop actually
-  // completed, or the original start) straight to the next pending stop,
-  // not from the skipped stop's own address. E.g. skipping stop 2 of
-  // 1→2→3 must route 1→3 directly, not 2→3.
-  const skipStop = useCallback(() => {
-    if (!currentMarker) return;
-    setHandledIds((current) => new Set(current).add(currentMarker.id));
-    setSkippedIds((current) => new Set(current).add(currentMarker.id));
-  }, [currentMarker]);
-
-  // Brings back the completed/skipped stops of a trip stored on the device,
-  // once that has loaded (the map keeps its trip from the first render on).
-  const restore = useCallback((state: { handledIds: string[]; skippedIds: string[] }) => {
-    setHandledIds(new Set(state.handledIds));
-    setSkippedIds(new Set(state.skippedIds));
-  }, []);
-
-  const skipToMarker = useCallback((customerId: string) => {
-    const targetIndex = markers.findIndex((marker) => marker.id === customerId);
-    if (targetIndex === -1) return;
-    const skippedOver = markers.slice(0, targetIndex).map((marker) => marker.id);
-
-    setHandledIds((current) => {
-      const next = new Set(current);
-      skippedOver.forEach((id) => next.add(id));
-      next.delete(customerId);
-      return next;
-    });
-    setSkippedIds((current) => {
-      const next = new Set(current);
-      skippedOver.forEach((id) => next.add(id));
-      next.delete(customerId);
-      return next;
-    });
+  // A skipped customer stays OPEN: still pending, just marked (orange) so the
+  // driver sees it still needs a visit. Moving it to the end of the route is
+  // the caller's job (useMapTrip owns the order). Deliberately does NOT touch
+  // legOrigin, unlike confirmArrival above — a skipped stop was never
+  // visited, so the route keeps departing from where it already was.
+  const markSkipped = useCallback((customerId: string) => {
+    setSkippedIds((current) => new Set(current).add(customerId));
     setDismissedIds((current) => {
       if (!current.has(customerId)) return current;
       const next = new Set(current);
       next.delete(customerId);
       return next;
     });
-  }, [markers]);
+  }, []);
+
+  // Brings back the completed/skipped stops of a trip stored on the device,
+  // once that has loaded (the map keeps its trip from the first render on).
+  // Trips stored before skipping kept stops open counted skipped ones as
+  // handled — those come back as open.
+  const restore = useCallback((state: { handledIds: string[]; skippedIds: string[] }) => {
+    const skipped = new Set(state.skippedIds);
+    setHandledIds(new Set(state.handledIds.filter((id) => !skipped.has(id))));
+    setSkippedIds(skipped);
+  }, []);
 
   // Undoes a skip/complete — removes the stop from handledIds so it becomes
   // pending again. Non-destructive by design (never touches the underlying
@@ -143,12 +129,11 @@ export function useRouteLiveNavigation(
   return {
     currentMarker,
     pendingMarkers,
-    // Completed/skipped stop ids — the map marker for these stays visible
-    // (never removed), just rendered muted/inactive instead of the normal
+    // Completed stop ids — the map marker for these stays visible (never
+    // removed), just rendered muted/inactive instead of the normal
     // upcoming-stop color.
     handledIds,
-    // Subset of handledIds that were skipped, not completed — see
-    // RouteStopMarker's `skipped` prop.
+    // Skipped stops — still pending (open), see RouteStopMarker's `skipped` prop.
     skippedIds,
     legOrigin,
     distanceToCurrentKm,
@@ -160,8 +145,7 @@ export function useRouteLiveNavigation(
     progressTotal: markers.length,
     confirmArrival,
     dismissArrival,
-    skipStop,
-    skipToMarker,
+    markSkipped,
     restore,
     reactivateStop,
   };

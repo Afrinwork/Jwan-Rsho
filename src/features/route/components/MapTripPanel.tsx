@@ -11,10 +11,13 @@ import { useDriverLiveStatus } from "@/src/features/map/hooks/useDriverLiveStatu
 import { RouteLastStopDropdown } from "@/src/features/route/components/RouteLastStopDropdown";
 import { RouteMoveStopDialog } from "@/src/features/route/components/RouteMoveStopDialog";
 import { RouteReorderSheet } from "@/src/features/route/components/RouteReorderSheet";
+import { RouteTimeDropdown } from "@/src/features/route/components/RouteTimeDropdown";
 import { TripActionDockButton } from "@/src/features/route/components/TripActionDockButton";
 import { TripActionMenu } from "@/src/features/route/components/TripActionMenu";
+import { TripStartLocationDialog } from "@/src/features/route/components/TripStartLocationDialog";
 import { useMapTrip } from "@/src/features/route/hooks/useMapTrip";
 import { routeT } from "@/src/features/route/i18n/routeT";
+import { STOP_SERVICE_BUFFER_SEC } from "@/src/features/route/services/routeDirectionsService";
 import { formatDistanceKm, formatDurationHM, formatEtaTime } from "@/src/features/route/utils/routeFormat";
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 import { navigationService } from "@/src/services/navigationService";
@@ -22,7 +25,14 @@ import { useAppStore } from "@/src/store/appStore";
 import { spacing } from "@/src/theme/spacing";
 
 type MapTripPanelProps = { trip: ReturnType<typeof useMapTrip> };
-type ActionSection = "stop" | "order" | "settings";
+type ActionSection = "stop" | "order" | "departure" | "settings";
+
+const QUARTER_HOUR_MS = 15 * 60 * 1000;
+
+// The departure picker offers 15-minute steps; "now" preselects the next one.
+function nextQuarterHour() {
+  return formatEtaTime(new Date(Math.ceil(Date.now() / QUARTER_HOUR_MS) * QUARTER_HOUR_MS));
+}
 
 export function MapTripPanel({ trip }: MapTripPanelProps) {
   const t = routeT;
@@ -35,6 +45,7 @@ export function MapTripPanel({ trip }: MapTripPanelProps) {
   const [showAllConfirmVisible, setShowAllConfirmVisible] = useState(false);
   const [reorderSheetVisible, setReorderSheetVisible] = useState(false);
   const [moveStopId, setMoveStopId] = useState<string | null>(null);
+  const [startLocationVisible, setStartLocationVisible] = useState(false);
 
   const stopNumberById = useMemo(
     () => new Map(trip.orderedMarkers.map((marker, index) => [marker.id, index + 1])),
@@ -47,7 +58,7 @@ export function MapTripPanel({ trip }: MapTripPanelProps) {
     id: marker.id,
     name: `${stopNumberById.get(marker.id) ?? "?"}. ${marker.title}`,
   }));
-  const hasSettings = pendingCount > 1 || isCurrentUserDriver;
+  const hasSettings = pendingCount > 1 || isCurrentUserDriver || trip.started;
 
   if (!trip.ready || (!trip.orderedMarkers.length && trip.scopeCount === null)) return null;
 
@@ -85,6 +96,28 @@ export function MapTripPanel({ trip }: MapTripPanelProps) {
     if (!current || !openSection) return null;
     const close = () => setOpenSection(null);
 
+    if (openSection === "departure") {
+      return (
+        <TripActionMenu
+          icon="clock-outline"
+          onClose={close}
+          subtitle={t("live.actionCategories.departureHint", { minutes: STOP_SERVICE_BUFFER_SEC / 60 })}
+          title={t("live.actionCategories.departure")}
+        >
+          <AppButton
+            label={t("live.departureNow")}
+            onPress={() => { close(); trip.chooseDepartureTime(null); }}
+            size="compact"
+            variant={trip.departureTime ? "secondary" : "primary"}
+          />
+          <View style={styles.lastStopRow}>
+            <AppText color="muted" variant="label">{t("startCard.departureTimeLabel")}</AppText>
+            <RouteTimeDropdown onChange={trip.chooseDepartureTime} value={trip.departureTime ?? nextQuarterHour()} />
+          </View>
+        </TripActionMenu>
+      );
+    }
+
     if (openSection === "stop") {
       return (
         <TripActionMenu
@@ -94,7 +127,7 @@ export function MapTripPanel({ trip }: MapTripPanelProps) {
           title={t("live.actionCategories.currentStop", { name: `${stopNumberById.get(current.id) ?? ""}. ${current.title}` })}
         >
           <AppButton label={t("live.markComplete")} loading={navigation.completingArrival} onPress={() => { close(); void navigation.confirmArrival(); }} size="compact" />
-          <AppButton label={t("live.skip")} onPress={() => { close(); navigation.skipStop(); }} size="compact" variant="secondary" />
+          <AppButton label={t("live.skip")} onPress={() => { close(); trip.skipStop(); }} size="compact" variant="secondary" />
           <AppButton
             label={t("live.fullNavigationFallbackShort")}
             onPress={() => {
@@ -146,6 +179,9 @@ export function MapTripPanel({ trip }: MapTripPanelProps) {
             variant="secondary"
           />
         ) : null}
+        {trip.started ? (
+          <AppButton label={t("live.endNavigation")} onPress={() => { close(); trip.endTrip(); }} size="compact" variant="secondary" />
+        ) : null}
       </TripActionMenu>
     );
   }
@@ -162,22 +198,46 @@ export function MapTripPanel({ trip }: MapTripPanelProps) {
             <AppCard contentStyle={styles.doneCard} style={styles.statsDock}>
               <AppText variant="subheading">{t("live.allDone")}</AppText>
               <AppText color="muted" variant="caption">
-                {t("live.summary.completed", { count: navigation.handledIds.size - navigation.skippedIds.size })}
-                {" · "}
-                {t("live.summary.skipped", { count: navigation.skippedIds.size })}
+                {t("live.summary.completed", { count: navigation.handledIds.size })}
               </AppText>
             </AppCard>
             {trip.scopeCount !== null ? <View style={styles.iconRail}>{scopeButton()}</View> : null}
           </View>
         ) : (
           <View style={styles.dockRow}>
-            <AppCard contentStyle={styles.statsCard} style={styles.statsDock}>
-              <Stat label={t("live.stats.arrival")} value={polyline.currentLegEta ? formatEtaTime(polyline.currentLegEta) : "--:--"} />
-              <Stat label={t("live.stats.duration")} value={polyline.currentLegDurationMinutes !== null ? formatDurationHM(polyline.currentLegDurationMinutes) : "--"} />
-              <Stat label={t("live.stats.distance")} value={polyline.currentLegDistanceKm !== null ? formatDistanceKm(polyline.currentLegDistanceKm) : "--"} />
-            </AppCard>
+            <View style={styles.statsDock}>
+              <AppCard contentStyle={styles.statsCard}>
+                <Stat label={t("live.stats.arrival")} value={polyline.currentLegEta ? formatEtaTime(polyline.currentLegEta) : "--:--"} />
+                <Stat label={t("live.stats.duration")} value={polyline.currentLegDurationMinutes !== null ? formatDurationHM(polyline.currentLegDurationMinutes) : "--"} />
+                <Stat label={t("live.stats.distance")} value={polyline.currentLegDistanceKm !== null ? formatDistanceKm(polyline.currentLegDistanceKm) : "--"} />
+              </AppCard>
+              {/* The route line appears on the map only after this. */}
+              {!trip.started ? (
+                <AppButton label={t("startCard.startButton")} onPress={() => { setOpenSection(null); trip.startTrip(); }} />
+              ) : null}
+            </View>
             <View style={styles.iconRail}>
               {scopeButton()}
+              {/* Before the start: when and from where. */}
+              {!trip.started ? (
+                <>
+                  <TripActionDockButton
+                    active={openSection === "departure" || trip.departureTime !== null}
+                    icon="clock-outline"
+                    label={t("live.actionCategories.departure")}
+                    onPress={() => toggleSection("departure")}
+                  />
+                  <TripActionDockButton
+                    active={startLocationVisible || trip.startLocation !== null}
+                    icon="map-marker-radius-outline"
+                    label={t("startCard.title")}
+                    onPress={() => {
+                      setOpenSection(null);
+                      setStartLocationVisible(true);
+                    }}
+                  />
+                </>
+              ) : null}
               <TripActionDockButton active={openSection === "stop"} icon="map-marker-check-outline" label={t("live.actionCategories.currentStop", { name: current.title })} onPress={() => toggleSection("stop")} />
               {/* The customer list with drag-to-reorder, one tap away — not
                   only from inside the "order" menu. */}
@@ -203,6 +263,12 @@ export function MapTripPanel({ trip }: MapTripPanelProps) {
         )}
       </View>
 
+      <TripStartLocationDialog
+        onChange={trip.chooseStartLocation}
+        onClose={() => setStartLocationVisible(false)}
+        value={trip.startLocation}
+        visible={startLocationVisible}
+      />
       <RouteReorderSheet
         currentStopId={current?.id ?? null}
         etaById={trip.etaById}
@@ -259,7 +325,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 const styles = StyleSheet.create({
   panel: { gap: spacing.sm },
   dockRow: { alignItems: "flex-end", flexDirection: "row", gap: spacing.sm },
-  statsDock: { flex: 1 },
+  statsDock: { flex: 1, gap: spacing.xs },
   statsCard: { flexDirection: "row", justifyContent: "space-around", paddingHorizontal: spacing.xs, paddingVertical: spacing.sm },
   statColumn: { alignItems: "center", flex: 1, gap: 2 },
   iconRail: { gap: spacing.xs },

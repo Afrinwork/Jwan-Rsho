@@ -1,8 +1,15 @@
 import { forwardRef, ReactNode, useImperativeHandle, useRef } from "react";
 import { StyleProp, ViewStyle } from "react-native";
-import MapView, { Region } from "react-native-maps";
+import MapView, { MapType, Region } from "react-native-maps";
 
-import { AppMapViewHandle, LatLng } from "@/src/features/map/types/mapViewTypes";
+import { AppMapViewHandle, LatLng, MapStyleKind } from "@/src/features/map/types/mapViewTypes";
+
+const MAP_TYPES: Record<MapStyleKind, MapType> = {
+  light: "mutedStandard",
+  standard: "standard",
+  satellite: "satellite",
+  hybrid: "hybrid",
+};
 
 // iOS/default implementation — a thin passthrough to react-native-maps
 // (Apple Maps on iOS). See AppMapView.android.tsx for the MapLibre/OpenFreeMap
@@ -22,12 +29,13 @@ type AppMapViewProps = {
   // reliable on this app's RN version — see AppMapView.android.tsx). Unused
   // here since react-native-maps' showsUserLocation above already covers it.
   userLocationCoordinate?: LatLng | null;
+  mapStyleKind?: MapStyleKind;
   style?: StyleProp<ViewStyle>;
   children?: ReactNode;
 };
 
 export const AppMapView = forwardRef<AppMapViewHandle, AppMapViewProps>(function AppMapView(
-  { userLocationCoordinate: _userLocationCoordinate, ...props },
+  { userLocationCoordinate: _userLocationCoordinate, mapStyleKind = "light", ...props },
   ref,
 ) {
   const mapRef = useRef<MapView | null>(null);
@@ -44,7 +52,16 @@ export const AppMapView = forwardRef<AppMapViewHandle, AppMapViewProps>(function
     },
   }));
 
-  // Muted base map without shop/POI clutter: a calmer, more modern look
-  // that lets the colored customer pins stand out.
-  return <MapView mapType="mutedStandard" ref={mapRef} showsPointsOfInterests={false} {...props} />;
+  // "light" (the default) is the muted base map without shop/POI clutter: a
+  // calmer look that lets the colored customer pins stand out. The map always
+  // stays light, like the rest of the app, regardless of the phone's dark mode.
+  return (
+    <MapView
+      mapType={MAP_TYPES[mapStyleKind]}
+      ref={mapRef}
+      showsPointsOfInterests={mapStyleKind !== "light"}
+      userInterfaceStyle="light"
+      {...props}
+    />
+  );
 });

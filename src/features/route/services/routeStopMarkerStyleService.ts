@@ -13,9 +13,8 @@ export type RouteStopMarkerStyleInput = {
   // Already completed or skipped — stays on the map (never removed), just
   // rendered muted so it visually recedes behind the upcoming stops.
   inactive?: boolean;
-  // Only meaningful together with inactive=true: distinguishes "couldn't be
-  // completed, still needs a revisit" from "done" — both stay on the map,
-  // but a driver needs to tell them apart at a glance.
+  // Skipped, still open: "couldn't be delivered yet, still needs a visit" —
+  // the driver needs to tell it apart from done and untouched stops.
   skipped?: boolean;
   // City-only address (no street on file) — same imprecise-location signal
   // as the plain customer map, shown as its own color so it stands out.
@@ -37,10 +36,14 @@ export function resolveRouteStopMarkerStyle(input: RouteStopMarkerStyleInput): R
     return { backgroundColor: colors.danger, borderColor: colors.dangerBorder, opacity: 1, scale: 1.15 };
   }
 
+  // Skipped = still open, so fully visible — just orange so it stands out
+  // as "still needs a visit".
+  if (input.skipped) {
+    return { backgroundColor: PIN_SKIPPED, borderColor: colors.surface, opacity: 1, scale: 1 };
+  }
+
   if (input.inactive) {
-    return input.skipped
-      ? { backgroundColor: PIN_SKIPPED, borderColor: colors.surface, opacity: 0.85, scale: 1 }
-      : { backgroundColor: PIN_COMPLETED, borderColor: colors.surface, opacity: 0.6, scale: 1 };
+    return { backgroundColor: PIN_COMPLETED, borderColor: colors.surface, opacity: 0.6, scale: 1 };
   }
 
   if (input.hasStreetAddress === false) {

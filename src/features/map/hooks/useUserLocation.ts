@@ -144,8 +144,11 @@ export function useUserLocation(): UserLocationState {
     };
   }, [hasPermission]);
 
+  // No isLoading reset here: the map screen swaps itself for a loading view
+  // while isLoading is true, which remounted the map and threw it back to
+  // the GPS position every time the app came back from the background.
+  // Only the very first load shows the loading view.
   const reload = useCallback(async () => {
-    setIsLoading(true);
     await loadLocation();
   }, [loadLocation]);
 

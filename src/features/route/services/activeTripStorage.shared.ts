@@ -2,6 +2,8 @@
 // app in the background (common on Android while Google Maps navigates):
 // on the next start the driver lands back in the same trip instead of on the
 // start screen with every completed/skipped stop forgotten.
+export type TripStartLocation = { latitude: number; longitude: number; label: string };
+
 export type StoredActiveTrip = {
   userId: string;
   // Remaining route in driving order (mid-drive re-sorts/additions included).
@@ -11,6 +13,13 @@ export type StoredActiveTrip = {
   // Set when the trip was started for a drawn selection only; absent =
   // every customer on the map is part of the trip.
   scopeIds?: string[] | null;
+  // "Start trip" was tapped: only then is the route line drawn on the map.
+  started?: boolean;
+  // Chosen start point instead of the GPS position; absent = GPS.
+  startLocation?: TripStartLocation | null;
+  // Chosen departure time ("HH:MM", German time) for the planned arrival
+  // times before the trip starts; absent = now.
+  departureTime?: string | null;
   savedAt: string;
 };
 

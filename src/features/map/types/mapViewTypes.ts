@@ -1,6 +1,13 @@
 export type LatLng = { latitude: number; longitude: number };
 
-export type EdgePadding = { top: number; right: number; bottom: number; left: number };
+// The base map look the driver picks on the map screen. Same four choices on
+// iOS (Apple Maps map types) and Android (MapLibre styles), so a driver
+// switching phones finds the same map.
+export type MapStyleKind = "light" | "standard" | "satellite" | "hybrid";
+
+export const MAP_STYLE_KINDS: MapStyleKind[] = ["light", "standard", "satellite", "hybrid"];
+
+export type EdgePadding ={ top: number; right: number; bottom: number; left: number };
 
 // The three imperative camera calls the app actually makes today (see
 // MapScreen.tsx and RouteLiveScreen.tsx) — kept minimal and shaped to match

@@ -21,6 +21,7 @@ import { MapCustomerSheet } from "@/src/features/map/components/MapCustomerSheet
 import { MapCategoryBar, type MapCategory } from "@/src/features/map/components/MapCategoryBar";
 import { MapFilters } from "@/src/features/map/components/MapFilters";
 import { MapSelectionToolbar } from "@/src/features/map/components/MapSelectionToolbar";
+import { MapStyleRail } from "@/src/features/map/components/MapStyleRail";
 import { MapToolbar } from "@/src/features/map/components/MapToolbar";
 import { PolygonDrawOverlay } from "@/src/features/map/components/PolygonDrawOverlay";
 import { PolygonSelectionOverlay } from "@/src/features/map/components/PolygonSelectionOverlay";
@@ -34,6 +35,7 @@ import { useMapCustomerDetails } from "@/src/features/map/hooks/useMapCustomerDe
 import { useMapCustomers } from "@/src/features/map/hooks/useMapCustomers";
 import { useMapCustomerSelection } from "@/src/features/map/hooks/useMapCustomerSelection";
 import { useMapFilters } from "@/src/features/map/hooks/useMapFilters";
+import { useMapStyleKind } from "@/src/features/map/hooks/useMapStyleKind";
 import { mapClusteringService } from "@/src/features/map/services/mapClusteringService";
 import { useUserLocation } from "@/src/features/map/hooks/useUserLocation";
 import { MapTripPanel } from "@/src/features/route/components/MapTripPanel";
@@ -66,6 +68,7 @@ export function MapScreen() {
   const [assignmentCustomerIds, setAssignmentCustomerIds] = useState<string[] | null>(null);
   const [activeCategory, setActiveCategory] = useState<MapCategory | null>(null);
   const { error, hasPermission, isLoading, region, reload } = useUserLocation();
+  const mapStyleKind = useMapStyleKind((state) => state.kind);
   const {
     error: customersError,
     isLoading: customersLoading,
@@ -104,10 +107,8 @@ export function MapScreen() {
   const trip = useMapTrip(filteredMarkers, !customersLoading, hasPermission ? region : null);
   const tripNavigation = trip.navigation;
   const isSelectedCurrentStop = selectedCustomerId !== null && selectedCustomerId === tripNavigation.currentMarker?.id;
-  const isSelectedPendingFutureStop =
-    selectedCustomerId !== null &&
-    !isSelectedCurrentStop &&
-    tripNavigation.pendingMarkers.some((marker) => marker.id === selectedCustomerId);
+  const isSelectedPendingStop =
+    selectedCustomerId !== null && tripNavigation.pendingMarkers.some((marker) => marker.id === selectedCustomerId);
   const canReactivateSelected = selectedCustomerId !== null && tripNavigation.handledIds.has(selectedCustomerId);
   const [skipConfirmVisible, setSkipConfirmVisible] = useState(false);
   const selectedCount = customerSelection.selection.selectedIds.length;
@@ -282,6 +283,7 @@ export function MapScreen() {
       <View style={styles.screen}>
       <AppMapView
         initialRegion={region}
+        mapStyleKind={mapStyleKind}
         onRegionChangeComplete={setVisibleRegion}
         onPanDrag={(event) => {
           if (customerSelection.selection.activeTool === "polygon") {
@@ -338,7 +340,7 @@ export function MapScreen() {
       </AppMapView>
 
       <SafeAreaView edges={["top"]} pointerEvents="box-none" style={styles.topOverlay}>
-        <View style={styles.topOverlayContent}>
+        <View pointerEvents="box-none" style={styles.topOverlayContent}>
           <AnimatedEntrance>
             <MapCategoryBar
               activeCategory={activeCategory}
@@ -429,6 +431,13 @@ export function MapScreen() {
             </View>
           </AnimatedEntrance>
           ) : null}
+          {!drawingSelection ? (
+            <MapStyleRail
+              onRecenter={hasPermission
+                ? () => mapRef.current?.animateToRegion({ latitude: region.latitude, longitude: region.longitude, latitudeDelta: 0.05, longitudeDelta: 0.05 })
+                : undefined}
+            />
+          ) : null}
         </View>
       </SafeAreaView>
 
@@ -492,8 +501,8 @@ export function MapScreen() {
               }
             : undefined
         }
-        onSkip={isSelectedCurrentStop || isSelectedPendingFutureStop ? () => setSkipConfirmVisible(true) : undefined}
-        onSkipLabel={isSelectedPendingFutureStop ? routeT("live.skipToStop") : undefined}
+        onSkip={isSelectedPendingStop ? () => setSkipConfirmVisible(true) : undefined}
+        onSkipLabel={isSelectedPendingStop ? routeT("live.skip") : undefined}
         visible={selectedCustomerId !== null && !completeConfirmVisible && !skipConfirmVisible && !tripNavigation.arrivalPromptVisible}
       />
       <ConfirmDialog
@@ -503,9 +512,8 @@ export function MapScreen() {
           setSkipConfirmVisible(false);
           const customerId = selectedCustomerId;
           setSelectedCustomerId(null);
-          if (!customerId) return;
-          if (customerId === tripNavigation.currentMarker?.id) tripNavigation.skipStop();
-          else tripNavigation.skipToMarker(customerId);
+          // Only this one customer: it stays open and moves to the end.
+          if (customerId) trip.skipStop(customerId);
         }}
         title={actionT("sheet.skipConfirmTitle")}
         visible={skipConfirmVisible}

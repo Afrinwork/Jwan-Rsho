@@ -17,6 +17,12 @@ test("a skipped stop gets its own color, distinct from a completed one", () => {
   assert.equal(skipped.backgroundColor, "#F97316");
 });
 
+test("a skipped stop that is still open is orange and fully visible", () => {
+  const style = resolveRouteStopMarkerStyle({ active: false, skipped: true, hasStreetAddress: true });
+  assert.equal(style.backgroundColor, "#F97316");
+  assert.equal(style.opacity, 1);
+});
+
 test("inactive (completed or skipped) wins over an imprecise address", () => {
   const style = resolveRouteStopMarkerStyle({ active: false, inactive: true, skipped: true, hasStreetAddress: false });
   assert.equal(style.backgroundColor, "#F97316");
@@ -29,10 +35,10 @@ test("a pending stop with no street address gets the imprecise-location color", 
 
 test("a normal pending stop with a street address gets the default color", () => {
   const style = resolveRouteStopMarkerStyle({ active: false, hasStreetAddress: true });
-  assert.equal(style.backgroundColor, "#111111");
+  assert.equal(style.backgroundColor, "#16A34A");
 });
 
 test("hasStreetAddress undefined behaves like a normal address (matches CustomerMarker's convention)", () => {
   const style = resolveRouteStopMarkerStyle({ active: false });
-  assert.equal(style.backgroundColor, "#111111");
+  assert.equal(style.backgroundColor, "#16A34A");
 });
