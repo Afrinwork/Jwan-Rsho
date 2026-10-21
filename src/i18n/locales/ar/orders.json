@@ -15,6 +15,10 @@
   "customerSection": {
     "title": "العميل"
   },
+  "driverSection": {
+    "title": "السائق",
+    "none": "بدون تعيين"
+  },
   "details": {
     "noOrderSelected": "لم يتم اختيار طلب.",
     "loading": "جارٍ تحميل الطلب...",

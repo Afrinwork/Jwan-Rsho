@@ -179,11 +179,11 @@ export function useMapTrip(mapMarkers: MapCustomerMarker[], ready: boolean, fall
     }
   }
 
-  // A new start point re-sorts the stops nearest-first from there (before
-  // the trip is started; mid-drive the order is left alone).
+  // A new start point re-sorts the stops nearest-first from there (until the
+  // first stop is done; mid-drive the order is left alone).
   function chooseStartLocation(location: TripStartLocation | null) {
     setStartLocation(location);
-    if (!started) resort("nearest", location ?? live.coordinate ?? fallbackOrigin);
+    if (!started || navigation.legOrigin === null) resort("nearest", location ?? live.coordinate ?? fallbackOrigin);
   }
 
   // New order of the remaining stops; done/skipped ones stay in front.
@@ -261,14 +261,21 @@ export function useMapTrip(mapMarkers: MapCustomerMarker[], ready: boolean, fall
   // Remaining km/duration/ETA from where the driver actually is, refreshed
   // every LIVE_ORIGIN_MIN_METERS of movement. Before the trip is started, a
   // chosen start point and departure time replace GPS position and "now".
+  // A started trip also departs from the chosen start point until the first
+  // stop is done — only then does the driver's GPS position take over.
   const liveAnchor = useMovementAnchor(live.coordinate, LIVE_ORIGIN_MIN_METERS);
-  const planningFromChosenStart = !started && startLocation !== null;
+  const planningFromChosenStart = startLocation !== null && (!started || navigation.legOrigin === null);
   const remainingRouteOrigin = planningFromChosenStart
     ? navigation.legOrigin ?? startLocation
     : liveAnchor?.coordinate ?? navigation.legOrigin ?? startOrigin;
   const [openedAt] = useState(() => new Date());
   const plannedDeparture = useMemo(() => (departureTime ? parseTimeInput(departureTime) : null), [departureTime]);
-  const etaAnchor = started ? liveAnchor?.at ?? startedAt ?? openedAt : plannedDeparture ?? liveAnchor?.at ?? openedAt;
+  // Like the start point, a chosen departure time also holds for a started
+  // trip until the first stop is done.
+  const departFromPlannedTime = plannedDeparture !== null && (!started || navigation.legOrigin === null);
+  const etaAnchor = departFromPlannedTime
+    ? plannedDeparture
+    : started ? liveAnchor?.at ?? startedAt ?? openedAt : liveAnchor?.at ?? openedAt;
   const nearStops = useMemo(() => navigation.pendingMarkers.slice(0, ROAD_ROUTE_STOP_LIMIT), [navigation.pendingMarkers]);
   const farStops = useMemo(() => navigation.pendingMarkers.slice(ROAD_ROUTE_STOP_LIMIT), [navigation.pendingMarkers]);
   const polyline = useRoutePolyline(remainingRouteOrigin, nearStops, etaAnchor);

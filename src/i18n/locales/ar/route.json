@@ -76,6 +76,8 @@
       "settings": "إعدادات إضافية",
       "settingsHint": "تحديد آخر زبون وإنهاء الرحلة",
       "departure": "وقت الانطلاق",
+      "startAndTime": "مكان ووقت الانطلاق",
+      "allActions": "كل الإجراءات",
       "departureHint": "أوقات الوصول من هذا الوقت، {{minutes}} دقائق لكل زبون"
     },
     "departureNow": "الانطلاق الآن"

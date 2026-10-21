@@ -114,12 +114,14 @@ export function MapScreen() {
   const selectedCount = customerSelection.selection.selectedIds.length;
   const pendingTripCount = tripNavigation.pendingMarkers.length;
   // Customers on the map that aren't on the route right now (the trip was
-  // started for a drawn selection): plain pins, no number.
+  // started for a drawn selection): plain pins, no number. Hidden while the
+  // trip is started so only the route's stops remain; "all customers" ends
+  // the started state and brings them back.
   const offRouteMarkers = useMemo(() => {
-    if (!trip.ready) return [];
+    if (!trip.ready || trip.started) return [];
     const onRoute = new Set(trip.orderedMarkers.map((marker) => marker.id));
     return filteredMarkers.filter((marker) => !onRoute.has(marker.id));
-  }, [trip.ready, trip.orderedMarkers, filteredMarkers]);
+  }, [trip.ready, trip.started, trip.orderedMarkers, filteredMarkers]);
 
   function startTripForSelection() {
     trip.startForSelection(customerSelection.selection.selectedIds);
@@ -443,10 +445,11 @@ export function MapScreen() {
 
       <View pointerEvents="box-none" style={[styles.bottomOverlay, { bottom: insets.bottom + TAB_BAR_CLEARANCE }]}>
         {/* Also with the selection tools open: after drawing, the trip and its
-            list button stay at hand. */}
-        {!drawingSelection && (activeCategory === "trip" || activeCategory === "selection") ? (
-          <View style={styles.tripPanel}>
-            <MapTripPanel trip={trip} />
+            list button stay at hand. Otherwise only the actions button shows,
+            right from opening the map. */}
+        {!drawingSelection ? (
+          <View pointerEvents="box-none" style={styles.tripPanel}>
+            <MapTripPanel railOnly={activeCategory !== "trip" && activeCategory !== "selection"} trip={trip} />
           </View>
         ) : null}
         <PolygonDrawOverlay

@@ -15,6 +15,10 @@
   "customerSection": {
     "title": "Kunde"
   },
+  "driverSection": {
+    "title": "Fahrer",
+    "none": "Keine Zuweisung"
+  },
   "details": {
     "noOrderSelected": "Es wurde keine Bestellung ausgewaehlt.",
     "loading": "Bestellung wird geladen...",

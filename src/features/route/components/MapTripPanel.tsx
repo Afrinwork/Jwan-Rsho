@@ -24,7 +24,9 @@ import { navigationService } from "@/src/services/navigationService";
 import { useAppStore } from "@/src/store/appStore";
 import { spacing } from "@/src/theme/spacing";
 
-type MapTripPanelProps = { trip: ReturnType<typeof useMapTrip> };
+// railOnly: just the actions button (and the menu it opens), without the
+// trip stats — shown on the map before "my trip" is opened.
+type MapTripPanelProps = { trip: ReturnType<typeof useMapTrip>; railOnly?: boolean };
 type ActionSection = "stop" | "order" | "departure" | "settings";
 
 const QUARTER_HOUR_MS = 15 * 60 * 1000;
@@ -34,7 +36,7 @@ function nextQuarterHour() {
   return formatEtaTime(new Date(Math.ceil(Date.now() / QUARTER_HOUR_MS) * QUARTER_HOUR_MS));
 }
 
-export function MapTripPanel({ trip }: MapTripPanelProps) {
+export function MapTripPanel({ trip, railOnly = false }: MapTripPanelProps) {
   const t = routeT;
   const isCurrentUserDriver = isDriver(useCurrentUser());
   const preferredNavigationApp = useAppStore((state) => state.preferredNavigationApp);
@@ -46,6 +48,7 @@ export function MapTripPanel({ trip }: MapTripPanelProps) {
   const [reorderSheetVisible, setReorderSheetVisible] = useState(false);
   const [moveStopId, setMoveStopId] = useState<string | null>(null);
   const [startLocationVisible, setStartLocationVisible] = useState(false);
+  const [railOpen, setRailOpen] = useState(false);
 
   const stopNumberById = useMemo(
     () => new Map(trip.orderedMarkers.map((marker, index) => [marker.id, index + 1])),
@@ -59,11 +62,19 @@ export function MapTripPanel({ trip }: MapTripPanelProps) {
     name: `${stopNumberById.get(marker.id) ?? "?"}. ${marker.title}`,
   }));
   const hasSettings = pendingCount > 1 || isCurrentUserDriver || trip.started;
+  // The trip stats only show for a started trip (drawn selection → start);
+  // before that, and after going back to all customers, just the actions.
+  const showStats = !railOnly && trip.started;
 
   if (!trip.ready || (!trip.orderedMarkers.length && trip.scopeCount === null)) return null;
 
   function toggleSection(section: ActionSection) {
     setOpenSection((active) => active === section ? null : section);
+  }
+
+  function pickFromRail(action: () => void) {
+    setRailOpen(false);
+    action();
   }
 
   function resortButton(kind: Parameters<typeof trip.resort>[0], label: string) {
@@ -102,8 +113,17 @@ export function MapTripPanel({ trip }: MapTripPanelProps) {
           icon="clock-outline"
           onClose={close}
           subtitle={t("live.actionCategories.departureHint", { minutes: STOP_SERVICE_BUFFER_SEC / 60 })}
-          title={t("live.actionCategories.departure")}
+          title={t("live.actionCategories.startAndTime")}
         >
+          <View style={styles.lastStopRow}>
+            <AppText color="muted" variant="label">{t("startCard.title")}</AppText>
+            <AppButton
+              label={trip.startLocation?.label ?? t("startCard.currentLocationLabel")}
+              onPress={() => { close(); setStartLocationVisible(true); }}
+              size="compact"
+              variant="secondary"
+            />
+          </View>
           <AppButton
             label={t("live.departureNow")}
             onPress={() => { close(); trip.chooseDepartureTime(null); }}
@@ -188,13 +208,13 @@ export function MapTripPanel({ trip }: MapTripPanelProps) {
 
   return (
     <>
-      <View style={styles.panel}>
+      <View pointerEvents="box-none" style={styles.panel}>
         {navigation.actionError ? <ErrorState message={navigation.actionError} /> : null}
         {driverLiveStatus.error ? <ErrorState message={driverLiveStatus.error} /> : null}
         {renderActionMenu()}
 
         {!current ? (
-          <View style={styles.dockRow}>
+          !showStats ? null : <View style={styles.dockRow}>
             <AppCard contentStyle={styles.doneCard} style={styles.statsDock}>
               <AppText variant="subheading">{t("live.allDone")}</AppText>
               <AppText color="muted" variant="caption">
@@ -204,60 +224,71 @@ export function MapTripPanel({ trip }: MapTripPanelProps) {
             {trip.scopeCount !== null ? <View style={styles.iconRail}>{scopeButton()}</View> : null}
           </View>
         ) : (
-          <View style={styles.dockRow}>
-            <View style={styles.statsDock}>
+          <View pointerEvents="box-none" style={styles.dockRow}>
+            {!showStats ? <View pointerEvents="none" style={styles.statsDock} /> : <View style={styles.statsDock}>
               <AppCard contentStyle={styles.statsCard}>
                 <Stat label={t("live.stats.arrival")} value={polyline.currentLegEta ? formatEtaTime(polyline.currentLegEta) : "--:--"} />
                 <Stat label={t("live.stats.duration")} value={polyline.currentLegDurationMinutes !== null ? formatDurationHM(polyline.currentLegDurationMinutes) : "--"} />
                 <Stat label={t("live.stats.distance")} value={polyline.currentLegDistanceKm !== null ? formatDistanceKm(polyline.currentLegDistanceKm) : "--"} />
               </AppCard>
-              {/* The route line appears on the map only after this. */}
-              {!trip.started ? (
-                <AppButton label={t("startCard.startButton")} onPress={() => { setOpenSection(null); trip.startTrip(); }} />
-              ) : null}
-            </View>
+            </View>}
+            {/* All actions sit behind one button so the map stays clear;
+                picking one folds the rail back up. */}
             <View style={styles.iconRail}>
-              {scopeButton()}
-              {/* Before the start: when and from where. */}
-              {!trip.started ? (
+              {railOpen ? (
                 <>
+                  {scopeButton()}
+                  {/* From where and when, under one button. */}
                   <TripActionDockButton
-                    active={openSection === "departure" || trip.departureTime !== null}
+                    active={openSection === "departure" || startLocationVisible || trip.departureTime !== null || trip.startLocation !== null}
                     icon="clock-outline"
-                    label={t("live.actionCategories.departure")}
-                    onPress={() => toggleSection("departure")}
+                    label={t("live.actionCategories.startAndTime")}
+                    onPress={() => pickFromRail(() => toggleSection("departure"))}
                   />
                   <TripActionDockButton
-                    active={startLocationVisible || trip.startLocation !== null}
-                    icon="map-marker-radius-outline"
-                    label={t("startCard.title")}
-                    onPress={() => {
-                      setOpenSection(null);
-                      setStartLocationVisible(true);
-                    }}
+                    active={openSection === "stop"}
+                    icon="map-marker-check-outline"
+                    label={t("live.actionCategories.currentStop", { name: current.title })}
+                    onPress={() => pickFromRail(() => toggleSection("stop"))}
                   />
+                  {/* The customer list with drag-to-reorder, one tap away — not
+                      only from inside the "order" menu. */}
+                  {pendingCount > 1 ? (
+                    <TripActionDockButton
+                      active={reorderSheetVisible}
+                      icon="format-list-numbered"
+                      label={t("reorderSheet.open", { count: pendingCount })}
+                      onPress={() => pickFromRail(() => {
+                        setOpenSection(null);
+                        setReorderSheetVisible(true);
+                      })}
+                    />
+                  ) : null}
+                  {pendingCount > 1 ? (
+                    <TripActionDockButton
+                      active={openSection === "order"}
+                      badge={pendingCount}
+                      icon="sort-variant"
+                      label={t("live.actionCategories.routeOrder")}
+                      onPress={() => pickFromRail(() => toggleSection("order"))}
+                    />
+                  ) : null}
+                  {hasSettings ? (
+                    <TripActionDockButton
+                      active={openSection === "settings"}
+                      icon="tune-variant"
+                      label={t("live.actionCategories.settings")}
+                      onPress={() => pickFromRail(() => toggleSection("settings"))}
+                    />
+                  ) : null}
                 </>
               ) : null}
-              <TripActionDockButton active={openSection === "stop"} icon="map-marker-check-outline" label={t("live.actionCategories.currentStop", { name: current.title })} onPress={() => toggleSection("stop")} />
-              {/* The customer list with drag-to-reorder, one tap away — not
-                  only from inside the "order" menu. */}
-              {pendingCount > 1 ? (
-                <TripActionDockButton
-                  active={reorderSheetVisible}
-                  icon="format-list-numbered"
-                  label={t("reorderSheet.open", { count: pendingCount })}
-                  onPress={() => {
-                    setOpenSection(null);
-                    setReorderSheetVisible(true);
-                  }}
-                />
-              ) : null}
-              {pendingCount > 1 ? (
-                <TripActionDockButton active={openSection === "order"} badge={pendingCount} icon="sort-variant" label={t("live.actionCategories.routeOrder")} onPress={() => toggleSection("order")} />
-              ) : null}
-              {hasSettings ? (
-                <TripActionDockButton active={openSection === "settings"} icon="tune-variant" label={t("live.actionCategories.settings")} onPress={() => toggleSection("settings")} />
-              ) : null}
+              <TripActionDockButton
+                active={railOpen}
+                icon={railOpen ? "close" : "dots-grid"}
+                label={t("live.actionCategories.allActions")}
+                onPress={() => setRailOpen((open) => !open)}
+              />
             </View>
           </View>
         )}

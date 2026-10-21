@@ -76,6 +76,8 @@
       "settings": "Weitere Einstellungen",
       "settingsHint": "Letzten Kunden festlegen, Fahrt beenden",
       "departure": "Abfahrtszeit",
+      "startAndTime": "Start & Uhrzeit",
+      "allActions": "Alle Aktionen",
       "departureHint": "Ankunftszeiten ab dieser Uhrzeit, {{minutes}} Min. pro Kunde"
     },
     "departureNow": "Jetzt losfahren"

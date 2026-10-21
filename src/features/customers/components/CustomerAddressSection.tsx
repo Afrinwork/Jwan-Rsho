@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { Control, Controller, FieldErrors, useWatch } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
@@ -12,11 +13,23 @@ import { AddOrderFormValues } from "@/src/features/orders/validation/addOrderFor
 type CustomerAddressSectionProps = {
   control: Control<AddOrderFormValues>;
   errors?: FieldErrors<AddOrderFormValues>["customer"];
+  // Optional field shown next to the city; the country then moves to its
+  // own full-width row above them.
+  driverField?: ReactNode;
 };
 
-export function CustomerAddressSection({ control, errors }: CustomerAddressSectionProps) {
+export function CustomerAddressSection({ control, errors, driverField }: CustomerAddressSectionProps) {
   const countryValue = useWatch({ control, name: "customer.country" }) ?? "";
   const { t } = useTranslation("customers");
+  const countryField = (
+    <Controller
+      control={control}
+      name="customer.country"
+      render={({ field }) => (
+        <CountrySelectField error={errors?.country?.message} onChange={field.onChange} value={field.value ?? ""} />
+      )}
+    />
+  );
 
   return (
     <View style={styles.container}>
@@ -38,16 +51,9 @@ export function CustomerAddressSection({ control, errors }: CustomerAddressSecti
           )}
         />
       </FormField>
+      {driverField ? countryField : null}
       <View style={styles.row}>
-        <View style={styles.column}>
-          <Controller
-            control={control}
-            name="customer.country"
-            render={({ field }) => (
-              <CountrySelectField error={errors?.country?.message} onChange={field.onChange} value={field.value ?? ""} />
-            )}
-          />
-        </View>
+        {driverField ? null : <View style={styles.column}>{countryField}</View>}
         <View style={styles.column}>
           <Controller
             control={control}
@@ -62,6 +68,7 @@ export function CustomerAddressSection({ control, errors }: CustomerAddressSecti
             )}
           />
         </View>
+        {driverField ? <View style={styles.column}>{driverField}</View> : null}
       </View>
     </View>
   );

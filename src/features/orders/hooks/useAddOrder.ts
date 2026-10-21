@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
@@ -18,9 +18,12 @@ import { geocodingService } from "@/src/services/geocodingService";
 import { formatError } from "@/src/utils/formatError";
 import { guardAsync } from "@/src/utils/guardAsync";
 import { isOrderAlreadyExistsError } from "@/src/features/orders/services/orderIdempotencyService";
-import { isDriver } from "@/src/features/auth/permissions";
+import { canManageDrivers, isDriver } from "@/src/features/auth/permissions";
 import { buildDriverOrderNote } from "@/src/features/orders/services/driverOrderNote";
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
+import { customerRepository } from "@/src/repositories/customerRepository";
+import { userRepository } from "@/src/repositories/userRepository";
+import { UserProfile } from "@/src/types/user";
 
 const defaultValues: AddOrderFormValues = {
   customerId: "",
@@ -46,6 +49,32 @@ export function useAddOrder() {
   // form.handleSubmit's callback, which React Compiler's lint rules treat as
   // render-adjacent — refs aren't safe to touch there, state is.
   const [draftIds, setDraftIds] = useState(() => orderRepository.createDraftIds());
+  // Admins can assign the order's customer to one of their drivers right
+  // from the form; null keeps the customer unassigned.
+  const canAssignDriver = canManageDrivers(currentUser);
+  const [driverId, setDriverId] = useState<string | null>(null);
+  const [drivers, setDrivers] = useState<UserProfile[]>([]);
+  const [loadingDrivers, setLoadingDrivers] = useState(canAssignDriver);
+  const [driversError, setDriversError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!canAssignDriver) return;
+    let cancelled = false;
+    userRepository
+      .getOwnDrivers()
+      .then((value) => {
+        if (!cancelled) setDrivers(value);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) setDriversError(formatError(error).message);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingDrivers(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [canAssignDriver]);
 
   const form = useForm<AddOrderFormValues>({
     resolver: zodResolver(buildAddOrderFormSchema(customerMode)),
@@ -59,11 +88,13 @@ export function useAddOrder() {
     setCustomerMode("existing");
     form.setValue("customerId", customer.id, { shouldValidate: true });
     form.setValue("customer", mapCustomerToFormValues(customer));
+    setDriverId(customer.assignedDriverId ?? null);
   }
 
   function clearCustomer() {
     setSelectedCustomer(null);
     setCustomerMode("new");
+    setDriverId(null);
     form.setValue("customerId", "");
     setSubmitError(null);
     setSuccessMessage(null);
@@ -93,6 +124,7 @@ export function useAddOrder() {
             };
 
       await guardedCreateOrder(payload);
+      await assignChosenDriver();
       onSaveSucceeded();
     } catch (error) {
       if (isOrderAlreadyExistsError(error)) {
@@ -100,6 +132,7 @@ export function useAddOrder() {
         // slipped past the disabled button, or a retry after the first
         // call's response was lost) — the order is safely saved, just not by
         // THIS call. Idempotent no-op, not a failure.
+        await assignChosenDriver().catch(() => undefined);
         onSaveSucceeded();
       } else {
         setSubmitError(formatError(error).message);
@@ -107,17 +140,35 @@ export function useAddOrder() {
     }
   });
 
+  // Runs after the order is saved: assign_customer_driver sets the customer's
+  // driver and mirrors it onto all of the customer's open orders, including
+  // the one just created. Skipped when the assignment wouldn't change.
+  async function assignChosenDriver() {
+    if (!canAssignDriver) return;
+    const currentDriverId = customerMode === "existing" ? (selectedCustomer?.assignedDriverId ?? null) : null;
+    if (driverId === currentDriverId) return;
+    const customerId = customerMode === "existing" ? form.getValues("customerId") : draftIds.customerId;
+    await customerRepository.assignDriver(customerId, driverId);
+  }
+
   function onSaveSucceeded() {
     setSuccessMessage(t("save.success"));
     form.reset(defaultValues);
     setCustomerMode("new");
     setSelectedCustomer(null);
+    setDriverId(null);
     setDraftIds(orderRepository.createDraftIds());
   }
 
   return {
     form,
     items,
+    canAssignDriver,
+    driverId,
+    setDriverId,
+    drivers,
+    loadingDrivers,
+    driversError,
     selectedCustomer,
     selectCustomer,
     clearCustomer,

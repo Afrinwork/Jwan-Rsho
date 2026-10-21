@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { Control, FieldErrors, useWatch } from "react-hook-form";
 import { StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
@@ -18,6 +19,7 @@ type CustomerSectionProps = {
   selectedCustomer: Customer | null;
   onSelectCustomer: (customer: Customer) => void;
   onClearCustomer: () => void;
+  driverField?: ReactNode;
 };
 
 export function CustomerSection({
@@ -27,6 +29,7 @@ export function CustomerSection({
   selectedCustomer,
   onSelectCustomer,
   onClearCustomer,
+  driverField,
 }: CustomerSectionProps) {
   const { t } = useTranslation("orders");
   const fullName = useWatch({ control, name: "customer.fullName" }) ?? "";
@@ -46,7 +49,7 @@ export function CustomerSection({
           selectedCustomer={selectedCustomer}
           suggestions={suggestions}
         />
-        <CustomerAddressSection control={control} errors={errors} />
+        <CustomerAddressSection control={control} driverField={driverField} errors={errors} />
       </FormSectionCard>
       {customerIdError ? <ErrorState message={customerIdError} /> : null}
     </View>

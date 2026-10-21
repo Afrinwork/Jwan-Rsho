@@ -9,6 +9,7 @@ import { SuccessState } from "@/src/components/ui/SuccessState";
 import { spacing } from "@/src/constants/spacing";
 import { CustomerSection } from "@/src/features/orders/components/CustomerSection";
 import { DriverAddSuggestions } from "@/src/features/orders/components/DriverAddSuggestions";
+import { OrderDriverField } from "@/src/features/orders/components/OrderDriverField";
 import { OrderItemsSection } from "@/src/features/orders/components/OrderItemsSection";
 import { SaveOrderButton } from "@/src/features/orders/components/SaveOrderButton";
 import { useAddOrder } from "@/src/features/orders/hooks/useAddOrder";
@@ -18,7 +19,22 @@ import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 export function AddOrderScreen() {
   const { t } = useTranslation("orders");
   const currentUser = useCurrentUser();
-  const { form, items, selectedCustomer, selectCustomer, clearCustomer, submit, submitError, successMessage } = useAddOrder();
+  const {
+    form,
+    items,
+    canAssignDriver,
+    driverId,
+    setDriverId,
+    drivers,
+    loadingDrivers,
+    driversError,
+    selectedCustomer,
+    selectCustomer,
+    clearCustomer,
+    submit,
+    submitError,
+    successMessage,
+  } = useAddOrder();
   const errors = form.formState.errors;
 
   function handleSave() {
@@ -50,6 +66,17 @@ export function AddOrderScreen() {
               <CustomerSection
                 control={form.control}
                 customerIdError={errors.customerId?.message}
+                driverField={
+                  canAssignDriver ? (
+                    <OrderDriverField
+                      driverId={driverId}
+                      drivers={drivers}
+                      error={driversError}
+                      loadingDrivers={loadingDrivers}
+                      onChange={setDriverId}
+                    />
+                  ) : undefined
+                }
                 errors={errors.customer}
                 onClearCustomer={clearCustomer}
                 onSelectCustomer={selectCustomer}
