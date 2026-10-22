@@ -104,12 +104,15 @@ export function MapScreen() {
   // The trip is always running (like IBI): every customer on the map — the
   // country/city filter decides which — is a numbered stop. Drawing only
   // selects customers for the selection actions, it doesn't change the route.
-  const trip = useMapTrip(filteredMarkers, !customersLoading, hasPermission ? region : null);
+  const trip = useMapTrip(filteredMarkers, !customersLoading, hasPermission ? region : null, markers);
   const tripNavigation = trip.navigation;
   const isSelectedCurrentStop = selectedCustomerId !== null && selectedCustomerId === tripNavigation.currentMarker?.id;
   const isSelectedPendingStop =
     selectedCustomerId !== null && tripNavigation.pendingMarkers.some((marker) => marker.id === selectedCustomerId);
-  const canReactivateSelected = selectedCustomerId !== null && tripNavigation.handledIds.has(selectedCustomerId);
+  // Completed and skipped stops can both be made normal open stops again.
+  const canReactivateSelected =
+    selectedCustomerId !== null &&
+    (tripNavigation.handledIds.has(selectedCustomerId) || tripNavigation.skippedIds.has(selectedCustomerId));
   const [skipConfirmVisible, setSkipConfirmVisible] = useState(false);
   const selectedCount = customerSelection.selection.selectedIds.length;
   const pendingTripCount = tripNavigation.pendingMarkers.length;
@@ -499,7 +502,7 @@ export function MapScreen() {
         onReactivate={
           canReactivateSelected && selectedCustomerId
             ? () => {
-                tripNavigation.reactivateStop(selectedCustomerId);
+                trip.reactivateStop(selectedCustomerId);
                 setSelectedCustomerId(null);
               }
             : undefined

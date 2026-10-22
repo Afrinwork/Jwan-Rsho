@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
@@ -22,8 +22,7 @@ import { canManageDrivers, isDriver } from "@/src/features/auth/permissions";
 import { buildDriverOrderNote } from "@/src/features/orders/services/driverOrderNote";
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 import { customerRepository } from "@/src/repositories/customerRepository";
-import { userRepository } from "@/src/repositories/userRepository";
-import { UserProfile } from "@/src/types/user";
+import { useOwnDrivers } from "@/src/features/orders/hooks/useOwnDrivers";
 
 const defaultValues: AddOrderFormValues = {
   customerId: "",
@@ -53,28 +52,7 @@ export function useAddOrder() {
   // from the form; null keeps the customer unassigned.
   const canAssignDriver = canManageDrivers(currentUser);
   const [driverId, setDriverId] = useState<string | null>(null);
-  const [drivers, setDrivers] = useState<UserProfile[]>([]);
-  const [loadingDrivers, setLoadingDrivers] = useState(canAssignDriver);
-  const [driversError, setDriversError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!canAssignDriver) return;
-    let cancelled = false;
-    userRepository
-      .getOwnDrivers()
-      .then((value) => {
-        if (!cancelled) setDrivers(value);
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) setDriversError(formatError(error).message);
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingDrivers(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [canAssignDriver]);
+  const { drivers, loadingDrivers, driversError } = useOwnDrivers(canAssignDriver);
 
   const form = useForm<AddOrderFormValues>({
     resolver: zodResolver(buildAddOrderFormSchema(customerMode)),

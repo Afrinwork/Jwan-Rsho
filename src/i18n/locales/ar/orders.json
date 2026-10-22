@@ -17,7 +17,8 @@
   },
   "driverSection": {
     "title": "السائق",
-    "none": "بدون تعيين"
+    "none": "بدون تعيين",
+    "self": "{{name}} (أساسي)"
   },
   "details": {
     "noOrderSelected": "لم يتم اختيار طلب.",

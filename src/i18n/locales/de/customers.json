@@ -46,7 +46,9 @@
     "backButton": "Zurueck zur Liste",
     "noOpenOrder": "Fuer diesen Kunden wurde keine offene Bestellung gefunden.",
     "saveSuccess": "Kundendaten und offene Bestellung wurden gespeichert.",
-    "saveCustomerSuccess": "Kundendaten wurden gespeichert."
+    "saveCustomerSuccess": "Kundendaten wurden gespeichert.",
+    "driverSectionTitle": "Zuweisung",
+    "driverSectionSubtitle": "Optional: Der Kunde bleibt bei dir (Standard) oder du weist ihn einem Fahrer zu."
   },
   "orderItems": {
     "sectionTitle": "Produkte",

@@ -17,6 +17,8 @@ type DriverAssignSheetProps = {
   error: string | null;
   currentDriverId?: string;
   customerCount?: number;
+  // Label of the "no driver" option (default: "no assignment").
+  noneLabel?: string;
   onSelect: (driverId: string | null) => void;
   onClose: () => void;
 };
@@ -29,6 +31,7 @@ export function DriverAssignSheet({
   error,
   currentDriverId,
   customerCount,
+  noneLabel,
   onSelect,
   onClose,
 }: DriverAssignSheetProps) {
@@ -54,7 +57,7 @@ export function DriverAssignSheet({
                 active={!currentDriverId}
                 colors={colors}
                 disabled={assigning}
-                label={t("driverAssignSheet.noneOption")}
+                label={noneLabel ?? t("driverAssignSheet.noneOption")}
                 onPress={() => onSelect(null)}
               />
               {!drivers.length ? (

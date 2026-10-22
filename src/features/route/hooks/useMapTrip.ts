@@ -22,11 +22,15 @@ import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 // Remaining km/duration/ETA are recalculated from the live position only
 // after this much movement (one Directions request per recalculation).
 const LIVE_ORIGIN_MIN_METERS = 500;
-// The road-following line and its timings cover the next stops only: one
+// The line from the live position covers the next stops only: one
 // Directions request (Google's waypoint limit) instead of one per 23 stops
-// on every recalculation. Arrival times further out are estimated, and no
-// line is drawn past these stops (never a straight line between customers).
+// on every recalculation. The rest of the route is fetched separately from
+// the last of these stops — a fixed origin, so it is only re-fetched when the
+// remaining stops change, not on every movement.
 const ROAD_ROUTE_STOP_LIMIT = 23;
+// Fixed anchor for the far part's timings (shifted onto the near part's last
+// arrival afterwards) — a changing anchor would re-fetch it on every update.
+const FAR_ETA_ANCHOR = new Date(0);
 // "New route" tries this many variants for one that differs from the
 // current order — only runs out with a single possible order.
 const MAX_NEW_ROUTE_ATTEMPTS = 12;
@@ -42,12 +46,22 @@ export type TripResortKind = "optimize" | "variant" | "nearest" | "farthest" | "
 // closed (activeTripStorage, same day only).
 //
 // "Start trip" on a drawn selection narrows the trip to those customers
-// (scope); the others stay on the map, just not on the route.
+// (scope); the others stay on the map, just not on the route. Customers that
+// show up while such a trip runs (a new order) join the scope — for drivers,
+// admins and super admins alike.
 //
 // The numbered stops are there from the start, but the route line only once
 // the trip is started — until then the driver can still pick the start point
 // and the departure time the planned arrival times are based on.
-export function useMapTrip(mapMarkers: MapCustomerMarker[], ready: boolean, fallbackOrigin: LatLng | null) {
+//
+// allMarkers: every customer with an open order, unfiltered — only used to
+// tell a newly added customer apart from one the country/city filter shows.
+export function useMapTrip(
+  mapMarkers: MapCustomerMarker[],
+  ready: boolean,
+  fallbackOrigin: LatLng | null,
+  allMarkers: MapCustomerMarker[] = mapMarkers,
+) {
   const currentUser = useCurrentUser();
   const userId = currentUser?.uid ?? null;
   const isCurrentUserDriver = isDriver(currentUser);
@@ -63,6 +77,18 @@ export function useMapTrip(mapMarkers: MapCustomerMarker[], ready: boolean, fall
     return mapMarkers.filter((marker) => scope.has(marker.id));
   }, [mapMarkers, scopeIds]);
   const markerById = useMemo(() => new Map(stopMarkers.map((marker) => [marker.id, marker])), [stopMarkers]);
+
+  // Customers already known when the trip was set up (null until then);
+  // anyone added later is new and joins a narrowed trip.
+  const seenMarkerIdsRef = useRef<Set<string> | null>(null);
+  useEffect(() => {
+    const seen = seenMarkerIdsRef.current;
+    if (!seen) return;
+    const added = allMarkers.filter((marker) => !seen.has(marker.id)).map((marker) => marker.id);
+    if (!added.length) return;
+    added.forEach((id) => seen.add(id));
+    setScopeIds((current) => (current ? [...current, ...added.filter((id) => !current.includes(id))] : current));
+  }, [allMarkers]);
 
   // null until the first order is decided (stored trip or a fresh sort).
   const [orderIds, setOrderIds] = useState<string[] | null>(null);
@@ -83,12 +109,14 @@ export function useMapTrip(mapMarkers: MapCustomerMarker[], ready: boolean, fall
   const currentStopIdRef = useRef<string | null>(null);
   const lastStopIdRef = useRef<string | null>(null);
   const mapMarkersRef = useRef(mapMarkers);
+  const allMarkersRef = useRef(allMarkers);
   const startOrigin = live.coordinate ?? fallbackOrigin;
   const startOriginRef = useRef(startOrigin);
   useEffect(() => {
     currentStopIdRef.current = currentStopId;
     lastStopIdRef.current = lastStopId;
     mapMarkersRef.current = mapMarkers;
+    allMarkersRef.current = allMarkers;
     startOriginRef.current = startOrigin;
   });
 
@@ -99,6 +127,7 @@ export function useMapTrip(mapMarkers: MapCustomerMarker[], ready: boolean, fall
   useEffect(() => {
     if (!ready || !userId || initStartedRef.current) return;
     initStartedRef.current = true;
+    seenMarkerIdsRef.current = new Set(allMarkersRef.current.map((marker) => marker.id));
 
     void activeTripStorage.load(userId).then((stored) => {
       const scope = stored?.scopeIds ? new Set(stored.scopeIds) : null;
@@ -169,13 +198,42 @@ export function useMapTrip(mapMarkers: MapCustomerMarker[], ready: boolean, fall
   }
 
   // Skipping keeps the customer open: it moves to the end of the route
-  // (before a pinned last stop) and is marked on the map.
+  // (before a pinned last stop) and is marked on the map. The stop that came
+  // right after it is remembered, so reactivating it restores its place
+  // (and number) instead of leaving it last. null = it was the last stop.
+  const skippedNextIdRef = useRef(new Map<string, string | null>());
   function skipStop(customerId: string | null = currentStopId) {
     if (!customerId) return;
     navigation.markSkipped(customerId);
     const pendingIds = navigation.pendingMarkers.map((marker) => marker.id);
     if (pendingIds.length > 1 && pendingIds.includes(customerId)) {
+      skippedNextIdRef.current.set(customerId, pendingIds[pendingIds.indexOf(customerId) + 1] ?? null);
       applyPendingOrder([...pendingIds.filter((id) => id !== customerId), customerId]);
+    }
+  }
+
+  // Undoes a skip or a completion. A skipped stop goes back to the place it
+  // had before the skip — right before the stop that followed it — and so
+  // gets its old number again. If that place is unknown (skipped before the
+  // app was reopened) or that stop is gone, it is slotted in where it adds
+  // the least detour, like any other stop.
+  function reactivateStop(customerId: string) {
+    const wasSkipped = navigation.skippedIds.has(customerId);
+    navigation.reactivateStop(customerId);
+    if (!wasSkipped) return;
+    const nextId = skippedNextIdRef.current.get(customerId);
+    skippedNextIdRef.current.delete(customerId);
+    const marker = navigation.pendingMarkers.find((pending) => pending.id === customerId);
+    const others = navigation.pendingMarkers.filter((pending) => pending.id !== customerId);
+    if (!marker || !others.length) return;
+    const otherIds = others.map((pending) => pending.id);
+    const nextIndex = nextId ? otherIds.indexOf(nextId) : -1;
+    if (nextIndex !== -1) {
+      applyPendingOrder([...otherIds.slice(0, nextIndex), customerId, ...otherIds.slice(nextIndex)]);
+    } else if (nextId === null) {
+      applyPendingOrder([...otherIds, customerId]);
+    } else {
+      applyPendingOrder(insertMarkersAfterAnchor(others, [marker], others[0].id).map((pending) => pending.id));
     }
   }
 
@@ -279,19 +337,31 @@ export function useMapTrip(mapMarkers: MapCustomerMarker[], ready: boolean, fall
   const nearStops = useMemo(() => navigation.pendingMarkers.slice(0, ROAD_ROUTE_STOP_LIMIT), [navigation.pendingMarkers]);
   const farStops = useMemo(() => navigation.pendingMarkers.slice(ROAD_ROUTE_STOP_LIMIT), [navigation.pendingMarkers]);
   const polyline = useRoutePolyline(remainingRouteOrigin, nearStops, etaAnchor);
+  const lastNearStop = farStops.length ? nearStops.at(-1) ?? null : null;
+  const farOrigin = useMemo(
+    () => (lastNearStop ? { latitude: lastNearStop.latitude, longitude: lastNearStop.longitude } : null),
+    [lastNearStop],
+  );
+  const farPolyline = useRoutePolyline(farOrigin, farStops, FAR_ETA_ANCHOR);
 
   // The line follows the roads and is only shown once the trip is started.
-  // Stops past the road-routed ones get no line, only an estimated arrival
-  // continuing from the last road-routed stop.
-  const lineCoordinates = started ? polyline.coordinates : [];
+  const lineCoordinates = useMemo(
+    () => (started ? [...polyline.coordinates, ...farPolyline.coordinates] : []),
+    [started, polyline.coordinates, farPolyline.coordinates],
+  );
+  // Arrival times past the near stops continue from the last near stop's
+  // arrival (road timings once loaded, estimated until then).
   const etaById = useMemo(() => {
-    const lastNear = nearStops.at(-1);
-    const lastEta = lastNear ? polyline.etaById.get(lastNear.id) : undefined;
-    if (!farStops.length || !lastNear || !lastEta) return polyline.etaById;
-    const start = new Date(lastEta.getTime() + STOP_SERVICE_BUFFER_SEC * 1000);
-    const far = buildCumulativeStops(buildFallbackLegs({ ...lastNear, label: "" }, farStops), start);
-    return new Map([...polyline.etaById, ...far.map((stop) => [stop.id, stop.cumulativeEta] as const)]);
-  }, [polyline.etaById, nearStops, farStops]);
+    const lastEta = lastNearStop ? polyline.etaById.get(lastNearStop.id) : undefined;
+    if (!farStops.length || !lastNearStop || !lastEta) return polyline.etaById;
+    const startMs = lastEta.getTime() + STOP_SERVICE_BUFFER_SEC * 1000;
+    const farEtas: [string, Date][] = farPolyline.etaById.size
+      ? [...farPolyline.etaById].map(([id, eta]) => [id, new Date(startMs + eta.getTime() - FAR_ETA_ANCHOR.getTime())])
+      : buildCumulativeStops(buildFallbackLegs({ ...lastNearStop, label: "" }, farStops), new Date(startMs)).map(
+          (stop) => [stop.id, stop.cumulativeEta],
+        );
+    return new Map([...polyline.etaById, ...farEtas]);
+  }, [polyline.etaById, farPolyline.etaById, lastNearStop, farStops]);
 
   // Re-sorting the remaining stops from the current position (real driving
   // distances when available).
@@ -353,6 +423,7 @@ export function useMapTrip(mapMarkers: MapCustomerMarker[], ready: boolean, fall
     startTrip,
     endTrip,
     skipStop,
+    reactivateStop,
     chooseStartLocation,
     chooseDepartureTime: setDepartureTime,
     // Number of customers the trip is narrowed to, null = all on the map.

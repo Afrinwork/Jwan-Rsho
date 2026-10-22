@@ -46,7 +46,9 @@
     "backButton": "العودة إلى القائمة",
     "noOpenOrder": "لم يتم العثور على طلب مفتوح لهذا العميل.",
     "saveSuccess": "تم حفظ بيانات العميل والطلب المفتوح.",
-    "saveCustomerSuccess": "تم حفظ بيانات العميل."
+    "saveCustomerSuccess": "تم حفظ بيانات العميل.",
+    "driverSectionTitle": "التعيين",
+    "driverSectionSubtitle": "اختياري: يبقى العميل عندك (أساسي) أو عيّنه لأحد السائقين."
   },
   "orderItems": {
     "sectionTitle": "المنتجات",

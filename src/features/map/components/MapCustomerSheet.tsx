@@ -73,7 +73,6 @@ export function MapCustomerSheet({
 }: MapCustomerSheetProps) {
   const colors = useThemeColors();
   const { t } = useTranslation("map");
-  const [showMore, setShowMore] = useState(false);
   // The call options render inline: iOS cannot present a second Modal on top
   // of this one, which left an invisible overlay that froze the screen.
   const [showContact, setShowContact] = useState(false);
@@ -110,6 +109,19 @@ export function MapCustomerSheet({
               {actionSuccess ? <SuccessState message={actionSuccess} /> : null}
               <View style={styles.actions}>
                 <AppButton label={t("sheet.navigation")} onPress={onNavigate} />
+                {/* Calling sits right below navigation: one button that opens
+                    both ways to call (phone, WhatsApp). */}
+                <AppButton
+                  label={hasPhone ? t("sheet.callPhone") : t("sheet.phoneMissing")}
+                  onPress={hasPhone ? () => setShowContact((current) => !current) : onCall}
+                  variant="secondary"
+                />
+                {hasPhone && showContact ? (
+                  <View style={styles.contactOptions}>
+                    <AppButton label={t("contactSheet.callPhone")} onPress={onCallPhone} size="compact" />
+                    <AppButton label={t("contactSheet.callWhatsapp")} onPress={onCallWhatsapp} size="compact" />
+                  </View>
+                ) : null}
                 {details.openOrders.length && onComplete ? (
                   <AppButton
                     label={
@@ -122,34 +134,15 @@ export function MapCustomerSheet({
                     variant="secondary"
                   />
                 ) : null}
-                <AppButton
-                  label={t(showMore ? "sheet.fewerActions" : "sheet.moreActions")}
-                  onPress={() => setShowMore((current) => !current)}
-                  size="compact"
-                  variant="secondary"
-                />
-                {showMore ? (
-                  <View style={styles.moreActions}>
-                    <AppButton label={t("common.edit")} onPress={onEdit} size="compact" variant="secondary" />
-                    <AppButton
-                      label={hasPhone ? t("sheet.callPhone") : t("sheet.phoneMissing")}
-                      onPress={hasPhone ? () => setShowContact((current) => !current) : onCall}
-                      size="compact"
-                      variant="secondary"
-                    />
-                    {hasPhone && showContact ? (
-                      <View style={styles.contactOptions}>
-                        <AppButton label={t("contactSheet.callPhone")} onPress={onCallPhone} size="compact" />
-                        <AppButton label={t("contactSheet.callWhatsapp")} onPress={onCallWhatsapp} size="compact" />
-                      </View>
-                    ) : null}
-                    <AppButton label={t("sheet.shareViaWhatsapp")} onPress={onShareOrder} size="compact" variant="secondary" />
-                    <AppButton label={t("sheet.shareLocation")} onPress={onShare} size="compact" variant="secondary" />
-                    {onAssignDriver ? <AppButton label={t("sheet.assignDriver")} onPress={onAssignDriver} size="compact" variant="secondary" /> : null}
-                    {onReactivate ? <AppButton label={t("sheet.reactivateStop")} onPress={onReactivate} size="compact" variant="secondary" /> : null}
-                    {onSkip ? <AppButton label={onSkipLabel ?? t("sheet.skipStop")} onPress={onSkip} size="compact" variant="secondary" /> : null}
-                  </View>
-                ) : null}
+                {/* Every action is shown right away — nothing hidden behind a "more" toggle. */}
+                <View style={styles.moreActions}>
+                  <AppButton label={t("common.edit")} onPress={onEdit} size="compact" variant="secondary" />
+                  <AppButton label={t("sheet.shareViaWhatsapp")} onPress={onShareOrder} size="compact" variant="secondary" />
+                  <AppButton label={t("sheet.shareLocation")} onPress={onShare} size="compact" variant="secondary" />
+                  {onAssignDriver ? <AppButton label={t("sheet.assignDriver")} onPress={onAssignDriver} size="compact" variant="secondary" /> : null}
+                  {onReactivate ? <AppButton label={t("sheet.reactivateStop")} onPress={onReactivate} size="compact" variant="secondary" /> : null}
+                  {onSkip ? <AppButton label={onSkipLabel ?? t("sheet.skipStop")} onPress={onSkip} size="compact" variant="secondary" /> : null}
+                </View>
               </View>
             </ScrollView>
           ) : null}

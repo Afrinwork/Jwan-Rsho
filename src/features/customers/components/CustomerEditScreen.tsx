@@ -16,6 +16,7 @@ import { CustomerEditAddressSection } from "@/src/features/customers/components/
 import { CustomerEditForm } from "@/src/features/customers/components/CustomerEditForm";
 import { CustomerEditOrderItemsSection } from "@/src/features/customers/components/CustomerEditOrderItemsSection";
 import { useCustomerEdit } from "@/src/features/customers/hooks/useCustomerEdit";
+import { OrderDriverField } from "@/src/features/orders/components/OrderDriverField";
 
 type CustomerEditScreenProps = {
   customerId: string;
@@ -23,7 +24,22 @@ type CustomerEditScreenProps = {
 
 export function CustomerEditScreen({ customerId }: CustomerEditScreenProps) {
   const router = useRouter();
-  const { error, form, hasOpenOrder, items, loading, saving, submit, successMessage } = useCustomerEdit(customerId);
+  const {
+    error,
+    form,
+    hasOpenOrder,
+    items,
+    loading,
+    saving,
+    submit,
+    successMessage,
+    canAssignDriver,
+    driverId,
+    setDriverId,
+    drivers,
+    loadingDrivers,
+    driversError,
+  } = useCustomerEdit(customerId);
   const { t } = useTranslation("customers");
 
   if (loading) {
@@ -58,6 +74,19 @@ export function CustomerEditScreen({ customerId }: CustomerEditScreenProps) {
               remove={items.remove}
               setValue={form.setValue}
             />
+          </AnimatedEntrance>
+        ) : null}
+        {canAssignDriver ? (
+          <AnimatedEntrance delay={180}>
+            <FormSectionCard subtitle={t("edit.driverSectionSubtitle")} title={t("edit.driverSectionTitle")}>
+              <OrderDriverField
+                driverId={driverId}
+                drivers={drivers}
+                error={driversError}
+                loadingDrivers={loadingDrivers}
+                onChange={setDriverId}
+              />
+            </FormSectionCard>
           </AnimatedEntrance>
         ) : null}
         <AnimatedEntrance delay={200} style={styles.actions}>
