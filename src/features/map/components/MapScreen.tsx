@@ -41,6 +41,7 @@ import { useUserLocation } from "@/src/features/map/hooks/useUserLocation";
 import { MapTripPanel } from "@/src/features/route/components/MapTripPanel";
 import { RoutePolyline } from "@/src/features/route/components/RoutePolyline";
 import { RouteStopMarker } from "@/src/features/route/components/RouteStopMarker";
+import { TripStartMarker } from "@/src/features/route/components/TripStartMarker";
 import { useMapTrip } from "@/src/features/route/hooks/useMapTrip";
 import { routeT } from "@/src/features/route/i18n/routeT";
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
@@ -106,9 +107,23 @@ export function MapScreen() {
   // selects customers for the selection actions, it doesn't change the route.
   const trip = useMapTrip(filteredMarkers, !customersLoading, hasPermission ? region : null, markers);
   const tripNavigation = trip.navigation;
+  // A newly chosen start address is shown on the map right away (not the
+  // one restored with a stored trip when the map opens).
+  const startLatitude = trip.startLocation?.latitude ?? null;
+  const startLongitude = trip.startLocation?.longitude ?? null;
+  const shownStartKeyRef = useRef<string | null | undefined>(undefined);
+  useEffect(() => {
+    if (!trip.ready) return;
+    const key = startLatitude === null || startLongitude === null ? null : `${startLatitude},${startLongitude}`;
+    const firstSeen = shownStartKeyRef.current === undefined;
+    if (key === shownStartKeyRef.current) return;
+    shownStartKeyRef.current = key;
+    if (firstSeen || startLatitude === null || startLongitude === null) return;
+    mapRef.current?.animateToRegion({ latitude: startLatitude, longitude: startLongitude, latitudeDelta: 0.05, longitudeDelta: 0.05 });
+  }, [trip.ready, startLatitude, startLongitude]);
   const isSelectedCurrentStop = selectedCustomerId !== null && selectedCustomerId === tripNavigation.currentMarker?.id;
   const isSelectedPendingStop =
-    selectedCustomerId !== null && tripNavigation.pendingMarkers.some((marker) => marker.id === selectedCustomerId);
+    selectedCustomerId !== null && tripNavigation.routeMarkers.some((marker) => marker.id === selectedCustomerId);
   // Completed and skipped stops can both be made normal open stops again.
   const canReactivateSelected =
     selectedCustomerId !== null &&
@@ -308,6 +323,7 @@ export function MapScreen() {
         {trip.ready ? (
           <>
             {trip.lineCoordinates.length >= 2 ? <RoutePolyline coordinates={trip.lineCoordinates} /> : null}
+            {trip.startLocation ? <TripStartMarker location={trip.startLocation} /> : null}
             {trip.orderedMarkers.map((marker, index) => (
               <RouteStopMarker
                 active={marker.id === tripNavigation.currentMarker?.id}
@@ -518,7 +534,7 @@ export function MapScreen() {
           setSkipConfirmVisible(false);
           const customerId = selectedCustomerId;
           setSelectedCustomerId(null);
-          // Only this one customer: it stays open and moves to the end.
+          // Only this one customer: it stays open and in place, the route goes past it.
           if (customerId) trip.skipStop(customerId);
         }}
         title={actionT("sheet.skipConfirmTitle")}

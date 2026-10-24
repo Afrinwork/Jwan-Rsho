@@ -25,6 +25,8 @@ export function useCompletedTodayOrders(scope: CompletedOrdersScope = "today") {
 
   useEffect(() => {
     let cancelled = false;
+    // An older customer join finishing late must not overwrite a newer list.
+    let latestJoinId = 0;
 
     const subscribe = scope === "all"
       ? orderDetailsRepository.subscribeToAllCompletedOrdersWithItems.bind(orderDetailsRepository)
@@ -43,10 +45,11 @@ export function useCompletedTodayOrders(scope: CompletedOrdersScope = "today") {
     );
 
     async function joinCustomers(orders: OrderWithItems[]) {
+      const joinId = ++latestJoinId;
       try {
         const customerIds = [...new Set(orders.map((value) => value.customerId))];
         const customers = await customerRepository.getCustomersByIds(customerIds);
-        if (cancelled) {
+        if (cancelled || joinId !== latestJoinId) {
           return;
         }
         setEntries(buildCompletedTodayEntries(orders, customers));

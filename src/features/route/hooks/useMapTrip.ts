@@ -197,44 +197,18 @@ export function useMapTrip(
     setStartedAt(null);
   }
 
-  // Skipping keeps the customer open: it moves to the end of the route
-  // (before a pinned last stop) and is marked on the map. The stop that came
-  // right after it is remembered, so reactivating it restores its place
-  // (and number) instead of leaving it last. null = it was the last stop.
-  const skippedNextIdRef = useRef(new Map<string, string | null>());
+  // Skipping keeps the customer open, in its place and with its number,
+  // marked on the map — the route line just goes past it (2 → 4 with 3
+  // skipped, see navigation.routeMarkers).
   function skipStop(customerId: string | null = currentStopId) {
     if (!customerId) return;
     navigation.markSkipped(customerId);
-    const pendingIds = navigation.pendingMarkers.map((marker) => marker.id);
-    if (pendingIds.length > 1 && pendingIds.includes(customerId)) {
-      skippedNextIdRef.current.set(customerId, pendingIds[pendingIds.indexOf(customerId) + 1] ?? null);
-      applyPendingOrder([...pendingIds.filter((id) => id !== customerId), customerId]);
-    }
   }
 
-  // Undoes a skip or a completion. A skipped stop goes back to the place it
-  // had before the skip — right before the stop that followed it — and so
-  // gets its old number again. If that place is unknown (skipped before the
-  // app was reopened) or that stop is gone, it is slotted in where it adds
-  // the least detour, like any other stop.
+  // Undoes a skip or a completion: the stop is back on the route line at the
+  // place it kept.
   function reactivateStop(customerId: string) {
-    const wasSkipped = navigation.skippedIds.has(customerId);
     navigation.reactivateStop(customerId);
-    if (!wasSkipped) return;
-    const nextId = skippedNextIdRef.current.get(customerId);
-    skippedNextIdRef.current.delete(customerId);
-    const marker = navigation.pendingMarkers.find((pending) => pending.id === customerId);
-    const others = navigation.pendingMarkers.filter((pending) => pending.id !== customerId);
-    if (!marker || !others.length) return;
-    const otherIds = others.map((pending) => pending.id);
-    const nextIndex = nextId ? otherIds.indexOf(nextId) : -1;
-    if (nextIndex !== -1) {
-      applyPendingOrder([...otherIds.slice(0, nextIndex), customerId, ...otherIds.slice(nextIndex)]);
-    } else if (nextId === null) {
-      applyPendingOrder([...otherIds, customerId]);
-    } else {
-      applyPendingOrder(insertMarkersAfterAnchor(others, [marker], others[0].id).map((pending) => pending.id));
-    }
   }
 
   // A new start point re-sorts the stops nearest-first from there (until the
@@ -334,8 +308,8 @@ export function useMapTrip(
   const etaAnchor = departFromPlannedTime
     ? plannedDeparture
     : started ? liveAnchor?.at ?? startedAt ?? openedAt : liveAnchor?.at ?? openedAt;
-  const nearStops = useMemo(() => navigation.pendingMarkers.slice(0, ROAD_ROUTE_STOP_LIMIT), [navigation.pendingMarkers]);
-  const farStops = useMemo(() => navigation.pendingMarkers.slice(ROAD_ROUTE_STOP_LIMIT), [navigation.pendingMarkers]);
+  const nearStops = useMemo(() => navigation.routeMarkers.slice(0, ROAD_ROUTE_STOP_LIMIT), [navigation.routeMarkers]);
+  const farStops = useMemo(() => navigation.routeMarkers.slice(ROAD_ROUTE_STOP_LIMIT), [navigation.routeMarkers]);
   const polyline = useRoutePolyline(remainingRouteOrigin, nearStops, etaAnchor);
   const lastNearStop = farStops.length ? nearStops.at(-1) ?? null : null;
   const farOrigin = useMemo(
@@ -374,7 +348,9 @@ export function useMapTrip(
 
   async function resort(kind: TripResortKind, fromOverride?: LatLng | null) {
     const from = fromOverride ?? (planningFromChosenStart ? startLocation : live.coordinate) ?? remainingRouteOrigin;
-    const points = navigation.pendingMarkers;
+    // Skipped stops aren't driven to, so they don't steer the new order —
+    // they end up after the sorted ones (see pendingNow below).
+    const points = navigation.routeMarkers;
     if (!from || points.length < 2) return;
 
     setResorting(kind);

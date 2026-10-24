@@ -3,6 +3,7 @@ import { buildNewCustomerForOrder, buildOrderCreateData, buildOrderItemData, Cre
 import { toCamelCase, toJson, toSnakeCase } from "@/src/repositories/supabase/caseMapping";
 import { cityRepository } from "@/src/repositories/supabase/cityRepository";
 import { driverStatsRepository } from "@/src/repositories/supabase/driverStatsRepository";
+import { createLiveRefetch } from "@/src/repositories/supabase/liveRefetch";
 import { requireSupabase, resolveOwnerScope } from "@/src/repositories/supabase/repositoryContext";
 import { dailyCompletionTracker } from "@/src/services/supabase/dailyCompletionTracker";
 import { Order } from "@/src/types/order";
@@ -146,15 +147,8 @@ export const orderRepository = {
     const client = requireSupabase();
     const { ownerId } = resolveOwnerScope();
 
-    const fetchAndEmit = async () => {
-      try {
-        onChange(await orderRepository.getOpenOrders());
-      } catch (error) {
-        onError(error);
-      }
-    };
-
-    void fetchAndEmit();
+    const refetch = createLiveRefetch(() => orderRepository.getOpenOrders(), onChange, onError);
+    refetch.now();
 
     // The topic must be unique per subscription instance, not just per
     // owner: if two callers (e.g. the map screen kept alive in the
@@ -165,10 +159,11 @@ export const orderRepository = {
     // .on(...) onto an already-subscribed channel throws.
     const channel = client
       .channel(`orders_open:${ownerId}:${generateUuid()}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: `owner_id=eq.${ownerId}` }, () => void fetchAndEmit())
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: `owner_id=eq.${ownerId}` }, () => refetch.schedule())
       .subscribe();
 
     return () => {
+      refetch.stop();
       void client.removeChannel(channel);
     };
   },
@@ -194,7 +189,6 @@ export const orderRepository = {
   // blocked by the owner-only orders_update policy -- and trims the
   // completed history at 200.
   async completeOrder(id: string) {
-    const order = await getOwnedOrder(id);
     const { error } = await requireSupabase().rpc("complete_order", { p_order_id: id });
 
     if (error && isMissingFunctionError(error)) {
@@ -215,12 +209,10 @@ export const orderRepository = {
       throw error;
     }
 
-    await dailyCompletionTracker.recordCompletion();
-    // Best-effort: the driver dashboard's live count is a nice-to-have,
-    // not something that should ever block the order actually completing.
-    if (order.assignedDriverId) {
-      await driverStatsRepository.recordCompletion(order.assignedDriverId).catch(() => undefined);
-    }
+    // Best-effort bookkeeping, deliberately not awaited: the order is
+    // already completed at this point, so the caller's button/spinner must
+    // not keep waiting on these extra round trips.
+    void recordCompletionSideEffects(id);
   },
 
   // Live view of today's completed orders (local calendar day), for the
@@ -358,40 +350,50 @@ function subscribeToCompletedOrders(
   const client = requireSupabase();
   const { ownerId } = resolveOwnerScope();
 
-  const fetchAndEmit = async () => {
-    try {
-      const { ownerId: scopedOwnerId, driverId } = resolveOwnerScope();
-      let queryBuilder = requireSupabase()
-        .from("orders")
-        .select("*")
-        .eq("owner_id", scopedOwnerId)
-        .eq("status", "completed");
-      if (scope === "today") {
-        const { startIso, endIsoExclusive } = getLocalDayIsoRange();
-        queryBuilder = queryBuilder.gte("completed_at", startIso).lt("completed_at", endIsoExclusive);
-      }
-      if (driverId) queryBuilder = queryBuilder.eq("assigned_driver_id", driverId);
-
-      const { data, error } = await queryBuilder;
-      if (error) throw error;
-      onChange(sortOrdersByDateDesc((data ?? []).map((row) => toCamelCase<Order>(row)), "completedAt"));
-    } catch (error) {
-      onError(error);
+  const load = async () => {
+    const { ownerId: scopedOwnerId, driverId } = resolveOwnerScope();
+    let queryBuilder = requireSupabase()
+      .from("orders")
+      .select("*")
+      .eq("owner_id", scopedOwnerId)
+      .eq("status", "completed");
+    if (scope === "today") {
+      const { startIso, endIsoExclusive } = getLocalDayIsoRange();
+      queryBuilder = queryBuilder.gte("completed_at", startIso).lt("completed_at", endIsoExclusive);
     }
+    if (driverId) queryBuilder = queryBuilder.eq("assigned_driver_id", driverId);
+
+    const { data, error } = await queryBuilder;
+    if (error) throw error;
+    return sortOrdersByDateDesc((data ?? []).map((row) => toCamelCase<Order>(row)), "completedAt");
   };
 
-  void fetchAndEmit();
+  const refetch = createLiveRefetch(load, onChange, onError);
+  refetch.now();
 
   // Unique per subscription instance -- see subscribeToOpenOrders above
   // for why a topic shared across concurrent callers breaks.
   const channel = client
     .channel(`orders_completed_${scope}:${ownerId}:${generateUuid()}`)
-    .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: `owner_id=eq.${ownerId}` }, () => void fetchAndEmit())
+    .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: `owner_id=eq.${ownerId}` }, () => refetch.schedule())
     .subscribe();
 
   return () => {
+    refetch.stop();
     void client.removeChannel(channel);
   };
+}
+
+async function recordCompletionSideEffects(orderId: string) {
+  await dailyCompletionTracker.recordCompletion().catch(() => undefined);
+  // The driver dashboard's live count is a nice-to-have, never something
+  // that should fail or slow down the completion itself.
+  try {
+    const order = await getOwnedOrder(orderId);
+    if (order.assignedDriverId) await driverStatsRepository.recordCompletion(order.assignedDriverId);
+  } catch {
+    // Best-effort, see above.
+  }
 }
 
 // Keeps the completed-order history bounded: at COMPLETED_ORDERS_LIMIT

@@ -12,16 +12,24 @@ function storageKeys() {
   return { count: `daily_completed_orders_count:${uid}`, windowStart: `daily_completed_orders_window_start:${uid}` };
 }
 
+// Completing several orders at once calls recordCompletion() in parallel --
+// unserialized, every call would read the same count and the increments
+// would overwrite each other.
+let pendingWrite: Promise<void> = Promise.resolve();
+
 export const dailyCompletionTracker = {
-  async recordCompletion() {
-    const keys = storageKeys();
-    const count = await currentWindowCount(keys);
+  recordCompletion() {
+    pendingWrite = pendingWrite.catch(() => undefined).then(async () => {
+      const keys = storageKeys();
+      const count = await currentWindowCount(keys);
 
-    if (count === 0) {
-      await AsyncStorage.setItem(keys.windowStart, String(Date.now()));
-    }
+      if (count === 0) {
+        await AsyncStorage.setItem(keys.windowStart, String(Date.now()));
+      }
 
-    await AsyncStorage.setItem(keys.count, String(count + 1));
+      await AsyncStorage.setItem(keys.count, String(count + 1));
+    });
+    return pendingWrite;
   },
 
   async getCount() {

@@ -1,4 +1,5 @@
 import { toCamelCase } from "@/src/repositories/supabase/caseMapping";
+import { createLiveRefetch } from "@/src/repositories/supabase/liveRefetch";
 import { requireSupabase, resolveOwnerScope } from "@/src/repositories/supabase/repositoryContext";
 import { getBerlinDateKey } from "@/src/utils/time/europeBerlin";
 import { generateUuid } from "@/src/utils/uuid";
@@ -40,16 +41,16 @@ export const driverStatsRepository = {
     const client = requireSupabase();
     const { ownerId } = resolveOwnerScope();
 
-    const fetchAndEmit = async () => {
-      const { data, error } = await client.from("driver_completion_stats").select("*").eq("owner_id", ownerId);
-      if (error) {
-        onError(error);
-        return;
-      }
-      onChange((data ?? []).map((row) => toCamelCase<DriverCompletionStat>({ ...row, id: row.driver_id })));
-    };
-
-    void fetchAndEmit();
+    const refetch = createLiveRefetch(
+      async () => {
+        const { data, error } = await client.from("driver_completion_stats").select("*").eq("owner_id", ownerId);
+        if (error) throw error;
+        return (data ?? []).map((row) => toCamelCase<DriverCompletionStat>({ ...row, id: row.driver_id }));
+      },
+      onChange,
+      onError,
+    );
+    refetch.now();
 
     // Unique per subscription instance -- a topic shared across
     // concurrent callers makes supabase-js return the same
@@ -60,11 +61,12 @@ export const driverStatsRepository = {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "driver_completion_stats", filter: `owner_id=eq.${ownerId}` },
-        () => void fetchAndEmit(),
+        () => refetch.schedule(),
       )
       .subscribe();
 
     return () => {
+      refetch.stop();
       void client.removeChannel(channel);
     };
   },

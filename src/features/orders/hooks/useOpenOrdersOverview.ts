@@ -24,14 +24,17 @@ export function useOpenOrdersOverview() {
   const [pendingActionType, setPendingActionType] = useState<"complete" | "completeMany" | "delete" | null>(null);
   const pendingActionOrderIdRef = useRef<string | null>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  // `silent`: refresh after an action without swapping the whole list for
+  // the full-screen loading view (which lost the scroll position and made
+  // the screen look frozen after every completion).
+  const load = useCallback(async (options?: { silent?: boolean }) => {
+    if (!options?.silent) setLoading(true);
 
     try {
       const openOrders = await orderRepository.getOpenOrders();
       const customerIds = [...new Set(openOrders.map((value) => value.customerId))];
       const [ordersWithItems, customers] = await Promise.all([
-        orderDetailsRepository.getOpenOrdersWithItemsByCustomerIds(customerIds),
+        orderDetailsRepository.getOrdersWithItems(openOrders),
         customerRepository.getCustomersByIds(customerIds),
       ]);
 
@@ -65,7 +68,7 @@ export function useOpenOrdersOverview() {
       setActionSuccess(null);
       await orderRepository.completeOrder(orderId);
       setActionSuccess(t("openOrders.completeSuccess"));
-      await load();
+      await load({ silent: true });
     } catch (value) {
       setActionError(formatError(value).message);
       setActionSuccess(null);
@@ -89,7 +92,7 @@ export function useOpenOrdersOverview() {
       setActionSuccess(null);
       await orderRepository.deleteOrder(orderId);
       setActionSuccess(t("openOrders.deleteSuccess"));
-      await load();
+      await load({ silent: true });
     } catch (value) {
       setActionError(formatError(value).message);
       setActionSuccess(null);
@@ -115,7 +118,7 @@ export function useOpenOrdersOverview() {
       setActionSuccess(null);
       await Promise.all(uniqueOrderIds.map((orderId) => orderRepository.completeOrder(orderId)));
       setActionSuccess(t("openOrders.completeManySuccess", { count: uniqueOrderIds.length }));
-      await load();
+      await load({ silent: true });
     } catch (value) {
       setActionError(formatError(value).message);
       setActionSuccess(null);
@@ -143,7 +146,7 @@ export function useOpenOrdersOverview() {
     deleteOrder,
     pendingActionOrderId,
     pendingActionType,
-    reload: load,
+    reload: () => load(),
   };
 }
 

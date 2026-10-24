@@ -2,7 +2,16 @@
 // app in the background (common on Android while Google Maps navigates):
 // on the next start the driver lands back in the same trip instead of on the
 // start screen with every completed/skipped stop forgotten.
-export type TripStartLocation = { latitude: number; longitude: number; label: string };
+// address/city/country: the fields it was entered with, to show them again
+// for editing (absent on trips stored before those fields existed).
+export type TripStartLocation = {
+  latitude: number;
+  longitude: number;
+  label: string;
+  address?: string;
+  city?: string;
+  country?: string;
+};
 
 export type StoredActiveTrip = {
   userId: string;

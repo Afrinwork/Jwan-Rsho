@@ -21,13 +21,11 @@ export const orderDetailsRepository = {
     return (data ?? []).map((row) => ({ ...toCamelCase<OrderItem>(row), quantity: Number(row.quantity) }));
   },
 
+  // Batched (one items query per 100 orders) instead of an ownership check
+  // plus an items query per order -- with many open orders the per-order
+  // version fired hundreds of requests after every completion.
   async getOrdersWithItems(orders: Order[]) {
-    return Promise.all(
-      orders.map(async (value) => ({
-        ...value,
-        items: await this.getOrderItems(value.id),
-      })),
-    );
+    return getItemsForOrders(orders);
   },
 
   async getOrderByIdWithItems(orderId: string): Promise<OrderWithItems> {
@@ -53,9 +51,7 @@ export const orderDetailsRepository = {
     onChange: (orders: OrderWithItems[]) => void,
     onError: (error: unknown) => void,
   ) {
-    return orderRepository.subscribeToCompletedOrdersToday((orders) => {
-      this.getOrdersWithItems(orders).then(onChange).catch(onError);
-    }, onError);
+    return orderRepository.subscribeToCompletedOrdersToday(withItemsInOrder(onChange, onError), onError);
   },
 
   // Same as above for the whole completed history (up to 200 orders), so
@@ -64,11 +60,25 @@ export const orderDetailsRepository = {
     onChange: (orders: OrderWithItems[]) => void,
     onError: (error: unknown) => void,
   ) {
-    return orderRepository.subscribeToAllCompletedOrders((orders) => {
-      getItemsForOrders(orders).then(onChange).catch(onError);
-    }, onError);
+    return orderRepository.subscribeToAllCompletedOrders(withItemsInOrder(onChange, onError), onError);
   },
 };
+
+// Joins items onto each emitted order list, dropping a result that finishes
+// after a newer list arrived so an older snapshot never overwrites it.
+function withItemsInOrder(onChange: (orders: OrderWithItems[]) => void, onError: (error: unknown) => void) {
+  let latestRequestId = 0;
+  return (orders: Order[]) => {
+    const requestId = ++latestRequestId;
+    getItemsForOrders(orders)
+      .then((value) => {
+        if (requestId === latestRequestId) onChange(value);
+      })
+      .catch((error) => {
+        if (requestId === latestRequestId) onError(error);
+      });
+  };
+}
 
 const ITEM_BATCH_SIZE = 100;
 

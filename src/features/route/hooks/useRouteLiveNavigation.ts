@@ -29,7 +29,11 @@ export function useRouteLiveNavigation(
   const [legOrigin, setLegOrigin] = useState<{ latitude: number; longitude: number } | null>(null);
 
   const pendingMarkers = useMemo(() => markers.filter((marker) => !handledIds.has(marker.id)), [markers, handledIds]);
-  const currentMarker = pendingMarkers[0] ?? null;
+  // The stops actually driven to: a skipped stop keeps its place and number
+  // but the route line goes past it (2 → 4 with 3 skipped), and it is never
+  // the current stop, until it is reactivated.
+  const routeMarkers = useMemo(() => pendingMarkers.filter((marker) => !skippedIds.has(marker.id)), [pendingMarkers, skippedIds]);
+  const currentMarker = routeMarkers[0] ?? null;
   const allDone = markers.length > 0 && pendingMarkers.length === 0;
 
   const distanceToCurrentKm = useMemo(() => {
@@ -78,8 +82,8 @@ export function useRouteLiveNavigation(
   }, [currentMarker]);
 
   // A skipped customer stays OPEN: still pending, just marked (orange) so the
-  // driver sees it still needs a visit. Moving it to the end of the route is
-  // the caller's job (useMapTrip owns the order). Deliberately does NOT touch
+  // driver sees it still needs a visit, and left out of routeMarkers so the
+  // route goes straight on to the next stop. Deliberately does NOT touch
   // legOrigin, unlike confirmArrival above — a skipped stop was never
   // visited, so the route keeps departing from where it already was.
   const markSkipped = useCallback((customerId: string) => {
@@ -129,6 +133,8 @@ export function useRouteLiveNavigation(
   return {
     currentMarker,
     pendingMarkers,
+    // Pending stops minus the skipped ones — what the route line covers.
+    routeMarkers,
     // Completed stop ids — the map marker for these stays visible (never
     // removed), just rendered muted/inactive instead of the normal
     // upcoming-stop color.

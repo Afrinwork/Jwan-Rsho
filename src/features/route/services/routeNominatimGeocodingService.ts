@@ -22,6 +22,10 @@ export async function geocodeEuropeanAddressViaNominatim(query: string): Promise
     format: "jsonv2",
     addressdetails: "1",
     limit: "1",
+    // Only European results — otherwise the single result can be a
+    // same-named place elsewhere, rejected below although a European match
+    // exists.
+    countrycodes: [...EUROPEAN_COUNTRY_CODES].join(",").toLowerCase(),
   });
 
   const response = await fetch(`${NOMINATIM_ENDPOINT}?${params.toString()}`, {
