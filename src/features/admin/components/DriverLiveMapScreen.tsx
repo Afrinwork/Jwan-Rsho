@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Platform, Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
@@ -9,6 +9,8 @@ import { AppText } from "@/src/components/ui/AppText";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { spacing } from "@/src/constants/spacing";
 import { AppMapView } from "@/src/features/map/components/AppMapView";
+import { MapPinLayer } from "@/src/features/map/components/MapPinLayer";
+import { routeStopPin } from "@/src/features/map/services/mapPinService";
 import { DriverPositionPin } from "@/src/features/admin/components/DriverPositionPin";
 import { DriverCityVisibility, DriverStopOrderList } from "@/src/features/admin/components/DriverStopOrderList";
 import { useDriverAssignedMarkers } from "@/src/features/admin/hooks/useDriverAssignedMarkers";
@@ -28,13 +30,25 @@ import { MapRegion } from "@/src/features/map/types/mapTypes";
 import { AppMapViewHandle } from "@/src/features/map/types/mapViewTypes";
 import { radius } from "@/src/theme/radius";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
-import { formatTime } from "@/src/utils/date";
+import { formatDate, formatTime } from "@/src/utils/date";
+import { useDriverLiveLocation } from "@/src/features/admin/hooks/useDriverLiveLocation";
 
 const FALLBACK_REGION: MapRegion = { latitude: 52.52, longitude: 13.405, latitudeDelta: 5, longitudeDelta: 5 };
 const DEFAULT_DELTA = { latitudeDelta: 0.08, longitudeDelta: 0.08 };
 // A trip mirror older than this is treated as stale (app killed mid-trip
 // without clearing it), not as "driving right now".
 const TRIP_STALE_MS = 12 * 60 * 60 * 1000;
+// A live position from a started trip this recent counts as "driving now".
+const LIVE_FRESH_MS = 5 * 60 * 1000;
+
+// Pins here aren't tappable; one shared function keeps them memoized.
+const ignorePress = () => undefined;
+
+// Time only for today, date and time for anything older.
+function formatSeenAt(value: string, now: number) {
+  const sameDay = new Date(value).toDateString() === new Date(now).toDateString();
+  return sameDay ? formatTime(value) : `${formatDate(value)} ${formatTime(value)}`;
+}
 
 export type DriverLocation = {
   latitude: number;
@@ -103,6 +117,24 @@ export function DriverLiveMapScreen(props: DriverLiveMapScreenProps) {
       setVisibilityBusy(false);
     }
   }
+  // Where the driver is: whichever is newer of the live position their app
+  // reports (driving, app opened) and the last status report. Updates live.
+  const live = useDriverLiveLocation(props.driverId);
+  const location = useMemo<DriverLocation | null>(() => {
+    const report = props.location;
+    if (live && (!report || new Date(live.updatedAt).getTime() >= new Date(report.updatedAt).getTime())) {
+      return { latitude: live.latitude, longitude: live.longitude, address: "", updatedAt: live.updatedAt };
+    }
+    return report;
+  }, [live, props.location]);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(timer);
+  }, []);
+  const isDrivingNow =
+    live !== null && live.updatedAt === location?.updatedAt && live.source === "trip" && now - new Date(live.updatedAt).getTime() < LIVE_FRESH_MS;
+
   const isManualOrder = routeOrder.savedIds !== null && markers.some((marker) => routeOrder.savedIds?.includes(marker.id));
   const [moveStopId, setMoveStopId] = useState<string | null>(null);
 
@@ -123,10 +155,10 @@ export function DriverLiveMapScreen(props: DriverLiveMapScreenProps) {
   const nextTripStop = trip?.currentCustomerId ? markerById.get(trip.currentCustomerId) ?? null : null;
   const tripLine = useMemo(
     () => [
-      ...(props.location ? [{ latitude: props.location.latitude, longitude: props.location.longitude }] : []),
+      ...(location ? [{ latitude: location.latitude, longitude: location.longitude }] : []),
       ...tripMarkers.map((marker) => ({ latitude: marker.latitude, longitude: marker.longitude })),
     ],
-    [props.location, tripMarkers],
+    [location, tripMarkers],
   );
   // The list follows the driver's real driving order while a trip is
   // running — numbered like the pins — so a move here changes exactly that
@@ -152,7 +184,7 @@ export function DriverLiveMapScreen(props: DriverLiveMapScreenProps) {
   const variantIndexRef = useRef(0);
   async function resortForDriver(kind: "variant" | "optimize" | "nearest") {
     const stops = tripMarkers.length ? listMarkers.filter((marker) => tripIds.has(marker.id)) : listMarkers;
-    const from = props.location ?? stops[0];
+    const from = location ?? stops[0];
     if (!from || stops.length < 2) return;
     setResorting(kind);
     try {
@@ -177,18 +209,26 @@ export function DriverLiveMapScreen(props: DriverLiveMapScreenProps) {
     }
   }
 
+  function describeLocation() {
+    if (!location) return t("driverMap.noLocation");
+    const time = formatSeenAt(location.updatedAt, now);
+    if (isDrivingNow) return t("driverMap.liveDriving", { time });
+    if (location.address) return t("driverMap.lastUpdate", { time, address: location.address });
+    return t("driverMap.lastSeen", { time });
+  }
+
   // Everything but the map starts collapsed, so the map gets the screen.
   const [panelOpen, setPanelOpen] = useState(false);
 
   const initialRegion: MapRegion = useMemo(() => {
-    if (props.location) {
-      return { latitude: props.location.latitude, longitude: props.location.longitude, ...DEFAULT_DELTA };
+    if (location) {
+      return { latitude: location.latitude, longitude: location.longitude, ...DEFAULT_DELTA };
     }
     if (markers.length) {
       return { latitude: markers[0].latitude, longitude: markers[0].longitude, ...DEFAULT_DELTA };
     }
     return FALLBACK_REGION;
-  }, [props.location, markers]);
+  }, [location, markers]);
 
   // Fit the camera to the driver + their stops once they're known, instead
   // of a fixed zoom around just one of them.
@@ -197,45 +237,74 @@ export function DriverLiveMapScreen(props: DriverLiveMapScreenProps) {
   useEffect(() => {
     if (fittedRef.current || !mapRef.current || !orderedMarkers.length) return;
     const coordinates = [
-      ...(props.location ? [{ latitude: props.location.latitude, longitude: props.location.longitude }] : []),
+      ...(location ? [{ latitude: location.latitude, longitude: location.longitude }] : []),
       ...orderedMarkers.map((marker) => ({ latitude: marker.latitude, longitude: marker.longitude })),
     ];
     if (coordinates.length < 2) return;
     fittedRef.current = true;
     mapRef.current.fitToCoordinates(coordinates, { animated: true, edgePadding: { top: 140, right: 50, bottom: 140, left: 50 } });
-  }, [orderedMarkers, props.location]);
+  }, [orderedMarkers, location]);
+
+  // A driver without open stops: the live position arrives after the map
+  // was laid out, so bring the camera to the driver once it's known.
+  const centeredOnDriverRef = useRef(false);
+  useEffect(() => {
+    if (centeredOnDriverRef.current || !mapRef.current || !location || loading || orderedMarkers.length) return;
+    centeredOnDriverRef.current = true;
+    mapRef.current.animateToRegion({ latitude: location.latitude, longitude: location.longitude, ...DEFAULT_DELTA });
+  }, [location, loading, orderedMarkers.length]);
+
+  // Numbered: the trip's stops in driving order, or the driver's list.
+  // Muted, no number: open stops outside the trip, or hidden from the driver.
+  const numberedMarkers = trip ? tripMarkers : markers;
+  const mutedMarkers = useMemo(
+    () => (trip ? orderedMarkers.filter((marker) => !tripIds.has(marker.id)) : hiddenMarkers),
+    [trip, orderedMarkers, tripIds, hiddenMarkers],
+  );
+  // Android draws them in one native map layer (see MapPinLayer).
+  const currentCustomerId = trip?.currentCustomerId ?? null;
+  const androidPins = useMemo(
+    () =>
+      Platform.OS === "android"
+        ? [
+            ...numberedMarkers.map((marker, index) => routeStopPin(marker, String(index + 1), { active: marker.id === currentCustomerId })),
+            ...mutedMarkers.map((marker) => routeStopPin(marker, "–", { active: false, inactive: true })),
+          ]
+        : [],
+    [numberedMarkers, mutedMarkers, currentCustomerId],
+  );
 
   return (
     <AppErrorBoundary>
       <View style={styles.screen}>
         <AppMapView initialRegion={initialRegion} ref={mapRef} showsCompass style={StyleSheet.absoluteFill}>
           {trip && tripLine.length >= 2 ? <RoutePolyline coordinates={tripLine} /> : null}
-          {props.location ? (
-            <DriverPositionPin coordinate={{ latitude: props.location.latitude, longitude: props.location.longitude }} title={props.driverName} />
+          {location ? (
+            <DriverPositionPin coordinate={{ latitude: location.latitude, longitude: location.longitude }} title={props.driverName} />
           ) : null}
-          {trip
-            ? tripMarkers.map((marker, index) => (
+          {Platform.OS === "android" ? (
+            <MapPinLayer id="driver-map" onPress={ignorePress} pins={androidPins} />
+          ) : (
+            <>
+              {numberedMarkers.map((marker, index) => (
                 <RouteStopMarker
-                  active={marker.id === trip.currentCustomerId}
+                  active={marker.id === trip?.currentCustomerId}
                   key={marker.id}
                   label={String(index + 1)}
                   marker={marker}
-                  onPress={() => undefined}
+                  onPress={ignorePress}
                 />
-              ))
-            : markers.map((marker, index) => (
-                <RouteStopMarker key={marker.id} active={false} label={String(index + 1)} marker={marker} onPress={() => undefined} />
               ))}
-          {/* Open stops that aren't part of the trip (or hidden from the
-              driver) — muted, no number. */}
-          {(trip ? orderedMarkers.filter((marker) => !tripIds.has(marker.id)) : hiddenMarkers).map((marker) => (
-            <RouteStopMarker active={false} inactive key={marker.id} label="–" marker={marker} onPress={() => undefined} />
-          ))}
+              {mutedMarkers.map((marker) => (
+                <RouteStopMarker active={false} inactive key={marker.id} label="–" marker={marker} onPress={ignorePress} />
+              ))}
+            </>
+          )}
         </AppMapView>
 
         <SafeAreaView edges={["top"]} pointerEvents="box-none" style={styles.overlay}>
           <View style={[styles.statusPill, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
-            <View style={[styles.statusDot, { backgroundColor: trip ? colors.success : colors.mutedText }]} />
+            <View style={[styles.statusDot, { backgroundColor: trip || isDrivingNow ? colors.success : colors.mutedText }]} />
             <View style={styles.statusText}>
               <AppText numberOfLines={1} variant="bodyMedium">
                 {props.driverName}
@@ -245,6 +314,14 @@ export function DriverLiveMapScreen(props: DriverLiveMapScreenProps) {
                   ? t("driverMap.tripActive", { count: tripMarkers.length, name: nextTripStop?.title ?? "–" })
                   : t("driverMap.tripInactive")}
               </AppText>
+              <AppText color="muted" numberOfLines={1} variant="caption">
+                {describeLocation()}
+              </AppText>
+              {live?.lastCustomerName && live.lastCustomerAt ? (
+                <AppText color="muted" numberOfLines={1} variant="caption">
+                  {t("driverMap.lastCustomer", { name: live.lastCustomerName, time: formatSeenAt(live.lastCustomerAt, now) })}
+                </AppText>
+              ) : null}
             </View>
             {loading ? <ActivityIndicator color={colors.primary} /> : null}
           </View>
@@ -266,11 +343,6 @@ export function DriverLiveMapScreen(props: DriverLiveMapScreenProps) {
             <View style={styles.panelBody}>
               <AppText color="muted" variant="caption">
                 {t("driverMap.progress", { open: props.openCount, completed: props.completedToday })}
-              </AppText>
-              <AppText color="muted" numberOfLines={2} variant="caption">
-                {props.location
-                  ? t("driverMap.lastUpdate", { time: formatTime(props.location.updatedAt), address: props.location.address })
-                  : t("driverMap.noLocation")}
               </AppText>
               {error ? <ErrorState message={error} /> : null}
               {routeOrder.error ? <ErrorState message={routeOrder.error} /> : null}

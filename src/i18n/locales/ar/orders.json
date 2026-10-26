@@ -17,8 +17,7 @@
   },
   "driverSection": {
     "title": "السائق",
-    "none": "بدون تعيين",
-    "self": "{{name}} (أساسي)"
+    "empty": "— فارغ (بدون سائق)"
   },
   "details": {
     "noOrderSelected": "لم يتم اختيار طلب.",

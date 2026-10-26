@@ -37,8 +37,13 @@ export function useRouteOrder(userId: string | null) {
         routeOrderRepository.subscribeToRouteOrder(
           userId,
           (order) => {
-            setSavedIds(order?.customerIds.length ? order.customerIds : null);
-            setTrip(order?.trip ?? null);
+            // Every own trip-mirror write comes back through here: keep the
+            // same array/object when nothing changed, so the map doesn't
+            // re-sort and re-render on each echo.
+            const nextIds = order?.customerIds.length ? order.customerIds : null;
+            setSavedIds((current) => (current?.join(",") === nextIds?.join(",") ? current : nextIds));
+            const nextTrip = order?.trip ?? null;
+            setTrip((current) => (JSON.stringify(current) === JSON.stringify(nextTrip) ? current : nextTrip));
             setLoaded(true);
             setError(null);
           },

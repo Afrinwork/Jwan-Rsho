@@ -16,6 +16,7 @@
   "fields": {
     "name": "Name",
     "email": "E-Mail-Adresse",
+    "currentPassword": "Aktuelles Passwort",
     "newPassword": "Neues Passwort"
   },
   "theme": {

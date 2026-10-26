@@ -90,7 +90,10 @@
     "nothingChanged": "Es wurde nichts geändert – für diesen Fahrer gibt es dort keine offene Bestellung.",
     "tripActive": "Unterwegs · noch {{count}} Stopps · als Nächstes: {{name}}",
     "tripInactive": "Gerade keine Fahrt gestartet",
-    "panelToggle": "Details, Liste & Ausblenden · {{count}} Stopps · {{hidden}} ausgeblendet"
+    "panelToggle": "Details, Liste & Ausblenden · {{count}} Stopps · {{hidden}} ausgeblendet",
+    "liveDriving": "Fährt gerade · Standort von {{time}}",
+    "lastSeen": "Zuletzt gesehen um {{time}} (App geöffnet)",
+    "lastCustomer": "Letzter Kunde: {{name}} · {{time}}"
   },
   "adminDashboard": {
     "title": "Admins",

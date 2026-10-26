@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 
 import { distanceKm } from "@/src/features/map/utils/circleMath";
 import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
+import { reportCompletedCustomer } from "@/src/features/route/hooks/useDriverPositionReporting";
 import { orderDetailsRepository } from "@/src/repositories/orderDetailsRepository";
 import { orderRepository } from "@/src/repositories/orderRepository";
 import { formatError } from "@/src/utils/formatError";
@@ -67,6 +68,7 @@ export function useRouteLiveNavigation(
         return next;
       });
       setLegOrigin({ latitude: currentMarker.latitude, longitude: currentMarker.longitude });
+      reportCompletedCustomer({ latitude: currentMarker.latitude, longitude: currentMarker.longitude, name: currentMarker.title });
       return true;
     } catch (error) {
       setActionError(formatError(error).message);

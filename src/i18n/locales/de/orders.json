@@ -17,8 +17,7 @@
   },
   "driverSection": {
     "title": "Fahrer",
-    "none": "Keine Zuweisung",
-    "self": "{{name}} (Standard)"
+    "empty": "— Leer (kein Fahrer)"
   },
   "details": {
     "noOrderSelected": "Es wurde keine Bestellung ausgewaehlt.",

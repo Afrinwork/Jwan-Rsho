@@ -54,13 +54,28 @@ export function SettingsScreen() {
               value={settings.email}
             />
           </FormField>
+          <FormField label={t("fields.currentPassword")}>
+            <AppInput
+              autoCapitalize="none"
+              autoCorrect={false}
+              onChangeText={settings.setCurrentPassword}
+              secureTextEntry
+              value={settings.currentPassword}
+            />
+          </FormField>
           <FormField label={t("fields.newPassword")}>
-            <AppInput onChangeText={settings.setNewPassword} secureTextEntry value={settings.newPassword} />
+            <AppInput
+              autoCapitalize="none"
+              autoCorrect={false}
+              onChangeText={settings.setNewPassword}
+              secureTextEntry
+              value={settings.newPassword}
+            />
           </FormField>
           {settings.passwordError ? <ErrorState message={settings.passwordError} /> : null}
           {settings.passwordSuccess ? <SuccessState message={settings.passwordSuccess} /> : null}
           <AppButton
-            disabled={!settings.newPassword.trim() || settings.changingPassword}
+            disabled={!settings.currentPassword || !settings.newPassword.trim() || settings.changingPassword}
             label={t("password.change")}
             loading={settings.changingPassword}
             onPress={() => void settings.changePassword()}

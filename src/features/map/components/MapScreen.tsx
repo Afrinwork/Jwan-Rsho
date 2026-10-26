@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFocusEffect, useRouter } from "expo-router";
-import { AppState, AppStateStatus, StyleSheet, View } from "react-native";
+import { AppState, AppStateStatus, Platform, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { mapT } from "@/src/features/map/i18n/mapT";
@@ -37,6 +37,8 @@ import { useMapCustomerSelection } from "@/src/features/map/hooks/useMapCustomer
 import { useMapFilters } from "@/src/features/map/hooks/useMapFilters";
 import { useMapStyleKind } from "@/src/features/map/hooks/useMapStyleKind";
 import { mapClusteringService } from "@/src/features/map/services/mapClusteringService";
+import { customerPin, routeStopPin } from "@/src/features/map/services/mapPinService";
+import { MapPinLayer } from "@/src/features/map/components/MapPinLayer";
 import { useUserLocation } from "@/src/features/map/hooks/useUserLocation";
 import { MapTripPanel } from "@/src/features/route/components/MapTripPanel";
 import { RoutePolyline } from "@/src/features/route/components/RoutePolyline";
@@ -147,15 +149,43 @@ export function MapScreen() {
     setActiveCategory("trip");
   }
 
-  function handleStopPress(marker: (typeof filteredMarkers)[number]) {
+  function handleStopPress(customerId: string) {
+    const marker = filteredMarkers.find((value) => value.id === customerId);
+    if (!marker) return;
     if (customerSelection.selection.activeTool === "single") return customerSelection.selection.handleMarkerPress(marker);
     if (customerSelection.selection.activeTool !== "none") return;
     setSelectedCustomerId(marker.id);
   }
+  // One stable press handler for every pin, so memoized markers skip
+  // re-rendering on each GPS update — on Android every pin is a native view,
+  // and re-rendering all of them every few seconds made the app hang.
+  const handleStopPressRef = useRef(handleStopPress);
+  useEffect(() => {
+    handleStopPressRef.current = handleStopPress;
+  });
+  const onMarkerPress = useCallback((customerId: string) => handleStopPressRef.current(customerId), []);
   const clusterItems = useMemo(
     () => mapClusteringService.buildClusterItems({ markers: filteredMarkers, region: visibleRegion }),
     [filteredMarkers, visibleRegion],
   );
+  // Android draws every pin in one native map layer (MapPinLayer) instead of
+  // a view per customer — same pins, states and numbers as below.
+  const currentStopId = tripNavigation.currentMarker?.id;
+  const androidPins = useMemo(() => {
+    if (Platform.OS !== "android") return [];
+    if (!trip.ready) return filteredMarkers.map((marker) => customerPin(marker, selectedIdSet.has(marker.id)));
+    return [
+      ...trip.orderedMarkers.map((marker, index) =>
+        routeStopPin(marker, String(index + 1), {
+          active: marker.id === currentStopId,
+          inactive: tripNavigation.handledIds.has(marker.id),
+          skipped: tripNavigation.skippedIds.has(marker.id),
+          selected: selectedIdSet.has(marker.id),
+        }),
+      ),
+      ...offRouteMarkers.map((marker) => customerPin(marker, selectedIdSet.has(marker.id))),
+    ];
+  }, [trip.ready, trip.orderedMarkers, filteredMarkers, offRouteMarkers, currentStopId, tripNavigation.handledIds, tripNavigation.skippedIds, selectedIdSet]);
 
   // Re-syncs the tracked viewport whenever the underlying location region
   // changes (e.g. once GPS resolves) — adjusted directly during render
@@ -320,10 +350,12 @@ export function MapScreen() {
         userLocationCoordinate={hasPermission ? region : null}
         zoomEnabled={mapGesturesEnabled}
       >
-        {trip.ready ? (
+        {trip.ready && trip.lineCoordinates.length >= 2 ? <RoutePolyline coordinates={trip.lineCoordinates} /> : null}
+        {trip.ready && trip.startLocation ? <TripStartMarker location={trip.startLocation} /> : null}
+        {Platform.OS === "android" ? (
+          <MapPinLayer id="customer-map" onPress={onMarkerPress} pins={androidPins} />
+        ) : trip.ready ? (
           <>
-            {trip.lineCoordinates.length >= 2 ? <RoutePolyline coordinates={trip.lineCoordinates} /> : null}
-            {trip.startLocation ? <TripStartMarker location={trip.startLocation} /> : null}
             {trip.orderedMarkers.map((marker, index) => (
               <RouteStopMarker
                 active={marker.id === tripNavigation.currentMarker?.id}
@@ -331,7 +363,7 @@ export function MapScreen() {
                 key={marker.id}
                 label={String(index + 1)}
                 marker={marker}
-                onPress={() => handleStopPress(marker)}
+                onPress={onMarkerPress}
                 selected={selectedIdSet.has(marker.id)}
                 skipped={tripNavigation.skippedIds.has(marker.id)}
               />
@@ -340,7 +372,7 @@ export function MapScreen() {
               <CustomerMarker
                 key={marker.id}
                 marker={marker}
-                onPress={() => handleStopPress(marker)}
+                onPress={onMarkerPress}
                 selected={selectedIdSet.has(marker.id)}
               />
             ))}
@@ -351,7 +383,7 @@ export function MapScreen() {
               <CustomerMarker
                 key={item.id}
                 marker={item.marker}
-                onPress={() => handleStopPress(item.marker)}
+                onPress={onMarkerPress}
                 selected={selectedIdSet.has(item.marker.id)}
               />
             ),

@@ -5,7 +5,7 @@ import { isDriver } from "@/src/features/auth/permissions";
 import { driverNameFromOrderNote } from "@/src/features/orders/services/driverOrderNote";
 import { customerRepository } from "@/src/repositories/customerRepository";
 import { orderRepository } from "@/src/repositories/orderRepository";
-import { buildMapCustomerMarkers, getCustomersNeedingAddressCheck, hasValidCoordinates } from "@/src/features/map/services/mapCustomerService";
+import { buildMapCustomerMarkers, getCustomersNeedingAddressCheck, hasValidCoordinates, reuseUnchangedMarkers } from "@/src/features/map/services/mapCustomerService";
 import { CustomerNeedingAddressCheck, MapCustomerMarker } from "@/src/features/map/types/mapTypes";
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 import { geocodingService } from "@/src/services/geocodingService";
@@ -129,7 +129,7 @@ export function useMapCustomers(): MapCustomersState {
 
       const nextMarkers = buildMapCustomerMarkers(healedCustomers, openOrders);
       const nextNeedsAddressCheck = getCustomersNeedingAddressCheck(healedCustomers, openOrders);
-      setMarkers(nextMarkers);
+      setMarkers((current) => reuseUnchangedMarkers(current, nextMarkers));
       setNeedsAddressCheck(nextNeedsAddressCheck);
       setOpenOrdersCount(openOrders.length);
       setCustomersCount(uniqueCustomerIds.length);

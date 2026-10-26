@@ -1,5 +1,6 @@
 import { Customer } from "@/src/types/customer";
 import { Order } from "@/src/types/order";
+import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
 
 export function countOpenOrdersByCustomerId(orders: Order[]) {
   const openOrderCountByCustomerId = new Map<string, number>();
@@ -133,4 +134,31 @@ function hasStreetAddress(customer: Customer) {
 
 function normalizeAddressPart(value: string) {
   return value.trim().toLocaleLowerCase("de-DE").replace(/\s+/g, " ");
+}
+
+function sameMarker(left: MapCustomerMarker, right: MapCustomerMarker) {
+  const keys = new Set([...Object.keys(left), ...Object.keys(right)]) as Set<keyof MapCustomerMarker>;
+  for (const key of keys) {
+    if (left[key] !== right[key]) return false;
+  }
+  return true;
+}
+
+// A live reload fires on every order change of the whole company, and
+// usually nothing on this map changed. Keeping unchanged markers (and the
+// list itself when nothing changed at all) as the same objects lets the
+// route, the pins and every memoized component skip their work.
+export function reuseUnchangedMarkers(previous: MapCustomerMarker[], next: MapCustomerMarker[]) {
+  const previousById = new Map(previous.map((marker) => [marker.id, marker]));
+  let changed = previous.length !== next.length;
+  const merged = next.map((marker, index) => {
+    const known = previousById.get(marker.id);
+    if (known && sameMarker(known, marker)) {
+      if (previous[index] !== known) changed = true;
+      return known;
+    }
+    changed = true;
+    return marker;
+  });
+  return changed ? merged : previous;
 }

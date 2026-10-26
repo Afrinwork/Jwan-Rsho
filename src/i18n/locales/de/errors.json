@@ -23,5 +23,9 @@
   "invalidForm": "Bitte pruefe die eingegebenen Daten im Formular.",
   "uiCrashTitle": "Diese Ansicht wurde vorsorglich angehalten.",
   "uiCrashMessage": "In der Ansicht ist ein Fehler aufgetreten, der Absturz der ganzen App wurde aber verhindert. Du kannst diesen Bildschirm jetzt neu laden.",
-  "databaseOutdated": "Die Datenbank ist noch nicht auf dem neuesten Stand. Bitte den Administrator informieren – erneutes Versuchen hilft hier nicht."
+  "databaseOutdated": "Die Datenbank ist noch nicht auf dem neuesten Stand. Bitte den Administrator informieren – erneutes Versuchen hilft hier nicht.",
+  "currentPasswordWrong": "Das aktuelle Passwort ist falsch.",
+  "weakPassword": "Das neue Passwort ist zu schwach. Bitte mindestens 6 Zeichen verwenden (ggf. Gross-/Kleinbuchstaben, Zahl und Sonderzeichen).",
+  "samePassword": "Das neue Passwort muss sich vom aktuellen unterscheiden.",
+  "passwordNotChanged": "Das Passwort wurde nicht geaendert. Bitte versuche es erneut."
 }

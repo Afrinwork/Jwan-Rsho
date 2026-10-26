@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { isDriver } from "@/src/features/auth/permissions";
 import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
+import { useReportTripPosition } from "@/src/features/route/hooks/useDriverPositionReporting";
 import { useLiveLocation } from "@/src/features/route/hooks/useLiveLocation";
 import { useMovementAnchor } from "@/src/features/route/hooks/useMovementAnchor";
 import { useRouteLiveNavigation } from "@/src/features/route/hooks/useRouteLiveNavigation";
@@ -104,6 +105,9 @@ export function useMapTrip(
     [orderIds, markerById],
   );
   const navigation = useRouteLiveNavigation(orderedMarkers, live.coordinate);
+  // The admin's driver view follows the driver live while the map is open
+  // ("driving" once the trip is started).
+  useReportTripPosition(live.coordinate, isCurrentUserDriver, started ? "trip" : "app");
   const restoreNavigation = navigation.restore;
   const currentStopId = navigation.currentMarker?.id ?? null;
   const currentStopIdRef = useRef<string | null>(null);

@@ -35,14 +35,20 @@ function rasterSource(service: string) {
   };
 }
 
+// The raster styles have no fonts of their own; the pin numbers (MapPinLayer,
+// "Noto Sans Bold") come from the same font server the vector styles use.
+const GLYPHS_URL = "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf";
+
 const SATELLITE_STYLE: StyleSpecification = {
   version: 8,
+  glyphs: GLYPHS_URL,
   sources: { imagery: rasterSource("World_Imagery") },
   layers: [{ id: "imagery", type: "raster", source: "imagery" }],
 };
 
 const HYBRID_STYLE: StyleSpecification = {
   version: 8,
+  glyphs: GLYPHS_URL,
   sources: {
     imagery: rasterSource("World_Imagery"),
     roads: rasterSource("Reference/World_Transportation"),

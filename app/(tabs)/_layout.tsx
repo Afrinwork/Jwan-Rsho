@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { isDriver } from "@/src/features/auth/permissions";
+import { useReportPositionOnAppOpen } from "@/src/features/route/hooks/useDriverPositionReporting";
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 import { typography } from "@/src/theme/typography";
 
@@ -35,6 +36,8 @@ export default function TabsLayout() {
   const { t } = useTranslation("navigation");
   const currentUser = useCurrentUser();
   const isCurrentUserDriver = isDriver(currentUser);
+  // Lets the admin's driver view show where the driver last opened the app.
+  useReportPositionOnAppOpen(isCurrentUserDriver);
 
   return (
     <Tabs

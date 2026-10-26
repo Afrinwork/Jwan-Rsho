@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { FlatList, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
 import { CompactScreenHeader } from "@/src/components/ui/CompactScreenHeader";
 import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
 import { EmptyState } from "@/src/components/ui/EmptyState";
@@ -39,46 +38,46 @@ export function CustomerManagementScreen() {
     return <LoadingView label={t("customersScreen.loading")} />;
   }
 
+  // Virtualized: only the cards on screen are rendered, so hundreds of
+  // customers (and typing in the search) stay smooth on slower phones.
+  const listHeader = (
+    <View style={styles.header}>
+      <CompactScreenHeader subtitle={t("customersScreen.subtitle")} title={t("customersScreen.title")} />
+      <CustomerListTabs mode={mode} onChange={setMode} openOrdersCustomerCount={openOrdersCustomerCount} totalCount={totalCount} />
+      <View style={styles.searchWrap}>
+        <SearchInput onChangeText={setQuery} value={query} />
+      </View>
+      {error ? <ErrorState message={error} /> : null}
+    </View>
+  );
+
   return (
     <ScreenContainer>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <AnimatedEntrance>
-          <CompactScreenHeader subtitle={t("customersScreen.subtitle")} title={t("customersScreen.title")} />
-        </AnimatedEntrance>
-        <AnimatedEntrance delay={40}>
-          <CustomerListTabs mode={mode} onChange={setMode} openOrdersCustomerCount={openOrdersCustomerCount} totalCount={totalCount} />
-        </AnimatedEntrance>
-        <AnimatedEntrance delay={50}>
-          <View style={styles.searchWrap}>
-            <SearchInput onChangeText={setQuery} value={query} />
-          </View>
-        </AnimatedEntrance>
-        {error ? (
-          <AnimatedEntrance delay={70}>
-            <ErrorState message={error} />
-          </AnimatedEntrance>
-        ) : null}
-        {!customers.length ? (
-          <AnimatedEntrance delay={90}>
-            <EmptyState
-              message={t(mode === "openOrders" ? "customersScreen.emptyOpenOrdersMessage" : "customersScreen.emptyMessage")}
-              title={t(mode === "openOrders" ? "customersScreen.emptyOpenOrdersTitle" : "customersScreen.emptyTitle")}
-            />
-          </AnimatedEntrance>
-        ) : (
-          <AnimatedEntrance delay={100} style={styles.list}>
-            {customers.map((customer) => (
-              <ManagementCustomerCard
-                customer={customer}
-                deleting={deletingId === customer.id}
-                key={customer.id}
-                onDelete={() => setDeleteTarget(customer.id)}
-                onPress={() => router.push(`${routes.customerEditBase}/${customer.id}` as never)}
-              />
-            ))}
-          </AnimatedEntrance>
+      <FlatList
+        ItemSeparatorComponent={ListSeparator}
+        ListEmptyComponent={
+          <EmptyState
+            message={t(mode === "openOrders" ? "customersScreen.emptyOpenOrdersMessage" : "customersScreen.emptyMessage")}
+            title={t(mode === "openOrders" ? "customersScreen.emptyOpenOrdersTitle" : "customersScreen.emptyTitle")}
+          />
+        }
+        ListHeaderComponent={listHeader}
+        contentContainerStyle={styles.content}
+        data={customers}
+        initialNumToRender={12}
+        keyExtractor={(customer) => customer.id}
+        keyboardShouldPersistTaps="handled"
+        renderItem={({ item: customer }) => (
+          <ManagementCustomerCard
+            customer={customer}
+            deleting={deletingId === customer.id}
+            onDelete={() => setDeleteTarget(customer.id)}
+            onPress={() => router.push(`${routes.customerEditBase}/${customer.id}` as never)}
+          />
         )}
-      </ScrollView>
+        showsVerticalScrollIndicator={false}
+        windowSize={7}
+      />
       <ConfirmDialog
         destructive
         message={t("customersScreen.deleteConfirmMessage")}
@@ -97,15 +96,22 @@ export function CustomerManagementScreen() {
   );
 }
 
+function ListSeparator() {
+  return <View style={styles.separator} />;
+}
+
 const styles = StyleSheet.create({
   content: {
-    gap: spacing.md,
     paddingBottom: spacing.xl,
+  },
+  header: {
+    gap: spacing.md,
+    marginBottom: spacing.md,
   },
   searchWrap: {
     marginTop: -spacing.sm,
   },
-  list: {
-    gap: spacing.sm,
+  separator: {
+    height: spacing.sm,
   },
 });

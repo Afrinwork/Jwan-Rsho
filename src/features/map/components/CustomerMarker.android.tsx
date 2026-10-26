@@ -9,7 +9,10 @@ import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
 type CustomerMarkerProps = {
   marker: MapCustomerMarker;
   selected: boolean;
-  onPress: () => void;
+  // Takes the customer id so callers can pass one stable function to every
+  // pin — a new closure per pin would defeat memo and re-render all native
+  // markers on every GPS update.
+  onPress: (customerId: string) => void;
 };
 
 
@@ -20,7 +23,7 @@ function CustomerMarkerComponent({ marker, selected, onPress }: CustomerMarkerPr
   const backgroundColor = selected ? PIN_SELECTED_BLACK : marker.hasStreetAddress === false ? PIN_YELLOW : PIN_GREEN;
 
   return (
-    <Marker id={marker.id} lngLat={[marker.longitude, marker.latitude]} onPress={onPress}>
+    <Marker id={marker.id} lngLat={[marker.longitude, marker.latitude]} onPress={() => onPress(marker.id)}>
       <View style={[styles.pin, { backgroundColor }, selected && styles.pinSelected]}>
         <Text style={styles.label}>{marker.numberLabel}</Text>
       </View>

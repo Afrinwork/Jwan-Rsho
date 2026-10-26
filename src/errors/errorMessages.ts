@@ -23,4 +23,8 @@ export const errorMessages = {
   cityInUse: t("errors:cityInUse"),
   invalidForm: t("errors:invalidForm"),
   databaseOutdated: t("errors:databaseOutdated"),
+  currentPasswordWrong: t("errors:currentPasswordWrong"),
+  weakPassword: t("errors:weakPassword"),
+  samePassword: t("errors:samePassword"),
+  passwordNotChanged: t("errors:passwordNotChanged"),
 };

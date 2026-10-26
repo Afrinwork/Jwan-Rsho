@@ -244,6 +244,44 @@ export type Database = {
           },
         ]
       }
+      driver_live_locations: {
+        Row: {
+          driver_id: string
+          last_customer_at: string | null
+          last_customer_name: string | null
+          latitude: number
+          longitude: number
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          driver_id: string
+          last_customer_at?: string | null
+          last_customer_name?: string | null
+          latitude: number
+          longitude: number
+          source: string
+          updated_at?: string
+        }
+        Update: {
+          driver_id?: string
+          last_customer_at?: string | null
+          last_customer_name?: string | null
+          latitude?: number
+          longitude?: number
+          source?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_live_locations_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       driver_check_ins: {
         Row: {
           address: string | null

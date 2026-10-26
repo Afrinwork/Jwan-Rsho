@@ -1,3 +1,5 @@
+import { AppError } from "@/src/errors/AppError";
+import { errorMessages } from "@/src/errors/errorMessages";
 import { requireSupabase } from "@/src/repositories/supabase/repositoryContext";
 import { supabase } from "@/src/supabase/client";
 import { AuthUser } from "@/src/types/authUser";
@@ -30,9 +32,26 @@ export const authRepository = {
     if (error) throw error;
   },
 
-  async updatePassword(nextPassword: string) {
-    const { error } = await requireSupabase().auth.updateUser({ password: nextPassword });
-    if (error) throw error;
+  // Signs in with the current password first: that proves it and gives a
+  // fresh session, which Supabase's "secure password change" needs (an
+  // older session is rejected with reauthentication_needed and the old
+  // password silently stays). Signing in with the new password afterwards
+  // confirms the change really landed before reporting success.
+  async changePassword(currentPassword: string, nextPassword: string) {
+    const client = requireSupabase();
+    const { data } = await client.auth.getSession();
+    const email = data.session?.user.email;
+    if (!email) throw new AppError(errorMessages.authRequired, "auth/unauthenticated");
+
+    const { error: verifyError } = await client.auth.signInWithPassword({ email, password: currentPassword });
+    if (verifyError?.code === "invalid_credentials") throw new AppError(errorMessages.currentPasswordWrong, "auth/wrong-password");
+    if (verifyError) throw verifyError;
+
+    const { error: updateError } = await client.auth.updateUser({ password: nextPassword });
+    if (updateError) throw updateError;
+
+    const { error: confirmError } = await client.auth.signInWithPassword({ email, password: nextPassword });
+    if (confirmError) throw new AppError(errorMessages.passwordNotChanged, "auth/password-not-changed");
   },
 
   // No Firebase-style "wait for getIdToken() first" step needed here --

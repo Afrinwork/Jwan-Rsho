@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { FlatList, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { AppText } from "@/src/components/ui/AppText";
@@ -14,7 +14,6 @@ import { AppButton } from "@/src/components/ui/AppButton";
 import { CustomerOpenOrders, useOpenOrdersOverview } from "@/src/features/orders/hooks/useOpenOrdersOverview";
 import { OpenOrdersCustomerCard } from "@/src/features/orders/components/OpenOrdersCustomerCard";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
-import { geocodingService } from "@/src/services/geocodingService";
 import { navigationService } from "@/src/services/navigationService";
 import { useAppStore } from "@/src/store/appStore";
 import { radius } from "@/src/theme/radius";
@@ -91,12 +90,9 @@ export function OpenOrdersScreen() {
   }
 
   async function handleNavigate(group: CustomerOpenOrders) {
-    const address = geocodingService.composeAddress({
-      address: group.customer.address,
-      city: group.customer.city,
-      country: group.customer.country,
-      region: group.customer.region,
-    });
+    // Only the order's address field — city and country are left out.
+    const address = group.customer.address?.trim();
+    if (!address) return;
     // Opens the navigation app chosen in Settings directly.
     await navigationService.openNavigationApp(preferredNavigationApp, { address });
   }
@@ -107,52 +103,61 @@ export function OpenOrdersScreen() {
 
   return (
     <ScreenContainer contentStyle={styles.screenContent}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {error ? <ErrorState message={error} /> : null}
-        {actionError ? <ErrorState message={actionError} /> : null}
-        {actionSuccess ? <SuccessState message={actionSuccess} /> : null}
-        <SearchInput onChangeText={setSearchTerm} placeholder={t("openOrders.searchPlaceholder")} value={searchTerm} />
-        {selectedOrderIds.length ? (
-          <View style={[styles.selectionBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <AppText color="muted" style={styles.selectionText} variant="bodyMedium">
-              {t("openOrders.selectedSummary", { count: selectedOrderIds.length })}
-            </AppText>
-            <View style={styles.selectionActions}>
-              <AppButton label={t("openOrders.clearSelection")} onPress={() => setSelectedCustomerIds(new Set())} size="compact" variant="secondary" />
-              <AppButton label={t("openOrders.completeSelected")} loading={isCompletingMany} onPress={() => void handleCompleteSelected()} size="compact" />
-            </View>
+      {/* Virtualized: only the cards on screen are rendered, so a long day
+          of open orders stays smooth on slower phones. */}
+      <FlatList
+        ItemSeparatorComponent={ListSeparator}
+        ListEmptyComponent={<EmptyState message={t("openOrders.emptyMessage")} title={t("openOrders.emptyTitle")} />}
+        ListHeaderComponent={
+          <View style={styles.content}>
+            {error ? <ErrorState message={error} /> : null}
+            {actionError ? <ErrorState message={actionError} /> : null}
+            {actionSuccess ? <SuccessState message={actionSuccess} /> : null}
+            <SearchInput onChangeText={setSearchTerm} placeholder={t("openOrders.searchPlaceholder")} value={searchTerm} />
+            {selectedOrderIds.length ? (
+              <View style={[styles.selectionBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <AppText color="muted" style={styles.selectionText} variant="bodyMedium">
+                  {t("openOrders.selectedSummary", { count: selectedOrderIds.length })}
+                </AppText>
+                <View style={styles.selectionActions}>
+                  <AppButton label={t("openOrders.clearSelection")} onPress={() => setSelectedCustomerIds(new Set())} size="compact" variant="secondary" />
+                  <AppButton label={t("openOrders.completeSelected")} loading={isCompletingMany} onPress={() => void handleCompleteSelected()} size="compact" />
+                </View>
+              </View>
+            ) : null}
+            {cities.length > 0 ? (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.filterRow}>
+                  <CityChip active={selectedCity === ALL_CITIES} label={t("openOrders.filterAll")} onPress={() => setSelectedCity(ALL_CITIES)} />
+                  {cities.map((city) => (
+                    <CityChip active={selectedCity === city} key={city} label={city} onPress={() => setSelectedCity(city)} />
+                  ))}
+                </View>
+              </ScrollView>
+            ) : null}
           </View>
-        ) : null}
-        {cities.length > 0 ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={styles.filterRow}>
-              <CityChip active={selectedCity === ALL_CITIES} label={t("openOrders.filterAll")} onPress={() => setSelectedCity(ALL_CITIES)} />
-              {cities.map((city) => (
-                <CityChip active={selectedCity === city} key={city} label={city} onPress={() => setSelectedCity(city)} />
-              ))}
-            </View>
-          </ScrollView>
-        ) : null}
-        {filteredGroups.length === 0 ? (
-          <EmptyState message={t("openOrders.emptyMessage")} title={t("openOrders.emptyTitle")} />
-        ) : (
-          <View style={styles.list}>
-            {filteredGroups.map((group) => (
-              <OpenOrdersCustomerCard
-                completingOrderId={pendingActionType === "complete" ? pendingActionOrderId : null}
-                deletingOrderId={pendingActionType === "delete" ? pendingActionOrderId : null}
-                group={group}
-                key={group.customer.id}
-                onComplete={(orderId) => void completeOrder(orderId)}
-                onDelete={(orderId) => setDeleteTarget(orderId)}
-                onNavigate={() => void handleNavigate(group)}
-                onToggleSelected={() => toggleCustomerSelection(group.customer.id)}
-                selected={selectedCustomerIds.has(group.customer.id)}
-              />
-            ))}
-          </View>
+        }
+        contentContainerStyle={styles.listContent}
+        data={filteredGroups}
+        extraData={[pendingActionType, pendingActionOrderId, selectedCustomerIds]}
+        initialNumToRender={8}
+        keyExtractor={(group) => group.customer.id}
+        keyboardShouldPersistTaps="handled"
+        renderItem={({ item: group }) => (
+          <OpenOrdersCustomerCard
+            completingOrderId={pendingActionType === "complete" ? pendingActionOrderId : null}
+            deletingOrderId={pendingActionType === "delete" ? pendingActionOrderId : null}
+            group={group}
+            onComplete={(orderId) => void completeOrder(orderId)}
+            onDelete={(orderId) => setDeleteTarget(orderId)}
+            onNavigate={() => void handleNavigate(group)}
+            onToggleSelected={() => toggleCustomerSelection(group.customer.id)}
+            selected={selectedCustomerIds.has(group.customer.id)}
+          />
         )}
-      </ScrollView>
+        showsVerticalScrollIndicator={false}
+        windowSize={7}
+      />
       <ConfirmDialog
         destructive
         message={t("openOrders.deleteConfirmMessage")}
@@ -203,6 +208,9 @@ const styles = StyleSheet.create({
   },
   content: {
     gap: spacing.xs,
+    marginBottom: spacing.xs,
+  },
+  listContent: {
     paddingBottom: spacing.xl,
   },
   filterRow: {
@@ -229,7 +237,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: spacing.xs,
   },
-  list: {
-    gap: spacing.sm,
+  separator: {
+    height: spacing.sm,
   },
 });
+
+function ListSeparator() {
+  return <View style={styles.separator} />;
+}

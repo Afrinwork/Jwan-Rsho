@@ -92,7 +92,10 @@
     "nothingChanged": "لم يتم تغيير أي شيء – لا يوجد طلب مفتوح لهذا السائق هنا.",
     "tripActive": "في الطريق · متبقٍ {{count}} توقفات · التالي: {{name}}",
     "tripInactive": "لم تبدأ رحلة حاليًا",
-    "panelToggle": "التفاصيل والقائمة والإخفاء · {{count}} توقفات · {{hidden}} مخفية"
+    "panelToggle": "التفاصيل والقائمة والإخفاء · {{count}} توقفات · {{hidden}} مخفية",
+    "liveDriving": "يقود الآن · الموقع من {{time}}",
+    "lastSeen": "آخر ظهور {{time}} (التطبيق مفتوح)",
+    "lastCustomer": "آخر عميل: {{name}} · {{time}}"
   },
   "adminDashboard": {
     "title": "المسؤولون",

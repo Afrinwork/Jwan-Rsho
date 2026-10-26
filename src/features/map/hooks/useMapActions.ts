@@ -4,11 +4,11 @@ import { useTranslation } from "react-i18next";
 import { MapCustomerDetails, MapCustomerMarker, NavigationAppId } from "@/src/features/map/types/mapTypes";
 import { buildSelectionShareMessage, SelectionShareCustomer } from "@/src/features/map/services/mapShareFormatterService";
 import { useProducts } from "@/src/features/products/hooks/useProducts";
+import { reportCompletedCustomer } from "@/src/features/route/hooks/useDriverPositionReporting";
 import { orderRepository } from "@/src/repositories/orderRepository";
 import { navigationService } from "@/src/services/navigationService";
 import { phoneService } from "@/src/services/phoneService";
 import { sharingService } from "@/src/services/sharingService";
-import { geocodingService } from "@/src/services/geocodingService";
 import { useAppStore } from "@/src/store/appStore";
 import { formatError } from "@/src/utils/formatError";
 
@@ -169,6 +169,7 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
       setActionSuccess(null);
       setCompletingOrder(true);
       await Promise.all(details.openOrders.map((order) => orderRepository.completeOrder(order.id)));
+      if (marker) reportCompletedCustomer({ latitude: marker.latitude, longitude: marker.longitude, name: details.customer.fullName });
       setActionSuccess(
         details.openOrders.length > 1 ? t("sheet.completeAllSuccess") : t("sheet.completeSuccess"),
       );
@@ -180,7 +181,7 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
     } finally {
       setCompletingOrder(false);
     }
-  }, [details, t]);
+  }, [details, marker, t]);
 
   return {
     actionError,
@@ -202,16 +203,11 @@ export function useMapActions(details: MapCustomerDetails | null, marker: MapCus
   };
 }
 
+// Only the order's address field goes to the navigation app — city and
+// country are left out on purpose. Without one, the pin's coordinates are used.
 function buildNavigationTarget(details: MapCustomerDetails | null, marker: MapCustomerMarker | null) {
   return {
-    address: details
-      ? geocodingService.composeAddress({
-          address: details.customer.address,
-          city: details.customer.city,
-          country: details.customer.country,
-          region: details.customer.region,
-        })
-      : undefined,
+    address: details?.customer.address?.trim() || undefined,
     latitude: marker?.latitude,
     longitude: marker?.longitude,
   };

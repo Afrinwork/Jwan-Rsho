@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { AppState } from "react-native";
 import * as Location from "expo-location";
 
 import { formatError } from "@/src/utils/formatError";
@@ -11,13 +12,26 @@ type LiveLocationState = {
   error: string | null;
 };
 
-const DISTANCE_INTERVAL_METERS = 15;
-const TIME_INTERVAL_MS = 3000;
+// Every update re-renders the whole map screen, so not more often than
+// needed: arrival detection (120 m) and the route refresh (500 m) are far
+// coarser than this.
+const DISTANCE_INTERVAL_METERS = 20;
+const TIME_INTERVAL_MS = 5000;
 
 export function useLiveLocation() {
   const [state, setState] = useState<LiveLocationState>({ coordinate: null, heading: null, error: null });
+  const [appActive, setAppActive] = useState(AppState.currentState === "active");
+
+  // No GPS while the app is in the background (e.g. the driver is in Google
+  // Maps): saves battery and avoids a burst of queued updates on return.
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextState) => setAppActive(nextState === "active"));
+    return () => subscription.remove();
+  }, []);
 
   useEffect(() => {
+    if (!appActive) return;
+
     let subscription: Location.LocationSubscription | null = null;
     let cancelled = false;
 
@@ -30,7 +44,7 @@ export function useLiveLocation() {
           return;
         }
 
-        subscription = await Location.watchPositionAsync(
+        const nextSubscription = await Location.watchPositionAsync(
           {
             accuracy: Location.Accuracy.Balanced,
             distanceInterval: DISTANCE_INTERVAL_METERS,
@@ -45,6 +59,9 @@ export function useLiveLocation() {
             });
           },
         );
+        // Stopped while the watch was still starting.
+        if (cancelled) nextSubscription.remove();
+        else subscription = nextSubscription;
       } catch (error) {
         if (!cancelled) setState({ coordinate: null, heading: null, error: formatError(error).message });
       }
@@ -56,7 +73,7 @@ export function useLiveLocation() {
       cancelled = true;
       subscription?.remove();
     };
-  }, []);
+  }, [appActive]);
 
   return state;
 }

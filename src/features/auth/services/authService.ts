@@ -5,5 +5,5 @@ export const authService = {
   logout: authRepository.logout,
   resetPassword: authRepository.resetPassword,
   updateEmail: authRepository.updateEmail,
-  updatePassword: authRepository.updatePassword,
+  changePassword: authRepository.changePassword,
 };

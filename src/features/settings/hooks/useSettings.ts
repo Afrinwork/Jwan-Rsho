@@ -65,6 +65,7 @@ export function useSettings() {
   } = useAppStore();
   const [fullName, setFullName] = useState(user?.displayName ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
@@ -141,19 +142,21 @@ export function useSettings() {
 
   // Changes the password on its own, independent of the profile save, so a
   // failing email/profile update can never block it.
+  // Not trimmed: the login form sends the password exactly as typed, so the
+  // saved one must match it character for character.
   const changePassword = useCallback(async () => {
-    const normalizedPassword = newPassword.trim();
     setPasswordError(null);
     setPasswordSuccess(null);
 
-    if (normalizedPassword.length < MIN_PASSWORD_LENGTH) {
+    if (newPassword.trim().length < MIN_PASSWORD_LENGTH) {
       setPasswordError(t("password.tooShort", { count: MIN_PASSWORD_LENGTH }));
       return;
     }
 
     try {
       setChangingPassword(true);
-      await authService.updatePassword(normalizedPassword);
+      await authService.changePassword(currentPassword, newPassword);
+      setCurrentPassword("");
       setNewPassword("");
       setPasswordSuccess(t("password.success"));
     } catch (value) {
@@ -161,7 +164,7 @@ export function useSettings() {
     } finally {
       setChangingPassword(false);
     }
-  }, [newPassword, t]);
+  }, [currentPassword, newPassword, t]);
 
   const save = useCallback(async () => {
     if (!user) {
@@ -200,6 +203,8 @@ export function useSettings() {
     setFullName,
     email,
     setEmail,
+    currentPassword,
+    setCurrentPassword,
     newPassword,
     setNewPassword,
     changePassword,

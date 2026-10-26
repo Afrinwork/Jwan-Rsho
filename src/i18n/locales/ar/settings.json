@@ -16,6 +16,7 @@
   "fields": {
     "name": "الاسم",
     "email": "البريد الإلكتروني",
+    "currentPassword": "كلمة المرور الحالية",
     "newPassword": "كلمة مرور جديدة"
   },
   "theme": {
