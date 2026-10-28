@@ -18,6 +18,9 @@ export function useDriverAssignedMarkers(customerIds: string[]) {
 
   useEffect(() => {
     let cancelled = false;
+    // Loading state for the fetch below (the standard data-fetching
+    // pattern) — not state that could be computed during render instead.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError(null);
 

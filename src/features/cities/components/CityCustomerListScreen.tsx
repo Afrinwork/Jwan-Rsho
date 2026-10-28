@@ -78,7 +78,7 @@ export function CityCustomerListScreen(props: CityCustomerListScreenProps) {
         ListEmptyComponent={
           !error ? (
             <EmptyState message={t("customerList.emptyMessage")} title={t("customerList.emptyTitle")} />
-          ) : null
+          ) : undefined
         }
         ListHeaderComponent={
           <View style={styles.header}>

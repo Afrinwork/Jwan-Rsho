@@ -58,7 +58,8 @@ const MAP_REFOCUS_MAX_AGE_MS = 60_000;
 export function MapScreen() {
   const { t: actionT } = useTranslation("map");
   const mapRef = useRef<AppMapViewHandle | null>(null);
-  const appStateRef = useRef<AppStateStatus>(AppState.currentState);
+  // RN 0.88 types currentState as a plain string (null before it is known).
+  const appStateRef = useRef<AppStateStatus>((AppState.currentState as AppStateStatus | null) ?? "active");
   const lastAutoFitFilterRef = useRef<string | null>(null);
   const router = useRouter();
   const insets = useSafeAreaInsets();

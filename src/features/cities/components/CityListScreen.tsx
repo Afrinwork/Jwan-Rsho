@@ -46,7 +46,7 @@ export function CityListScreen() {
           data={customerGroups}
           keyExtractor={(item) => item.normalizedCity}
           ListEmptyComponent={
-            !error ? <EmptyState message={t("listScreen.emptyCustomerSearchMessage")} title={t("listScreen.emptyCustomerSearchTitle")} /> : null
+            !error ? <EmptyState message={t("listScreen.emptyCustomerSearchMessage")} title={t("listScreen.emptyCustomerSearchTitle")} /> : undefined
           }
           ListHeaderComponent={
             <Header
@@ -79,7 +79,7 @@ export function CityListScreen() {
           data={cities}
           keyExtractor={(item) => item.normalizedName}
           ListEmptyComponent={
-            !error ? <EmptyState message={t("listScreen.emptyMessage")} title={t("listScreen.emptyTitle")} /> : null
+            !error ? <EmptyState message={t("listScreen.emptyMessage")} title={t("listScreen.emptyTitle")} /> : undefined
           }
           ListHeaderComponent={
             <Header

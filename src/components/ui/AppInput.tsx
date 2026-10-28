@@ -1,4 +1,4 @@
-import { ForwardedRef, forwardRef, useState } from "react";
+import { ComponentRef, ForwardedRef, forwardRef, useState } from "react";
 import { StyleSheet, TextInput, TextInputProps } from "react-native";
 
 import { useThemeColors } from "@/src/hooks/useThemeColors";
@@ -8,7 +8,7 @@ import { typography } from "@/src/theme/typography";
 
 export const AppInput = forwardRef(function AppInput(
   props: TextInputProps,
-  ref: ForwardedRef<TextInput>,
+  ref: ForwardedRef<ComponentRef<typeof TextInput>>,
 ) {
   const colors = useThemeColors();
   const [focused, setFocused] = useState(false);
