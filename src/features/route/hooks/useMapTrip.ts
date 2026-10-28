@@ -9,6 +9,7 @@ import { useRouteLiveNavigation } from "@/src/features/route/hooks/useRouteLiveN
 import { useRouteOrder } from "@/src/features/route/hooks/useRouteOrder";
 import { useRoutePolyline } from "@/src/features/route/hooks/useRoutePolyline";
 import { activeTripStorage } from "@/src/features/route/services/activeTripStorage";
+import { useTripAdditionStore } from "@/src/features/route/store/tripAdditionStore";
 import { TripStartLocation } from "@/src/features/route/services/activeTripStorage.shared";
 import { buildCumulativeStops, buildFallbackLegs, STOP_SERVICE_BUFFER_SEC } from "@/src/features/route/services/routeDirectionsService";
 import { fetchRoadDistanceMatrix, RouteDistanceMatrix } from "@/src/features/route/services/routeDistanceMatrixService";
@@ -48,8 +49,10 @@ export type TripResortKind = "optimize" | "variant" | "nearest" | "farthest" | "
 //
 // "Start trip" on a drawn selection narrows the trip to those customers
 // (scope); the others stay on the map, just not on the route. Customers that
-// show up while such a trip runs (a new order) join the scope — for drivers,
-// admins and super admins alike.
+// show up while such a trip runs join the scope live, wherever they are, on
+// a driver's trip (their map holds only their own customers). An admin's own
+// trip takes only the customers saved with "add to trip" on the order form
+// (tripAdditionStore).
 //
 // The numbered stops are there from the start, but the route line only once
 // the trip is started — until then the driver can still pick the start point
@@ -80,22 +83,48 @@ export function useMapTrip(
   const markerById = useMemo(() => new Map(stopMarkers.map((marker) => [marker.id, marker])), [stopMarkers]);
 
   // Customers already known when the trip was set up (null until then);
-  // anyone added later is new and joins a narrowed trip.
+  // anyone added later is new and joins a narrowed trip (see above).
   const seenMarkerIdsRef = useRef<Set<string> | null>(null);
+  function joinScope(customerIds: string[]) {
+    setScopeIds((current) => (current ? [...current, ...customerIds.filter((id) => !current.includes(id))] : current));
+  }
   useEffect(() => {
     const seen = seenMarkerIdsRef.current;
     if (!seen) return;
-    const added = allMarkers.filter((marker) => !seen.has(marker.id)).map((marker) => marker.id);
+    const added = allMarkers.filter((marker) => !seen.has(marker.id));
     if (!added.length) return;
-    added.forEach((id) => seen.add(id));
-    setScopeIds((current) => (current ? [...current, ...added.filter((id) => !current.includes(id))] : current));
-  }, [allMarkers]);
+    added.forEach((marker) => seen.add(marker.id));
+    if (!isCurrentUserDriver) return;
+    joinScope(added.map((marker) => marker.id));
+  }, [allMarkers, isCurrentUserDriver]);
 
   // null until the first order is decided (stored trip or a fresh sort).
   const [orderIds, setOrderIds] = useState<string[] | null>(null);
   const [lastStopId, setLastStopId] = useState<string | null>(null);
   const [started, setStarted] = useState(false);
   const [startedAt, setStartedAt] = useState<Date | null>(null);
+
+  // "Add to trip" on the order form: offered while the trip is started, and
+  // the customer joins once the live reload has put them on the map.
+  const setTripStarted = useTripAdditionStore((state) => state.setTripStarted);
+  const pendingAdditionIds = useTripAdditionStore((state) => state.pendingCustomerIds);
+  const clearPendingAdditions = useTripAdditionStore((state) => state.clearPending);
+  useEffect(() => {
+    setTripStarted(started);
+    return () => setTripStarted(false);
+  }, [started, setTripStarted]);
+  useEffect(() => {
+    if (!pendingAdditionIds.length) return;
+    const onMap = new Set(allMarkers.map((marker) => marker.id));
+    const arrived = pendingAdditionIds.filter((id) => onMap.has(id));
+    if (!arrived.length) return;
+    clearPendingAdditions(arrived);
+    // Reacts to the live reload bringing the customer onto the map — an
+    // outside event, not state that could be computed during render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    joinScope(arrived);
+  }, [pendingAdditionIds, allMarkers, clearPendingAdditions]);
+
   // null = start from the GPS position.
   const [startLocation, setStartLocation] = useState<TripStartLocation | null>(null);
   // "HH:MM" German time, null = leave now.

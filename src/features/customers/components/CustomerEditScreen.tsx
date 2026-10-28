@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { ScrollView, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 
@@ -12,10 +13,12 @@ import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
 import { SuccessState } from "@/src/components/ui/SuccessState";
 import { FormSectionCard } from "@/src/components/ui/FormSectionCard";
 import { spacing } from "@/src/constants/spacing";
+import { AddressConfirmDialog } from "@/src/features/customers/components/AddressConfirmDialog";
 import { CustomerEditAddressSection } from "@/src/features/customers/components/CustomerEditAddressSection";
 import { CustomerEditForm } from "@/src/features/customers/components/CustomerEditForm";
 import { CustomerEditOrderItemsSection } from "@/src/features/customers/components/CustomerEditOrderItemsSection";
 import { useCustomerEdit } from "@/src/features/customers/hooks/useCustomerEdit";
+import { isPreciseAddress } from "@/src/features/customers/services/addressNote";
 import { OrderDriverField } from "@/src/features/orders/components/OrderDriverField";
 
 type CustomerEditScreenProps = {
@@ -41,6 +44,25 @@ export function CustomerEditScreen({ customerId }: CustomerEditScreenProps) {
     driversError,
   } = useCustomerEdit(customerId);
   const { t } = useTranslation("customers");
+  const [addressConfirmVisible, setAddressConfirmVisible] = useState(false);
+
+  function save() {
+    void submit().then((saved) => {
+      if (saved) {
+        router.back();
+      }
+    });
+  }
+
+  // A valid form without street and house number is confirmed first;
+  // an invalid one goes straight to submit, which shows the field errors.
+  async function saveAfterAddressCheck() {
+    if ((await form.trigger()) && !isPreciseAddress(form.getValues("customer"))) {
+      setAddressConfirmVisible(true);
+      return;
+    }
+    save();
+  }
 
   if (loading) {
     return <LoadingView label={t("edit.loading")} />;
@@ -93,17 +115,19 @@ export function CustomerEditScreen({ customerId }: CustomerEditScreenProps) {
           <AppButton
             label={t("common:save")}
             loading={saving}
-            onPress={() => {
-              void submit().then((saved) => {
-                if (saved) {
-                  router.back();
-                }
-              });
-            }}
+            onPress={() => void saveAfterAddressCheck()}
           />
           <AppButton label={t("edit.backButton")} onPress={() => router.back()} variant="secondary" />
         </AnimatedEntrance>
       </ScrollView>
+      <AddressConfirmDialog
+        onCancel={() => setAddressConfirmVisible(false)}
+        onConfirm={() => {
+          setAddressConfirmVisible(false);
+          save();
+        }}
+        visible={addressConfirmVisible}
+      />
     </ScreenContainer>
   );
 }

@@ -1,12 +1,16 @@
+import { useState } from "react";
 import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
+import { AppButton } from "@/src/components/ui/AppButton";
 import { CompactScreenHeader } from "@/src/components/ui/CompactScreenHeader";
 import { ErrorState } from "@/src/components/ui/ErrorState";
 import { ScreenContainer } from "@/src/components/ui/ScreenContainer";
 import { SuccessState } from "@/src/components/ui/SuccessState";
 import { spacing } from "@/src/constants/spacing";
+import { AddressConfirmDialog } from "@/src/features/customers/components/AddressConfirmDialog";
+import { isPreciseAddress } from "@/src/features/customers/services/addressNote";
 import { CustomerSection } from "@/src/features/orders/components/CustomerSection";
 import { DriverAddSuggestions } from "@/src/features/orders/components/DriverAddSuggestions";
 import { OrderDriverField } from "@/src/features/orders/components/OrderDriverField";
@@ -32,16 +36,36 @@ export function AddOrderScreen() {
     selectCustomer,
     clearCustomer,
     submit,
+    submitToTrip,
+    canAddToTrip,
     submitError,
     successMessage,
   } = useAddOrder();
   const errors = form.formState.errors;
+  const [addressConfirmVisible, setAddressConfirmVisible] = useState(false);
+  // Which save button was pressed, kept while the address is confirmed.
+  const [addToTrip, setAddToTrip] = useState(false);
 
-  function handleSave() {
+  function handleSave(toTrip: boolean) {
     Keyboard.dismiss();
+    setAddToTrip(toTrip);
     setTimeout(() => {
-      void submit();
+      void saveAfterAddressCheck(toTrip);
     }, 120);
+  }
+
+  function save(toTrip: boolean) {
+    void (toTrip ? submitToTrip() : submit());
+  }
+
+  // A valid form without street and house number is confirmed first;
+  // an invalid one goes straight to submit, which shows the field errors.
+  async function saveAfterAddressCheck(toTrip: boolean) {
+    if ((await form.trigger()) && !isPreciseAddress(form.getValues("customer"))) {
+      setAddressConfirmVisible(true);
+      return;
+    }
+    save(toTrip);
   }
 
   return (
@@ -97,12 +121,31 @@ export function AddOrderScreen() {
             {submitError ? <AnimatedEntrance delay={190}><ErrorState message={submitError} /></AnimatedEntrance> : null}
             {successMessage ? <AnimatedEntrance delay={220}><SuccessState message={successMessage} /></AnimatedEntrance> : null}
             <AnimatedEntrance delay={250}>
-              <SaveOrderButton isSubmitting={form.formState.isSubmitting} onPress={handleSave} />
+              <View style={styles.saveButtons}>
+                <SaveOrderButton isSubmitting={form.formState.isSubmitting} onPress={() => handleSave(false)} />
+                {canAddToTrip ? (
+                  <AppButton
+                    disabled={form.formState.isSubmitting}
+                    label={t("save.addToTrip")}
+                    onPress={() => handleSave(true)}
+                    size="compact"
+                    variant="secondary"
+                  />
+                ) : null}
+              </View>
             </AnimatedEntrance>
             <View style={styles.footerSpacer} />
           </ScrollView>
         </KeyboardAvoidingView>
       </View>
+      <AddressConfirmDialog
+        onCancel={() => setAddressConfirmVisible(false)}
+        onConfirm={() => {
+          setAddressConfirmVisible(false);
+          save(addToTrip);
+        }}
+        visible={addressConfirmVisible}
+      />
     </ScreenContainer>
   );
 }
@@ -115,6 +158,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingBottom: spacing.xl,
     flexGrow: 1,
+  },
+  saveButtons: {
+    gap: spacing.sm,
   },
   footerSpacer: {
     height: spacing.md,

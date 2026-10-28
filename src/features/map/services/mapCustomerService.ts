@@ -1,6 +1,7 @@
 import { Customer } from "@/src/types/customer";
 import { Order } from "@/src/types/order";
 import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
+import { hasStreetAddress } from "@/src/features/customers/services/addressNote";
 
 export function countOpenOrdersByCustomerId(orders: Order[]) {
   const openOrderCountByCustomerId = new Map<string, number>();
@@ -119,21 +120,6 @@ export function getCustomersNeedingAddressCheck(customers: Customer[], orders: O
 
 function formatCustomerAddress(customer: Customer) {
   return [customer.address, customer.city].filter((part) => part.trim()).join(", ");
-}
-
-function hasStreetAddress(customer: Customer) {
-  const address = normalizeAddressPart(customer.address);
-  const city = normalizeAddressPart(customer.city);
-
-  // A frequent data-entry shortcut is entering the city again in the street
-  // field. Geocoders then return the city centre, not the customer's address.
-  // Treat it exactly like an empty street: keep the customer visible, but use
-  // the warning marker so a dispatcher knows the stop needs a real address.
-  return Boolean(address) && address !== city;
-}
-
-function normalizeAddressPart(value: string) {
-  return value.trim().toLocaleLowerCase("de-DE").replace(/\s+/g, " ");
 }
 
 function sameMarker(left: MapCustomerMarker, right: MapCustomerMarker) {

@@ -4,6 +4,7 @@ import { Resolver, useFieldArray, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { canManageDrivers } from "@/src/features/auth/permissions";
+import { withAddressNote } from "@/src/features/customers/services/addressNote";
 import { customerSchema } from "@/src/features/customers/validation/customerSchema";
 import { useOwnDrivers } from "@/src/features/orders/hooks/useOwnDrivers";
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
@@ -80,7 +81,7 @@ export function useCustomerEdit(customerId: string) {
     setSuccessMessage(null);
 
     try {
-      const parsedCustomer = customerSchema.parse(values.customer);
+      const parsedCustomer = withAddressNote(customerSchema.parse(values.customer));
       const coordinates = await geocodingService.geocodeCustomerAddressSafely({
         address: parsedCustomer.address,
         city: parsedCustomer.city,

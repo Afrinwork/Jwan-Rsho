@@ -161,5 +161,19 @@
     "alternativeHint": "Route Nr. {{number}}. Jeder Tipp auf „Andere Route“ berechnet eine neue Route für dieselben Kunden.",
     "manualHint": "Deine eigene Reihenfolge ist aktiv. Tippe eine andere Sortierung, um sie zu ersetzen.",
     "changeSelection": "Auswahl ändern"
+  },
+  "whatsappNotify": {
+    "window": "Zeitfenster",
+    "windowNone": "Ohne",
+    "minutes": "{{count}} Min",
+    "hours": "{{count}} Std",
+    "pickHint": "Kunden ankreuzen, um sie per WhatsApp zu informieren.",
+    "whatsapp": "WhatsApp",
+    "business": "WhatsApp Business",
+    "sending": "Chat {{current}} von {{total}}: {{name}}",
+    "sendingHint": "In WhatsApp auf Senden tippen und zurueck in die App - der naechste Kunde oeffnet sich dann von selbst.",
+    "stop": "Stoppen",
+    "done": "{{count}} Chats geoeffnet.",
+    "noPhone": "Ohne Telefonnummer, uebersprungen: {{names}}"
   }
 }

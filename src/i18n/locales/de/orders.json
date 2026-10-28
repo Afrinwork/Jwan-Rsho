@@ -60,7 +60,8 @@
   "save": {
     "button": "Bestellung speichern",
     "saving": "Wird gespeichert...",
-    "success": "Die Bestellung wurde gespeichert."
+    "success": "Die Bestellung wurde gespeichert.",
+    "addToTrip": "Speichern und zur Fahrt hinzufuegen"
   },
   "validation": {
     "itemsMin": "Fuege mindestens ein Produkt hinzu",

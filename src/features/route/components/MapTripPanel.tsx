@@ -16,6 +16,7 @@ import { TripActionDockButton } from "@/src/features/route/components/TripAction
 import { TripActionMenu } from "@/src/features/route/components/TripActionMenu";
 import { TripStartLocationDialog } from "@/src/features/route/components/TripStartLocationDialog";
 import { useMapTrip } from "@/src/features/route/hooks/useMapTrip";
+import { useTripWhatsapp } from "@/src/features/route/hooks/useTripWhatsapp";
 import { routeT } from "@/src/features/route/i18n/routeT";
 import { STOP_SERVICE_BUFFER_SEC } from "@/src/features/route/services/routeDirectionsService";
 import { formatDistanceKm, formatDurationHM, formatEtaTime } from "@/src/features/route/utils/routeFormat";
@@ -26,7 +27,12 @@ import { spacing } from "@/src/theme/spacing";
 
 // railOnly: just the actions button (and the menu it opens), without the
 // trip stats — shown on the map before "my trip" is opened.
-type MapTripPanelProps = { trip: ReturnType<typeof useMapTrip>; railOnly?: boolean };
+// productEmojiById: for the order lines in the WhatsApp messages.
+type MapTripPanelProps = {
+  trip: ReturnType<typeof useMapTrip>;
+  railOnly?: boolean;
+  productEmojiById: Map<string, string | undefined>;
+};
 type ActionSection = "stop" | "order" | "departure" | "settings";
 
 const QUARTER_HOUR_MS = 15 * 60 * 1000;
@@ -36,7 +42,7 @@ function nextQuarterHour() {
   return formatEtaTime(new Date(Math.ceil(Date.now() / QUARTER_HOUR_MS) * QUARTER_HOUR_MS));
 }
 
-export function MapTripPanel({ trip, railOnly = false }: MapTripPanelProps) {
+export function MapTripPanel({ trip, railOnly = false, productEmojiById }: MapTripPanelProps) {
   const t = routeT;
   const isCurrentUserDriver = isDriver(useCurrentUser());
   const preferredNavigationApp = useAppStore((state) => state.preferredNavigationApp);
@@ -49,6 +55,7 @@ export function MapTripPanel({ trip, railOnly = false }: MapTripPanelProps) {
   const [moveStopId, setMoveStopId] = useState<string | null>(null);
   const [startLocationVisible, setStartLocationVisible] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
+  const whatsapp = useTripWhatsapp(navigation.pendingMarkers, trip.etaById, productEmojiById);
 
   const stopNumberById = useMemo(
     () => new Map(trip.orderedMarkers.map((marker, index) => [marker.id, index + 1])),
@@ -302,13 +309,13 @@ export function MapTripPanel({ trip, railOnly = false }: MapTripPanelProps) {
       />
       <RouteReorderSheet
         currentStopId={current?.id ?? null}
-        etaById={trip.etaById}
         onClose={() => setReorderSheetVisible(false)}
         onMove={trip.movePendingStop}
         onPressPosition={setMoveStopId}
         pendingMarkers={navigation.pendingMarkers}
         stopNumberById={stopNumberById}
         visible={reorderSheetVisible && moveStopId === null}
+        whatsapp={whatsapp}
       />
       <RouteMoveStopDialog
         key={moveStopId ?? "closed"}

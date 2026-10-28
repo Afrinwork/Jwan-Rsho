@@ -9,8 +9,7 @@ import { radius } from "@/src/theme/radius";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { UserProfile } from "@/src/types/user";
 
-type DriverAssignSheetProps = {
-  visible: boolean;
+type DriverAssignContentProps = {
   drivers: UserProfile[];
   loadingDrivers: boolean;
   assigning: boolean;
@@ -23,8 +22,27 @@ type DriverAssignSheetProps = {
   onClose: () => void;
 };
 
-export function DriverAssignSheet({
-  visible,
+type DriverAssignSheetProps = DriverAssignContentProps & {
+  visible: boolean;
+};
+
+export function DriverAssignSheet({ visible, ...content }: DriverAssignSheetProps) {
+  const colors = useThemeColors();
+
+  return (
+    <Modal animationType="fade" onRequestClose={content.onClose} transparent visible={visible}>
+      <View style={styles.overlay}>
+        <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <DriverAssignContent {...content} />
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+// The driver list without a Modal of its own, so it can also be shown inside
+// an already open sheet (a second Modal on top freezes the app there).
+export function DriverAssignContent({
   drivers,
   loadingDrivers,
   assigning,
@@ -34,51 +52,47 @@ export function DriverAssignSheet({
   noneLabel,
   onSelect,
   onClose,
-}: DriverAssignSheetProps) {
+}: DriverAssignContentProps) {
   const colors = useThemeColors();
   const { t } = useTranslation("map");
 
   return (
-    <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
-      <View style={styles.overlay}>
-        <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <Text style={[styles.title, { color: colors.text }]}>{t("driverAssignSheet.title")}</Text>
-          <Text style={[styles.subtitle, { color: colors.mutedText }]}>
-            {customerCount && customerCount > 1
-              ? t("driverAssignSheet.subtitleMultiple", { count: customerCount })
-              : t("driverAssignSheet.subtitle")}
-          </Text>
-          {error ? <ErrorState message={error} /> : null}
-          {loadingDrivers ? (
-            <LoadingView label={t("driverAssignSheet.loading")} />
-          ) : (
-            <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
-              <DriverOption
-                active={!currentDriverId}
-                colors={colors}
-                disabled={assigning}
-                label={noneLabel ?? t("driverAssignSheet.noneOption")}
-                onPress={() => onSelect(null)}
-              />
-              {!drivers.length ? (
-                <Text style={[styles.emptyText, { color: colors.mutedText }]}>{t("driverAssignSheet.emptyMessage")}</Text>
-              ) : null}
-              {drivers.map((driver) => (
-                <DriverOption
-                  active={currentDriverId === driver.id}
-                  colors={colors}
-                  disabled={assigning}
-                  key={driver.id}
-                  label={driver.fullName}
-                  onPress={() => onSelect(driver.id)}
-                />
-              ))}
-            </ScrollView>
-          )}
-          <AppButton label={t("common.close")} onPress={onClose} size="compact" variant="secondary" />
-        </View>
-      </View>
-    </Modal>
+    <View style={styles.content}>
+      <Text style={[styles.title, { color: colors.text }]}>{t("driverAssignSheet.title")}</Text>
+      <Text style={[styles.subtitle, { color: colors.mutedText }]}>
+        {customerCount && customerCount > 1
+          ? t("driverAssignSheet.subtitleMultiple", { count: customerCount })
+          : t("driverAssignSheet.subtitle")}
+      </Text>
+      {error ? <ErrorState message={error} /> : null}
+      {loadingDrivers ? (
+        <LoadingView label={t("driverAssignSheet.loading")} />
+      ) : (
+        <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
+          <DriverOption
+            active={!currentDriverId}
+            colors={colors}
+            disabled={assigning}
+            label={noneLabel ?? t("driverAssignSheet.noneOption")}
+            onPress={() => onSelect(null)}
+          />
+          {!drivers.length ? (
+            <Text style={[styles.emptyText, { color: colors.mutedText }]}>{t("driverAssignSheet.emptyMessage")}</Text>
+          ) : null}
+          {drivers.map((driver) => (
+            <DriverOption
+              active={currentDriverId === driver.id}
+              colors={colors}
+              disabled={assigning}
+              key={driver.id}
+              label={driver.fullName}
+              onPress={() => onSelect(driver.id)}
+            />
+          ))}
+        </ScrollView>
+      )}
+      <AppButton label={t("common.close")} onPress={onClose} size="compact" variant="secondary" />
+    </View>
   );
 }
 
@@ -121,6 +135,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.card,
     maxHeight: "70%",
     padding: spacing.md,
+  },
+  content: {
+    flexShrink: 1,
     gap: spacing.sm,
   },
   title: {

@@ -9,7 +9,8 @@
     "addressLabel": "Adresse",
     "addressPlaceholder": "",
     "cityLabel": "Stadt",
-    "cityPlaceholder": "z. B. Berlin"
+    "cityPlaceholder": "z. B. Berlin",
+    "addressHint": "Format: Strasse Hausnummer, z. B. Hauptstrasse 5"
   },
   "city": {
     "loadingHint": "Vorhandene Staedte werden geladen...",
@@ -72,5 +73,11 @@
     "open": "Offene Bestellung",
     "completed": "Erledigte Bestellung",
     "cancelled": "Stornierte Bestellung"
+  },
+  "addressConfirm": {
+    "title": "Keine genaue Adresse",
+    "message": "Strasse und Hausnummer fehlen oder sind nicht im richtigen Format (z. B. Hauptstrasse 5). Der Kunde wird dann nur ungefaehr auf der Karte angezeigt. Trotzdem speichern?",
+    "confirm": "Trotzdem speichern",
+    "cancel": "Adresse korrigieren"
   }
 }

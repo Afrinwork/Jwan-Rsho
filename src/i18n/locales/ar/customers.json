@@ -9,7 +9,8 @@
     "addressLabel": "العنوان",
     "addressPlaceholder": "",
     "cityLabel": "المدينة",
-    "cityPlaceholder": "مثال: برلين"
+    "cityPlaceholder": "مثال: برلين",
+    "addressHint": "الصيغة: اسم الشارع ورقم البيت، مثال: Hauptstraße 5"
   },
   "city": {
     "loadingHint": "جارٍ تحميل المدن الحالية...",
@@ -72,5 +73,11 @@
     "open": "طلب مفتوح",
     "completed": "طلب مكتمل",
     "cancelled": "طلب ملغى"
+  },
+  "addressConfirm": {
+    "title": "لا يوجد عنوان دقيق",
+    "message": "اسم الشارع ورقم البيت غير موجودين أو ليسا بالصيغة الصحيحة (مثال: Hauptstraße 5). سيظهر العميل على الخريطة بموقع تقريبي فقط. هل تريد الحفظ على أي حال؟",
+    "confirm": "احفظ على أي حال",
+    "cancel": "تصحيح العنوان"
   }
 }

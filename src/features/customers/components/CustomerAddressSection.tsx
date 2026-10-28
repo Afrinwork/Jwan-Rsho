@@ -33,7 +33,7 @@ export function CustomerAddressSection({ control, errors, driverField }: Custome
 
   return (
     <View style={styles.container}>
-      <FormField error={errors?.address?.message} label={t("form.addressLabel")}>
+      <FormField error={errors?.address?.message} hint={t("form.addressHint")} label={t("form.addressLabel")}>
         <Controller
           control={control}
           name="customer.address"

@@ -9,13 +9,14 @@ import { AnimatedEntrance } from "@/src/components/ui/AnimatedEntrance";
 import { AppButton } from "@/src/components/ui/AppButton";
 import { AppErrorBoundary } from "@/src/components/layout/AppErrorBoundary";
 import { ConfirmDialog } from "@/src/components/ui/ConfirmDialog";
+import { ConfirmPanel } from "@/src/components/ui/ConfirmPanel";
 import { LoadingView } from "@/src/components/ui/LoadingView";
 import { SuccessState } from "@/src/components/ui/SuccessState";
 import { spacing } from "@/src/constants/spacing";
 import { AddressCheckSheet } from "@/src/features/map/components/AddressCheckSheet";
 import { AppMapView } from "@/src/features/map/components/AppMapView";
 import { CustomerMarker } from "@/src/features/map/components/CustomerMarker";
-import { DriverAssignSheet } from "@/src/features/map/components/DriverAssignSheet";
+import { DriverAssignContent, DriverAssignSheet } from "@/src/features/map/components/DriverAssignSheet";
 import { DriverLiveStatusSheet } from "@/src/features/map/components/DriverLiveStatusSheet";
 import { MapCustomerSheet } from "@/src/features/map/components/MapCustomerSheet";
 import { MapCategoryBar, type MapCategory } from "@/src/features/map/components/MapCategoryBar";
@@ -327,6 +328,50 @@ export function MapScreen() {
     void driverAssignment.open();
   }
 
+  function closeDriverAssignment() {
+    setAssignmentCustomerIds(null);
+    driverAssignment.close();
+  }
+
+  // Questions about the customer in the sheet open inside the sheet itself
+  // (see MapCustomerSheet's panel) — never as a second Modal.
+  const sheetPanel = completeConfirmVisible ? (
+    <ConfirmPanel
+      destructive
+      message={
+        (details?.openOrders.length ?? 0) > 1
+          ? actionT("sheet.completeAllConfirmMessage", { count: details?.openOrders.length ?? 0 })
+          : actionT("sheet.completeConfirmMessage")
+      }
+      onCancel={() => setCompleteConfirmVisible(false)}
+      onConfirm={() => void handleConfirmComplete()}
+      title={actionT("sheet.completeConfirmTitle")}
+    />
+  ) : skipConfirmVisible ? (
+    <ConfirmPanel
+      message={actionT("sheet.skipConfirmMessage")}
+      onCancel={() => setSkipConfirmVisible(false)}
+      onConfirm={() => {
+        setSkipConfirmVisible(false);
+        const customerId = selectedCustomerId;
+        setSelectedCustomerId(null);
+        // Only this one customer: it stays open and in place, the route goes past it.
+        if (customerId) trip.skipStop(customerId);
+      }}
+      title={actionT("sheet.skipConfirmTitle")}
+    />
+  ) : driverAssignment.visible ? (
+    <DriverAssignContent
+      assigning={driverAssignment.assigning}
+      currentDriverId={details?.customer.assignedDriverId}
+      drivers={driverAssignment.drivers}
+      error={driverAssignment.error}
+      loadingDrivers={driverAssignment.loadingDrivers}
+      onClose={closeDriverAssignment}
+      onSelect={(driverId) => void handleSelectDriver(driverId)}
+    />
+  ) : undefined;
+
   if (isLoading) return <LoadingView label={t("screen.loading")} />;
 
   return (
@@ -501,7 +546,7 @@ export function MapScreen() {
             right from opening the map. */}
         {!drawingSelection ? (
           <View pointerEvents="box-none" style={styles.tripPanel}>
-            <MapTripPanel railOnly={activeCategory !== "trip" && activeCategory !== "selection"} trip={trip} />
+            <MapTripPanel productEmojiById={productEmojiById} railOnly={activeCategory !== "trip" && activeCategory !== "selection"} trip={trip} />
           </View>
         ) : null}
         <PolygonDrawOverlay
@@ -538,6 +583,8 @@ export function MapScreen() {
         onClose={() => {
           setSelectedCustomerId(null);
           setCompleteConfirmVisible(false);
+          setSkipConfirmVisible(false);
+          closeDriverAssignment();
         }}
         onEdit={() => {
           if (selectedCustomerId) router.push(`/customer/edit/${selectedCustomerId}`);
@@ -558,20 +605,8 @@ export function MapScreen() {
         }
         onSkip={isSelectedPendingStop ? () => setSkipConfirmVisible(true) : undefined}
         onSkipLabel={isSelectedPendingStop ? routeT("live.skip") : undefined}
-        visible={selectedCustomerId !== null && !completeConfirmVisible && !skipConfirmVisible && !tripNavigation.arrivalPromptVisible}
-      />
-      <ConfirmDialog
-        message={actionT("sheet.skipConfirmMessage")}
-        onCancel={() => setSkipConfirmVisible(false)}
-        onConfirm={() => {
-          setSkipConfirmVisible(false);
-          const customerId = selectedCustomerId;
-          setSelectedCustomerId(null);
-          // Only this one customer: it stays open and in place, the route goes past it.
-          if (customerId) trip.skipStop(customerId);
-        }}
-        title={actionT("sheet.skipConfirmTitle")}
-        visible={skipConfirmVisible}
+        panel={selectedCustomerId !== null ? sheetPanel : undefined}
+        visible={selectedCustomerId !== null && !tripNavigation.arrivalPromptVisible}
       />
       <DriverAssignSheet
         assigning={driverAssignment.assigning}
@@ -580,12 +615,10 @@ export function MapScreen() {
         drivers={driverAssignment.drivers}
         error={driverAssignment.error}
         loadingDrivers={driverAssignment.loadingDrivers}
-        onClose={() => {
-          setAssignmentCustomerIds(null);
-          driverAssignment.close();
-        }}
+        onClose={closeDriverAssignment}
         onSelect={(driverId) => void handleSelectDriver(driverId)}
-        visible={driverAssignment.visible}
+        // From the customer sheet the list opens inside it (sheetPanel).
+        visible={driverAssignment.visible && selectedCustomerId === null}
       />
       <DriverLiveStatusSheet
         error={driverLiveStatus.error}
@@ -605,18 +638,6 @@ export function MapScreen() {
           router.push(`/customer/edit/${customerId}`);
         }}
         visible={addressCheckVisible}
-      />
-      <ConfirmDialog
-        destructive
-        message={
-          (details?.openOrders.length ?? 0) > 1
-            ? actionT("sheet.completeAllConfirmMessage", { count: details?.openOrders.length ?? 0 })
-            : actionT("sheet.completeConfirmMessage")
-        }
-        onCancel={() => setCompleteConfirmVisible(false)}
-        onConfirm={() => void handleConfirmComplete()}
-        title={actionT("sheet.completeConfirmTitle")}
-        visible={completeConfirmVisible}
       />
       <ConfirmDialog
         destructive

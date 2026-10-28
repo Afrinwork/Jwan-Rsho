@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
+import { withAddressNote } from "@/src/features/customers/services/addressNote";
+import { diffExistingCustomerEdits } from "@/src/features/orders/services/existingCustomerEdits";
 import { customerSchema } from "@/src/features/customers/validation/customerSchema";
 import { CustomerMode } from "@/src/features/orders/types/orderFormTypes";
 import {
@@ -23,6 +25,7 @@ import { buildDriverOrderNote } from "@/src/features/orders/services/driverOrder
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 import { customerRepository } from "@/src/repositories/customerRepository";
 import { useOwnDrivers } from "@/src/features/orders/hooks/useOwnDrivers";
+import { useTripAdditionStore } from "@/src/features/route/store/tripAdditionStore";
 
 const defaultValues: AddOrderFormValues = {
   customerId: "",
@@ -60,6 +63,11 @@ export function useAddOrder() {
   });
 
   const items = useFieldArray({ control: form.control, name: "items" });
+  // Offered on the form while the person's own trip is started (admins —
+  // a driver's new customers join their trip anyway).
+  const tripStarted = useTripAdditionStore((state) => state.tripStarted);
+  const requestTripAddition = useTripAdditionStore((state) => state.requestAddition);
+  const canAddToTrip = tripStarted && !isDriver(currentUser);
 
   function selectCustomer(customer: Customer) {
     setSelectedCustomer(customer);
@@ -78,7 +86,8 @@ export function useAddOrder() {
     setSuccessMessage(null);
   }
 
-  const submit = form.handleSubmit(async (values) => {
+  // addToTrip: the saved customer also joins the running trip, live.
+  const saveOrder = (addToTrip: boolean) => form.handleSubmit(async (values) => {
     setSubmitError(null);
     setSuccessMessage(null);
 
@@ -91,8 +100,11 @@ export function useAddOrder() {
           : {
               ...driverNote,
               customer: {
-                ...customerSchema.parse(values.customer),
-                ...(isDriver(currentUser) ? { assignedDriverId: currentUser!.uid } : {}),
+                ...withAddressNote(customerSchema.parse(values.customer)),
+                // Set with the customer itself (the order takes it over in the
+                // same transaction), so it never shows up unassigned for a
+                // moment and joins the admin's running trip by mistake.
+                ...(isDriver(currentUser) ? { assignedDriverId: currentUser!.uid } : canAssignDriver && driverId ? { assignedDriverId: driverId } : {}),
                 ...(await buildCustomerCoordinates(values.customer)),
               },
               items: values.items,
@@ -101,9 +113,10 @@ export function useAddOrder() {
               requestId: draftIds.orderId,
             };
 
-      await guardedCreateOrder(payload);
+      await saveExistingCustomerEdits(values.customer);
       await assignChosenDriver();
-      onSaveSucceeded();
+      await guardedCreateOrder(payload);
+      onSaveSucceeded(addToTrip, values.customerId);
     } catch (error) {
       if (isOrderAlreadyExistsError(error)) {
         // This exact save attempt already went through (a double-tap that
@@ -111,25 +124,38 @@ export function useAddOrder() {
         // call's response was lost) — the order is safely saved, just not by
         // THIS call. Idempotent no-op, not a failure.
         await assignChosenDriver().catch(() => undefined);
-        onSaveSucceeded();
+        onSaveSucceeded(addToTrip, values.customerId);
       } else {
         setSubmitError(formatError(error).message);
       }
     }
   });
+  const submit = saveOrder(false);
+  const submitToTrip = saveOrder(true);
 
-  // Runs after the order is saved: assign_customer_driver sets the customer's
-  // driver and mirrors it onto all of the customer's open orders, including
-  // the one just created. Skipped when the assignment wouldn't change.
-  async function assignChosenDriver() {
-    if (!canAssignDriver) return;
-    const currentDriverId = customerMode === "existing" ? (selectedCustomer?.assignedDriverId ?? null) : null;
-    if (driverId === currentDriverId) return;
-    const customerId = customerMode === "existing" ? form.getValues("customerId") : draftIds.customerId;
-    await customerRepository.assignDriver(customerId, driverId);
+  // A picked existing customer whose fields were changed here (e.g. the
+  // street added now): saved too, instead of only the order. Drivers may not
+  // update customers (RLS), so for them the order is saved as before.
+  async function saveExistingCustomerEdits(customer: AddOrderFormValues["customer"]) {
+    if (customerMode !== "existing" || !selectedCustomer || isDriver(currentUser)) return;
+    const edits = diffExistingCustomerEdits(selectedCustomer, withAddressNote(customerSchema.parse(customer)));
+    if (!edits) return;
+    const coordinates = edits.locationChanged ? await buildCustomerCoordinates(customer) : {};
+    await customerRepository.updateCustomer(selectedCustomer.id, { ...edits.changes, ...coordinates });
   }
 
-  function onSaveSucceeded() {
+  // Existing customer only (a new one gets the driver with the customer
+  // itself): runs before the order is saved — assign_customer_driver sets the
+  // customer's driver and mirrors it onto their open orders, and the new order
+  // takes it over from the customer. Skipped when it wouldn't change.
+  async function assignChosenDriver() {
+    if (!canAssignDriver || customerMode !== "existing" || !selectedCustomer) return;
+    if (driverId === (selectedCustomer.assignedDriverId ?? null)) return;
+    await customerRepository.assignDriver(selectedCustomer.id, driverId);
+  }
+
+  function onSaveSucceeded(addToTrip: boolean, existingCustomerId: string) {
+    if (addToTrip) requestTripAddition(customerMode === "existing" ? existingCustomerId : draftIds.customerId);
     setSuccessMessage(t("save.success"));
     form.reset(defaultValues);
     setCustomerMode("new");
@@ -151,6 +177,8 @@ export function useAddOrder() {
     selectCustomer,
     clearCustomer,
     submit,
+    submitToTrip,
+    canAddToTrip,
     submitError,
     successMessage,
   };

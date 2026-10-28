@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
@@ -46,6 +46,10 @@ type MapCustomerSheetProps = {
   // making it pending again. Omitted for a stop that isn't currently
   // skipped/completed, and for the plain map screen.
   onReactivate?: () => void;
+  // Shown in place of the details (a confirmation, the driver list) — inside
+  // this sheet, never as a second Modal: one on top, or one opening while
+  // this one closes, leaves an invisible overlay that freezes the app.
+  panel?: ReactNode;
 };
 
 export function MapCustomerSheet({
@@ -70,6 +74,7 @@ export function MapCustomerSheet({
   onSkip,
   onSkipLabel,
   onReactivate,
+  panel,
 }: MapCustomerSheetProps) {
   const colors = useThemeColors();
   const { t } = useTranslation("map");
@@ -86,14 +91,15 @@ export function MapCustomerSheet({
           <View style={styles.handleWrap}>
             <View style={[styles.handle, { backgroundColor: colors.border }]} />
           </View>
-          {loading ? <LoadingView label={t("sheet.loadingDetails")} /> : null}
-          {!loading && error ? (
+          {panel ? <ScrollView contentContainerStyle={styles.content}>{panel}</ScrollView> : null}
+          {!panel && loading ? <LoadingView label={t("sheet.loadingDetails")} /> : null}
+          {!panel && !loading && error ? (
             <View style={styles.content}>
               <ErrorState message={error} />
               <AppButton label={t("common.retry")} onPress={onRetry} variant="secondary" />
             </View>
           ) : null}
-          {!loading && !error && details ? (
+          {!panel && !loading && !error && details ? (
             <ScrollView contentContainerStyle={styles.content}>
               <CustomerMapCard details={details} />
               <DebtStatusBox
