@@ -1,4 +1,4 @@
-import { Dismiss20Regular, ReOrderDotsVertical20Regular } from "@fluentui/react-native-icons";
+import { Dismiss20Regular, Edit20Regular, ReOrderDotsVertical20Regular } from "@fluentui/react-native-icons";
 import { useState } from "react";
 import { Modal, Pressable, StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -26,6 +26,8 @@ type RouteReorderSheetProps = {
   whatsapp: ReturnType<typeof useTripWhatsapp>;
   onMove: (customerId: string, pendingPosition: number) => void;
   onPressPosition: (customerId: string) => void;
+  // Pencil next to the name: correct the customer's address.
+  onEditAddress: (customerId: string) => void;
   onClose: () => void;
 };
 
@@ -121,6 +123,7 @@ export function RouteReorderSheet(props: RouteReorderSheetProps) {
                 isCurrent={item.id === props.currentStopId}
                 marker={item}
                 number={props.stopNumberById.get(item.id) ?? index + 1}
+                onEditAddress={() => props.onEditAddress(item.id)}
                 onPressPosition={() => props.onPressPosition(item.id)}
                 onToggle={() => whatsapp.toggle(item.id)}
                 selected={whatsapp.selectedIds.includes(item.id)}
@@ -183,6 +186,7 @@ type ReorderRowProps = {
   isCurrent: boolean;
   selected: boolean;
   onPressPosition: () => void;
+  onEditAddress: () => void;
   onToggle: () => void;
 };
 
@@ -213,9 +217,20 @@ function ReorderRow(props: ReorderRowProps) {
         </AppText>
       </Pressable>
       <View style={styles.rowText}>
-        <AppText numberOfLines={1} variant="bodyMedium">
-          {props.marker.title}
-        </AppText>
+        <View style={styles.titleRow}>
+          <AppText numberOfLines={1} style={styles.title} variant="bodyMedium">
+            {props.marker.title}
+          </AppText>
+          <Pressable
+            accessibilityLabel={t("editAddress.open", { name: props.marker.title })}
+            accessibilityRole="button"
+            hitSlop={10}
+            onPress={props.onEditAddress}
+            style={styles.editButton}
+          >
+            <Edit20Regular color={colors.primary} />
+          </Pressable>
+        </View>
         <View style={styles.captionRow}>
           <AppText color={props.isCurrent ? "primary" : "muted"} numberOfLines={1} style={styles.caption} variant="caption">
             {props.isCurrent ? t("reorderSheet.current") : props.marker.description}
@@ -296,6 +311,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   rowText: { flex: 1, gap: 2 },
+  titleRow: { flexDirection: "row", alignItems: "center", gap: spacing.xs },
+  title: { flexShrink: 1 },
+  editButton: { padding: 2 },
   captionRow: { flexDirection: "row", alignItems: "center", gap: spacing.xs },
   caption: { flexShrink: 1 },
   checkbox: {

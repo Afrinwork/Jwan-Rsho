@@ -546,7 +546,7 @@ export function MapScreen() {
             right from opening the map. */}
         {!drawingSelection ? (
           <View pointerEvents="box-none" style={styles.tripPanel}>
-            <MapTripPanel productEmojiById={productEmojiById} railOnly={activeCategory !== "trip" && activeCategory !== "selection"} trip={trip} />
+            <MapTripPanel onCustomerChanged={() => void reloadCustomers()} productEmojiById={productEmojiById} railOnly={activeCategory !== "trip" && activeCategory !== "selection"} trip={trip} />
           </View>
         ) : null}
         <PolygonDrawOverlay

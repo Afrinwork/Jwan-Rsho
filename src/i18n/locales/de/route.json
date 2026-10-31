@@ -146,6 +146,14 @@
     "title": "Verbleibende Kunden ({{count}})",
     "current": "Aktuelles Ziel"
   },
+  "editAddress": {
+    "title": "Adresse aendern",
+    "hint": "Die neue Adresse wird beim Kunden gespeichert und die Reise passt sich sofort an.",
+    "open": "Adresse von {{name}} aendern",
+    "save": "Speichern",
+    "notFound": "Diese Adresse wurde nicht gefunden. Bitte Strasse, Stadt und Land pruefen.",
+    "missing": "Bitte Strasse oder Stadt eingeben."
+  },
   "sortMode": {
     "title": "Wie soll sortiert werden?",
     "optimized": "Kürzeste Route",

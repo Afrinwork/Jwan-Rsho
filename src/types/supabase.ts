@@ -810,6 +810,18 @@ export type Database = {
         }
         Returns: undefined
       }
+      update_customer_address: {
+        Args: {
+          p_address: string
+          p_city: string
+          p_country: string
+          p_customer_id: string
+          p_latitude: number
+          p_longitude: number
+          p_normalized_city: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

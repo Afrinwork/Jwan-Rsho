@@ -34,6 +34,7 @@ export function buildMapCustomerMarkers(customers: Customer[], orders: Order[]) 
       country: value.country,
       city: value.city,
       region: value.region ?? "",
+      address: value.address ?? "",
       hasStreetAddress: hasStreetAddress(value),
       ...(hiddenFromDriverIds.has(value.id) ? { hiddenFromDriver: true } : {}),
     }));

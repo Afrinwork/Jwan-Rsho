@@ -11,6 +11,7 @@ import { useDriverLiveStatus } from "@/src/features/map/hooks/useDriverLiveStatu
 import { RouteLastStopDropdown } from "@/src/features/route/components/RouteLastStopDropdown";
 import { RouteMoveStopDialog } from "@/src/features/route/components/RouteMoveStopDialog";
 import { RouteReorderSheet } from "@/src/features/route/components/RouteReorderSheet";
+import { CustomerAddressDialog } from "@/src/features/route/components/CustomerAddressDialog";
 import { RouteTimeDropdown } from "@/src/features/route/components/RouteTimeDropdown";
 import { TripActionDockButton } from "@/src/features/route/components/TripActionDockButton";
 import { TripActionMenu } from "@/src/features/route/components/TripActionMenu";
@@ -32,6 +33,9 @@ type MapTripPanelProps = {
   trip: ReturnType<typeof useMapTrip>;
   railOnly?: boolean;
   productEmojiById: Map<string, string | undefined>;
+  // A customer's address was corrected from the list: reload the map now
+  // instead of waiting for the live reload.
+  onCustomerChanged?: () => void;
 };
 type ActionSection = "stop" | "order" | "departure" | "settings";
 
@@ -42,7 +46,7 @@ function nextQuarterHour() {
   return formatEtaTime(new Date(Math.ceil(Date.now() / QUARTER_HOUR_MS) * QUARTER_HOUR_MS));
 }
 
-export function MapTripPanel({ trip, railOnly = false, productEmojiById }: MapTripPanelProps) {
+export function MapTripPanel({ trip, railOnly = false, productEmojiById, onCustomerChanged }: MapTripPanelProps) {
   const t = routeT;
   const isCurrentUserDriver = isDriver(useCurrentUser());
   const preferredNavigationApp = useAppStore((state) => state.preferredNavigationApp);
@@ -53,6 +57,7 @@ export function MapTripPanel({ trip, railOnly = false, productEmojiById }: MapTr
   const [showAllConfirmVisible, setShowAllConfirmVisible] = useState(false);
   const [reorderSheetVisible, setReorderSheetVisible] = useState(false);
   const [moveStopId, setMoveStopId] = useState<string | null>(null);
+  const [editAddressId, setEditAddressId] = useState<string | null>(null);
   const [startLocationVisible, setStartLocationVisible] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
   const whatsapp = useTripWhatsapp(navigation.pendingMarkers, trip.etaById, productEmojiById);
@@ -310,12 +315,21 @@ export function MapTripPanel({ trip, railOnly = false, productEmojiById }: MapTr
       <RouteReorderSheet
         currentStopId={current?.id ?? null}
         onClose={() => setReorderSheetVisible(false)}
+        onEditAddress={setEditAddressId}
         onMove={trip.movePendingStop}
         onPressPosition={setMoveStopId}
         pendingMarkers={navigation.pendingMarkers}
         stopNumberById={stopNumberById}
-        visible={reorderSheetVisible && moveStopId === null}
+        visible={reorderSheetVisible && moveStopId === null && editAddressId === null}
         whatsapp={whatsapp}
+      />
+      {/* Instead of the list, not on top of it: a second Modal on top of the
+          list freezes the screen. */}
+      <CustomerAddressDialog
+        key={editAddressId ?? "closed"}
+        marker={editAddressId ? navigation.pendingMarkers.find((marker) => marker.id === editAddressId) ?? null : null}
+        onClose={() => setEditAddressId(null)}
+        onSaved={() => onCustomerChanged?.()}
       />
       <RouteMoveStopDialog
         key={moveStopId ?? "closed"}

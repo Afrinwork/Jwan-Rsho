@@ -98,6 +98,7 @@ test("map markers include only customers with open orders and valid coordinates"
       country: "DE",
       city: "Berlin",
       region: "",
+      address: "Main 1, 1000",
       hasStreetAddress: true,
     },
   ]);

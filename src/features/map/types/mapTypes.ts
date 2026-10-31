@@ -23,6 +23,9 @@ export type MapCustomerMarker = {
   country: string;
   city: string;
   region: string;
+  // The street line as stored, for correcting it from the trip's list.
+  // Optional like hasStreetAddress below, for the same test fixtures.
+  address?: string;
   // No street on file (city-only address) — shown as an orange pin instead
   // of the usual teal, so an imprecise location stands out on the map.
   // Optional (defaults to true / teal) so the many marker fixtures in tests

@@ -4,6 +4,7 @@ import { requireSupabase, resolveOwnerScope } from "@/src/repositories/supabase/
 import { cityRepository } from "@/src/repositories/supabase/cityRepository";
 import { Customer } from "@/src/types/customer";
 import type { Database } from "@/src/types/supabase";
+import { normalizeCity } from "@/src/utils/normalizeCity";
 import { generateUuid } from "@/src/utils/uuid";
 
 type CustomerInsert = Database["public"]["Tables"]["customers"]["Insert"];
@@ -59,6 +60,26 @@ export const customerRepository = {
     if (error) throw error;
 
     if (input.city) {
+      await cityRepository.ensureCityExists(input.city).catch(() => undefined);
+    }
+  },
+
+  // New address + coordinates from the trip's customer list — also allowed
+  // for the customer's assigned driver (update_customer_address), unlike
+  // updateCustomer. Every map running a trip picks the moved stop up live.
+  async updateAddress(id: string, input: { address: string; city: string; country: string; latitude: number; longitude: number }) {
+    const { error } = await requireSupabase().rpc("update_customer_address", {
+      p_customer_id: id,
+      p_address: input.address.trim(),
+      p_city: input.city.trim(),
+      p_normalized_city: normalizeCity(input.city),
+      p_country: input.country.trim(),
+      p_latitude: input.latitude,
+      p_longitude: input.longitude,
+    });
+    if (error) throw error;
+
+    if (input.city.trim()) {
       await cityRepository.ensureCityExists(input.city).catch(() => undefined);
     }
   },
