@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { AppInput } from "@/src/components/ui/AppInput";
+import { DecimalInput } from "@/src/components/ui/DecimalInput";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { radius } from "@/src/theme/radius";
 import { spacing } from "@/src/theme/spacing";
@@ -26,12 +26,7 @@ export function QuantityStepper({ value, onChange, step = 1 }: QuantityStepperPr
       >
         <Text style={[styles.buttonLabel, { color: colors.danger }]}>−</Text>
       </Pressable>
-      <AppInput
-        keyboardType="decimal-pad"
-        onChangeText={(text) => onChange(text === "" ? 0 : clamp(Number(text.replace(",", "."))))}
-        style={styles.input}
-        value={String(value)}
-      />
+      <DecimalInput onChangeValue={onChange} style={styles.input} value={value} />
       <Pressable
         onPress={() => onChange(clamp(value + step))}
         style={[styles.button, { backgroundColor: colors.primaryMuted, borderColor: colors.border }]}

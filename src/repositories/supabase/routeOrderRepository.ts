@@ -1,4 +1,5 @@
 import { requireCurrentUserId, requireSupabase } from "@/src/repositories/supabase/repositoryContext";
+import type { SyncedActiveTrip } from "@/src/features/route/services/activeTripStorage.shared";
 import { ActiveTrip, RouteOrder } from "@/src/types/routeOrder";
 import { generateUuid } from "@/src/utils/uuid";
 
@@ -10,6 +11,7 @@ type RouteOrderRow = {
   trip_customer_ids?: string[] | null;
   trip_current_customer_id?: string | null;
   trip_updated_at?: string | null;
+  trip_state?: SyncedActiveTrip | null;
 };
 
 function mapRow(row: RouteOrderRow): RouteOrder {
@@ -21,6 +23,7 @@ function mapRow(row: RouteOrderRow): RouteOrder {
     trip: row.trip_customer_ids?.length
       ? { customerIds: row.trip_customer_ids, currentCustomerId: row.trip_current_customer_id ?? null, updatedAt: row.trip_updated_at ?? row.updated_at }
       : null,
+    tripState: row.trip_state ?? null,
   };
 }
 
@@ -82,5 +85,17 @@ export const routeOrderRepository = {
       trip_current_customer_id: trip?.currentCustomerId ?? null,
       trip_updated_at: trip ? new Date().toISOString() : null,
     });
+  },
+
+  // The person's own map trip, for their other phones.
+  async saveTripState(userId: string, tripState: SyncedActiveTrip) {
+    await upsertColumns(userId, { trip_state: tripState });
+  },
+
+  // "Add to trip" from any phone: joins the customer to the caller's
+  // started trip on the server, where every phone running it picks it up.
+  async addCustomerToTrip(customerId: string) {
+    const { error } = await requireSupabase().rpc("add_customer_to_trip", { p_customer_id: customerId });
+    if (error) throw error;
   },
 };

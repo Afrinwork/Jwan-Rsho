@@ -3,7 +3,7 @@ import * as Location from "expo-location";
 import { useTranslation } from "react-i18next";
 
 import { driverCheckInRepository } from "@/src/repositories/driverCheckInRepository";
-import { geocodingService } from "@/src/services/geocodingService";
+import { describePosition, getCurrentPositionOrRecent } from "@/src/services/devicePosition";
 import { formatError } from "@/src/utils/formatError";
 
 export function useDriverLiveStatus() {
@@ -44,12 +44,13 @@ export function useDriverLiveStatus() {
         return false;
       }
 
-      const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const location = await getCurrentPositionOrRecent();
+      if (!location) {
+        setError(t("driverStatus.locationUnavailable"));
+        return false;
+      }
       const coordinate = { latitude: location.coords.latitude, longitude: location.coords.longitude };
-      const place = await geocodingService.reverseGeocode(coordinate).catch(() => null);
-      const address = [place?.name, place?.street, place?.postalCode, place?.city, place?.country]
-        .filter((part): part is string => Boolean(part?.trim()))
-        .join(", ") || `${coordinate.latitude.toFixed(5)}, ${coordinate.longitude.toFixed(5)}`;
+      const address = await describePosition(coordinate);
 
       await driverCheckInRepository.submitDailyStatus({
         address,
@@ -79,12 +80,13 @@ export function useDriverLiveStatus() {
         return false;
       }
 
-      const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const location = await getCurrentPositionOrRecent();
+      if (!location) {
+        setError(t("driverStatus.locationUnavailable"));
+        return false;
+      }
       const coordinate = { latitude: location.coords.latitude, longitude: location.coords.longitude };
-      const place = await geocodingService.reverseGeocode(coordinate).catch(() => null);
-      const address = [place?.name, place?.street, place?.postalCode, place?.city, place?.country]
-        .filter((part): part is string => Boolean(part?.trim()))
-        .join(", ") || `${coordinate.latitude.toFixed(5)}, ${coordinate.longitude.toFixed(5)}`;
+      const address = await describePosition(coordinate);
 
       await driverCheckInRepository.reportLiveStatus({
         address,

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, View } from "react-native";
+import { KeyboardAvoidingView, Modal, ScrollView, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { FormField } from "@/src/components/forms/FormField";
@@ -68,7 +68,9 @@ export function TripStartLocationDialog(props: TripStartLocationDialogProps) {
 
   return (
     <Modal animationType="fade" onRequestClose={props.onClose} transparent visible={props.visible}>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.overlay}>
+      {/* "padding" on Android too: edge-to-edge (SDK 58) no longer resizes the
+          window for the keyboard, so the bottom fields ended up under it. */}
+      <KeyboardAvoidingView behavior="padding" style={styles.overlay}>
         <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
             <AppText variant="subheading">{t("startCard.title")}</AppText>

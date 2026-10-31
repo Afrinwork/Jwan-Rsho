@@ -135,6 +135,7 @@
     "updateLocation": "Standort aktualisieren",
     "invalidOdometer": "Bitte gib einen gueltigen Kilometerstand ein.",
     "locationRequired": "Bitte erlaube den Standortzugriff, damit deine aktuelle Adresse uebermittelt werden kann.",
+    "locationUnavailable": "Dein Standort konnte gerade nicht ermittelt werden. Bitte GPS einschalten und erneut versuchen.",
     "sentSuccess": "Tagesmeldung gesendet. Aktuelle Adresse und {{odometer}} wurden an die Verwaltung uebermittelt.",
     "locationSentSuccess": "Deine aktuelle Adresse wurde an die Verwaltung uebermittelt."
   },

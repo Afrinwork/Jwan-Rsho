@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { AppInput } from "@/src/components/ui/AppInput";
+import { DecimalInput } from "@/src/components/ui/DecimalInput";
 import { spacing } from "@/src/constants/spacing";
 import { AddOrderFormValues } from "@/src/features/orders/validation/addOrderFormSchema";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
@@ -31,12 +32,12 @@ export function ProductQuantityRow({ index, control, error, onRemove }: ProductQ
             control={control}
             name={`items.${index}.quantity`}
             render={({ field }) => (
-              <AppInput
-                keyboardType="decimal-pad"
+              <DecimalInput
+                emptyWhenZero
                 onBlur={field.onBlur}
-                onChangeText={(text) => field.onChange(text === "" ? 0 : Number(text.replace(",", ".")))}
+                onChangeValue={field.onChange}
                 placeholder={t("items.quantityPlaceholder")}
-                value={field.value ? String(field.value) : ""}
+                value={field.value ?? 0}
               />
             )}
           />

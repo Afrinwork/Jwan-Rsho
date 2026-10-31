@@ -10,7 +10,12 @@ import { useRouteOrder } from "@/src/features/route/hooks/useRouteOrder";
 import { useRoutePolyline } from "@/src/features/route/hooks/useRoutePolyline";
 import { activeTripStorage } from "@/src/features/route/services/activeTripStorage";
 import { useTripAdditionStore } from "@/src/features/route/store/tripAdditionStore";
-import { TripStartLocation } from "@/src/features/route/services/activeTripStorage.shared";
+import {
+  chooseTripToResume,
+  isOtherDevicesTripChange,
+  StoredActiveTrip,
+  TripStartLocation,
+} from "@/src/features/route/services/activeTripStorage.shared";
 import { buildCumulativeStops, buildFallbackLegs, STOP_SERVICE_BUFFER_SEC } from "@/src/features/route/services/routeDirectionsService";
 import { fetchRoadDistanceMatrix, RouteDistanceMatrix } from "@/src/features/route/services/routeDistanceMatrixService";
 import { insertMarkersAfterAnchor } from "@/src/features/route/services/routeLiveReorderService";
@@ -20,6 +25,7 @@ import { alternativeRouteOrder, optimizedRemainingOrder } from "@/src/features/r
 import { RouteOrigin } from "@/src/features/route/types/routeTypes";
 import { parseTimeInput } from "@/src/features/route/utils/routeFormat";
 import { useCurrentUser } from "@/src/hooks/useCurrentUser";
+import { generateUuid } from "@/src/utils/uuid";
 
 // Remaining km/duration/ETA are recalculated from the live position only
 // after this much movement (one Directions request per recalculation).
@@ -37,6 +43,10 @@ const FAR_ETA_ANCHOR = new Date(0);
 // current order — only runs out with a single possible order.
 const MAX_NEW_ROUTE_ATTEMPTS = 12;
 
+// Tells this phone's trip writes apart from the account's other phones'
+// (see SyncedActiveTrip) — a new id per app start is enough for that.
+const DEVICE_ID = generateUuid();
+
 type LatLng = { latitude: number; longitude: number };
 export type TripResortKind = "optimize" | "variant" | "nearest" | "farthest" | "city";
 
@@ -45,7 +55,9 @@ export type TripResortKind = "optimize" | "variant" | "nearest" | "farthest" | "
 // up later (new order, new assignment) are slotted in where they add the
 // least detour — after the stop being driven to right now — and completed
 // ones drop out. Completed/skipped stops and the order survive the app being
-// closed (activeTripStorage, same day only).
+// closed (activeTripStorage, same day only), and are synced to every phone
+// signed in to the same account (route_orders.trip_state): a trip started on
+// one phone runs on the others too, and "add to trip" works from any of them.
 //
 // "Start trip" on a drawn selection narrows the trip to those customers
 // (scope); the others stay on the map, just not on the route. Customers that
@@ -153,36 +165,77 @@ export function useMapTrip(
     startOriginRef.current = startOrigin;
   });
 
-  // First order: today's stored trip (with its completed/skipped stops), or
-  // nearest-first from where the driver is. Runs once, when the customers
-  // have loaded.
+  // Takes over a stored trip — this phone's own after a restart, or the one
+  // another phone of the same account is running — with its completed/
+  // skipped stops; customers on the map it doesn't know yet are slotted in
+  // after the next stop.
+  const applyStoredTrip = useCallback(
+    (stored: StoredActiveTrip) => {
+      const scope = stored.scopeIds ? new Set(stored.scopeIds) : null;
+      const markers = scope ? mapMarkersRef.current.filter((marker) => scope.has(marker.id)) : mapMarkersRef.current;
+      setScopeIds(stored.scopeIds ?? null);
+      const byId = new Map(markers.map((marker) => [marker.id, marker]));
+      setStarted(Boolean(stored.started));
+      setStartedAt((current) => (stored.started ? current ?? new Date() : null));
+      setStartLocation(stored.startLocation ?? null);
+      setDepartureTime(stored.departureTime ?? null);
+      const kept = stored.orderedIds.map((id) => byId.get(id)).filter((marker) => marker !== undefined);
+      const keptIds = new Set(kept.map((marker) => marker.id));
+      const fresh = markers.filter((marker) => !keptIds.has(marker.id));
+      const pending = kept.find((marker) => !stored.handledIds.includes(marker.id));
+      restoreNavigation({ handledIds: stored.handledIds, skippedIds: stored.skippedIds });
+      setOrderIds(insertMarkersAfterAnchor(kept, fresh, pending?.id ?? null).map((marker) => marker.id));
+    },
+    [restoreNavigation],
+  );
+
+  // The synced trip as last seen (taken over or not), so each one is taken
+  // over only once; and set while a taken-over trip is about to be saved, so
+  // it isn't sent straight back to the other phones.
+  const lastRemoteSavedAtRef = useRef<string | null>(null);
+  const skipRemoteSaveRef = useRef(false);
+  // The synced trip has arrived (or can't, e.g. offline) — the first order
+  // waits for it, so a phone opening the map joins the trip already running.
+  const syncReady = routeOrder.loaded || routeOrder.error !== null;
+  const remoteTrip = routeOrder.tripState;
+  const remoteTripRef = useRef(remoteTrip);
+  useEffect(() => {
+    remoteTripRef.current = remoteTrip;
+  });
+
+  // First order: today's trip — the newer of this phone's and the synced one
+  // (with its completed/skipped stops) — or nearest-first from where the
+  // driver is. Runs once, when the customers have loaded.
   const initStartedRef = useRef(false);
   useEffect(() => {
-    if (!ready || !userId || initStartedRef.current) return;
+    if (!ready || !userId || !syncReady || initStartedRef.current) return;
     initStartedRef.current = true;
     seenMarkerIdsRef.current = new Set(allMarkersRef.current.map((marker) => marker.id));
 
-    void activeTripStorage.load(userId).then((stored) => {
-      const scope = stored?.scopeIds ? new Set(stored.scopeIds) : null;
-      const markers = scope ? mapMarkersRef.current.filter((marker) => scope.has(marker.id)) : mapMarkersRef.current;
-      if (stored?.scopeIds) setScopeIds(stored.scopeIds);
-      const byId = new Map(markers.map((marker) => [marker.id, marker]));
+    void activeTripStorage.load(userId).then((local) => {
+      const remote = remoteTripRef.current;
+      lastRemoteSavedAtRef.current = remote?.savedAt ?? null;
+      const { trip: stored, fromSync } = chooseTripToResume(local, remote, userId, Date.now());
       if (stored) {
-        setStarted(Boolean(stored.started));
-        if (stored.started) setStartedAt(new Date());
-        setStartLocation(stored.startLocation ?? null);
-        setDepartureTime(stored.departureTime ?? null);
-        const kept = stored.orderedIds.map((id) => byId.get(id)).filter((marker) => marker !== undefined);
-        const keptIds = new Set(kept.map((marker) => marker.id));
-        const fresh = markers.filter((marker) => !keptIds.has(marker.id));
-        const pending = kept.find((marker) => !stored.handledIds.includes(marker.id));
-        restoreNavigation({ handledIds: stored.handledIds, skippedIds: stored.skippedIds });
-        setOrderIds(insertMarkersAfterAnchor(kept, fresh, pending?.id ?? null).map((marker) => marker.id));
+        skipRemoteSaveRef.current = fromSync;
+        applyStoredTrip(stored);
         return;
       }
-      setOrderIds(nearestFirst(markers, startOriginRef.current));
+      setOrderIds(nearestFirst(mapMarkersRef.current, startOriginRef.current));
     });
-  }, [ready, userId, restoreNavigation]);
+  }, [ready, userId, syncReady, applyStoredTrip]);
+
+  // Another phone of the same account changed the trip (started, ended,
+  // completed a stop, added a customer...): this one follows.
+  const tripReady = orderIds !== null;
+  useEffect(() => {
+    if (!tripReady || !remoteTrip) return;
+    const changed = isOtherDevicesTripChange(remoteTrip, DEVICE_ID, lastRemoteSavedAtRef.current, userId, Date.now());
+    lastRemoteSavedAtRef.current = remoteTrip.savedAt;
+    if (!changed) return;
+    skipRemoteSaveRef.current = true;
+    applyStoredTrip(remoteTrip);
+  }, [tripReady, remoteTrip, userId, applyStoredTrip]);
 
   // The customers on the map changed (new order or assignment, completed,
   // filter): keep the order of the known ones, slot new ones in after the
@@ -298,11 +351,15 @@ export function useMapTrip(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [routeOrder.loaded, routeOrder.savedIds]);
 
-  // Kept on the device so the trip survives the app being closed.
+  // Kept on the device so the trip survives the app being closed, and
+  // synced to the account's other phones.
   const orderKey = orderedMarkers.map((marker) => marker.id).join(",");
+  const saveTripState = routeOrder.saveTripState;
   useEffect(() => {
+    const takenOver = skipRemoteSaveRef.current;
+    skipRemoteSaveRef.current = false;
     if (!userId || !orderKey) return;
-    void activeTripStorage.save({
+    const trip = {
       userId,
       orderedIds: orderKey.split(","),
       handledIds: [...navigation.handledIds],
@@ -311,8 +368,11 @@ export function useMapTrip(
       started,
       startLocation,
       departureTime,
-    });
-  }, [userId, orderKey, navigation.handledIds, navigation.skippedIds, scopeIds, started, startLocation, departureTime]);
+    };
+    void activeTripStorage.save(trip);
+    if (takenOver) return;
+    void saveTripState({ ...trip, savedAt: new Date().toISOString(), deviceId: DEVICE_ID });
+  }, [userId, orderKey, navigation.handledIds, navigation.skippedIds, scopeIds, started, startLocation, departureTime, saveTripState]);
 
   // Mirrors the driver's trip for their admin (driver map): remaining stops
   // in driving order and the next one.

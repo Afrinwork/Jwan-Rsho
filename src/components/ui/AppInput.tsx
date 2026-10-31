@@ -13,8 +13,15 @@ export const AppInput = forwardRef(function AppInput(
   const colors = useThemeColors();
   const [focused, setFocused] = useState(false);
 
+  // Password and email fields must reach the server exactly as typed. iOS
+  // never capitalizes or autocorrects a secure field, Android keyboards do
+  // (autoCapitalize defaults to "sentences"): a driver created on Android
+  // with "abc12345" got "Abc12345" and then couldn't sign in.
+  const verbatim = props.secureTextEntry || props.keyboardType === "email-address";
+
   return (
     <TextInput
+      {...(verbatim ? { autoCapitalize: "none", autoCorrect: false, spellCheck: false } : null)}
       {...props}
       onBlur={(event) => {
         setFocused(false);

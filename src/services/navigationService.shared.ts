@@ -26,6 +26,20 @@ export function buildGoogleMapsUrl(target: NavigationTarget) {
   return `comgooglemaps://?daddr=${resolveDestination(target)}&directionsmode=driving`;
 }
 
+// comgooglemaps:// only exists in Google Maps for iOS — on Android nothing
+// answers it, so Google Maps showed as "not available" there. Android's
+// Google Maps claims this universal link instead (the browser opens it when
+// the app is missing); dir_action=navigate starts driving right away.
+export function buildGoogleMapsWebUrl(target: NavigationTarget) {
+  const params = new URLSearchParams({
+    api: "1",
+    destination: target.address?.trim() || `${target.latitude},${target.longitude}`,
+    travelmode: "driving",
+    dir_action: "navigate",
+  });
+  return `https://www.google.com/maps/dir/?${params.toString()}`;
+}
+
 export function buildWazeUrl(target: NavigationTarget) {
   if (target.address?.trim()) {
     return `waze://?q=${encodeURIComponent(target.address.trim())}&navigate=yes`;

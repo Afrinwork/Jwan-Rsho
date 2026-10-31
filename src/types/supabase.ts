@@ -651,6 +651,7 @@ export type Database = {
           customer_ids: string[]
           trip_current_customer_id: string | null
           trip_customer_ids: string[] | null
+          trip_state: Json | null
           trip_updated_at: string | null
           updated_at: string
           updated_by: string
@@ -660,6 +661,7 @@ export type Database = {
           customer_ids?: string[]
           trip_current_customer_id?: string | null
           trip_customer_ids?: string[] | null
+          trip_state?: Json | null
           trip_updated_at?: string | null
           updated_at?: string
           updated_by: string
@@ -669,6 +671,7 @@ export type Database = {
           customer_ids?: string[]
           trip_current_customer_id?: string | null
           trip_customer_ids?: string[] | null
+          trip_state?: Json | null
           trip_updated_at?: string | null
           updated_at?: string
           updated_by?: string
@@ -746,6 +749,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_customer_to_trip: {
+        Args: { p_customer_id: string }
+        Returns: undefined
+      }
       assign_customer_driver: {
         Args: { p_customer_id: string; p_driver_id: string }
         Returns: undefined

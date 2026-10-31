@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { mergeRouteOrder } from "@/src/features/route/services/routeManualOrderService";
 import { routeOrderRepository } from "@/src/repositories/routeOrderRepository";
+import { SyncedActiveTrip } from "@/src/features/route/services/activeTripStorage.shared";
 import { ActiveTrip } from "@/src/types/routeOrder";
 import { formatError } from "@/src/utils/formatError";
 
@@ -25,6 +26,8 @@ export function useRouteOrder(userId: string | null) {
   const [savedIds, setSavedIds] = useState<string[] | null>(null);
   // The person's trip in progress, if any (only drivers publish one).
   const [trip, setTrip] = useState<ActiveTrip | null>(null);
+  // The person's own map trip as last synced by any of their phones.
+  const [tripState, setTripState] = useState<SyncedActiveTrip | null>(null);
   const [error, setError] = useState<string | null>(null);
   // False until the first saved order (or "none") has arrived.
   const [loaded, setLoaded] = useState(false);
@@ -44,6 +47,8 @@ export function useRouteOrder(userId: string | null) {
             setSavedIds((current) => (current?.join(",") === nextIds?.join(",") ? current : nextIds));
             const nextTrip = order?.trip ?? null;
             setTrip((current) => (JSON.stringify(current) === JSON.stringify(nextTrip) ? current : nextTrip));
+            const nextTripState = order?.tripState ?? null;
+            setTripState((current) => (current?.savedAt === nextTripState?.savedAt && current?.deviceId === nextTripState?.deviceId ? current : nextTripState));
             setLoaded(true);
             setError(null);
           },
@@ -99,5 +104,19 @@ export function useRouteOrder(userId: string | null) {
     [userId],
   );
 
-  return { savedIds, loaded, trip, error, save, clear, saveTrip };
+  // Best effort as well: syncing to the other phones must never disturb
+  // the trip on this one.
+  const saveTripState = useCallback(
+    async (next: SyncedActiveTrip) => {
+      if (!userId) return;
+      try {
+        await routeOrderRepository.saveTripState(userId, next);
+      } catch {
+        // ignored on purpose
+      }
+    },
+    [userId],
+  );
+
+  return { savedIds, loaded, trip, tripState, error, save, clear, saveTrip, saveTripState };
 }

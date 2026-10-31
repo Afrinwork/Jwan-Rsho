@@ -71,7 +71,9 @@ export function AddOrderScreen() {
   return (
     <ScreenContainer>
       <View style={styles.flex}>
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.flex}>
+        {/* "padding" on Android too: edge-to-edge (SDK 58) no longer resizes the
+            window for the keyboard, so the bottom fields ended up under it. */}
+        <KeyboardAvoidingView behavior="padding" style={styles.flex}>
           <ScrollView
             automaticallyAdjustKeyboardInsets
             contentContainerStyle={styles.scrollContent}

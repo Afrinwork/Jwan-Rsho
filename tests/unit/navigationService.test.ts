@@ -6,8 +6,20 @@ import {
   buildGoogleMapsMultiStopAppUrl,
   buildGoogleMapsMultiStopWebUrl,
   buildGoogleMapsUrl,
+  buildGoogleMapsWebUrl,
   buildWazeUrl,
 } from "@/src/services/navigationService.shared";
+
+test("android google maps link navigates to coordinates or an address", () => {
+  assert.equal(
+    buildGoogleMapsWebUrl({ latitude: 1, longitude: 2 }),
+    "https://www.google.com/maps/dir/?api=1&destination=1%2C2&travelmode=driving&dir_action=navigate",
+  );
+  assert.equal(
+    buildGoogleMapsWebUrl({ address: " Musterstrasse 12, Berlin " }),
+    "https://www.google.com/maps/dir/?api=1&destination=Musterstrasse+12%2C+Berlin&travelmode=driving&dir_action=navigate",
+  );
+});
 
 test("apple maps url is built for iPhone navigation", () => {
   assert.equal(buildAppleMapsUrl({ latitude: 52.52, longitude: 13.405 }), "http://maps.apple.com/?daddr=52.52,13.405");

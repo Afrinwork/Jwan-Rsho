@@ -152,7 +152,11 @@ export const AppMapView = forwardRef<AppMapViewHandle, AppMapViewProps>(function
   // otherwise this transparent layer would swallow normal map panning.
   const captureDragGestures = Boolean(onPanDrag) && scrollEnabled === false;
 
-  const dragGesture = Gesture.Pan().onUpdate((event) => {
+  // runOnJS: the worklets Babel plugin turns every Gesture.Pan() callback
+  // into a UI-thread worklet, where neither mapRef nor onPanDrag (plain JS)
+  // can be called — the drag then silently draws nothing. This callback has
+  // to run on the JS thread.
+  const dragGesture = Gesture.Pan().runOnJS(true).onUpdate((event) => {
     if (!onPanDrag) return;
     // unproject is async (bridges to the native view) — the app's own
     // polygon-drag throttling (50ms + minimum distance, in useMapSelection.ts)

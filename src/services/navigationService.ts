@@ -10,6 +10,7 @@ import {
   buildGoogleMapsMultiStopAppUrl,
   buildGoogleMapsMultiStopWebUrl,
   buildGoogleMapsUrl,
+  buildGoogleMapsWebUrl,
   buildWazeUrl,
 } from "@/src/services/navigationService.shared";
 
@@ -40,13 +41,19 @@ export const navigationService = {
 
   openDefaultNavigation(target: NavigationTarget) {
     if (Platform.OS === "android") {
-      return openIfAvailable(buildGoogleMapsUrl(target), buildGeoUrl(target));
+      return this.openGoogleMaps(target);
     }
 
     return this.openAppleMaps(target);
   },
 
+  // Android: the universal link (see buildGoogleMapsWebUrl) — opened
+  // directly, canOpenURL can't see https handlers without a manifest query.
   openGoogleMaps(target: NavigationTarget) {
+    if (Platform.OS === "android") {
+      return Linking.openURL(buildGoogleMapsWebUrl(target)).catch(() => Linking.openURL(buildGeoUrl(target)));
+    }
+
     return openIfAvailable(
       buildGoogleMapsUrl(target),
       nativeFallbackUrl(target),
@@ -65,6 +72,10 @@ export const navigationService = {
   // no reliable multi-stop URL scheme, so this always goes through Google
   // Maps (app if installed, otherwise the web/browser fallback).
   openMultiStopDrivingRoute(origin: NavigationWaypoint, waypoints: NavigationWaypoint[]) {
+    if (Platform.OS === "android") {
+      return Linking.openURL(buildGoogleMapsMultiStopWebUrl(origin, waypoints));
+    }
+
     return openIfAvailable(
       buildGoogleMapsMultiStopAppUrl(origin, waypoints),
       buildGoogleMapsMultiStopWebUrl(origin, waypoints),
@@ -75,8 +86,9 @@ export const navigationService = {
     target: NavigationTarget,
     preferredNavigationApp: NavigationAppId,
   ): Promise<MapNavigationApp[]> {
+    // The Android link always opens something (app, else browser).
     const [googleMapsAvailable, wazeAvailable] = await Promise.all([
-      safeCanOpenURL(buildGoogleMapsUrl(target)),
+      Platform.OS === "android" ? true : safeCanOpenURL(buildGoogleMapsUrl(target)),
       safeCanOpenURL(buildWazeUrl(target)),
     ]);
 

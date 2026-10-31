@@ -1,3 +1,5 @@
+import type { SyncedActiveTrip } from "@/src/features/route/services/activeTripStorage.shared";
+
 // A driver's trip in progress (RouteLiveScreen) — the stops in the order
 // they're being driven and the one that's next. Shown to their admin live.
 export type ActiveTrip = {
@@ -16,4 +18,6 @@ export type RouteOrder = {
   updatedBy: string;
   updatedAt: string;
   trip?: ActiveTrip | null;
+  // The person's own map trip, synced between their phones.
+  tripState?: SyncedActiveTrip | null;
 };

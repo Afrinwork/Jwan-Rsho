@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
@@ -111,7 +111,9 @@ export function DebtSheet(props: DebtSheetProps) {
 
   return (
     <Modal animationType="slide" onRequestClose={props.onClose} transparent visible>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.overlay}>
+      {/* "padding" on Android too: edge-to-edge (SDK 58) no longer resizes the
+          window for the keyboard, so the bottom fields ended up under it. */}
+      <KeyboardAvoidingView behavior="padding" style={styles.overlay}>
         <Pressable accessibilityLabel={t("close")} onPress={props.onClose} style={styles.backdrop} />
         <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">

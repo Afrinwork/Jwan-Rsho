@@ -26,6 +26,9 @@ import { useCurrentUser } from "@/src/hooks/useCurrentUser";
 import { customerRepository } from "@/src/repositories/customerRepository";
 import { useOwnDrivers } from "@/src/features/orders/hooks/useOwnDrivers";
 import { useTripAdditionStore } from "@/src/features/route/store/tripAdditionStore";
+import { useRouteOrder } from "@/src/features/route/hooks/useRouteOrder";
+import { isResumableTrip } from "@/src/features/route/services/activeTripStorage.shared";
+import { routeOrderRepository } from "@/src/repositories/routeOrderRepository";
 
 const defaultValues: AddOrderFormValues = {
   customerId: "",
@@ -64,10 +67,15 @@ export function useAddOrder() {
 
   const items = useFieldArray({ control: form.control, name: "items" });
   // Offered on the form while the person's own trip is started (admins —
-  // a driver's new customers join their trip anyway).
+  // a driver's new customers join their trip anyway) — on this phone's map
+  // or on another phone signed in to the same account (synced trip).
   const tripStarted = useTripAdditionStore((state) => state.tripStarted);
   const requestTripAddition = useTripAdditionStore((state) => state.requestAddition);
-  const canAddToTrip = tripStarted && !isDriver(currentUser);
+  const isCurrentUserDriver = isDriver(currentUser);
+  const { tripState } = useRouteOrder(isCurrentUserDriver ? null : currentUser?.uid ?? null);
+  const [openedAt] = useState(() => Date.now());
+  const syncedTripStarted = Boolean(tripState?.started) && isResumableTrip(tripState, currentUser?.uid ?? null, openedAt);
+  const canAddToTrip = (tripStarted || syncedTripStarted) && !isCurrentUserDriver;
 
   function selectCustomer(customer: Customer) {
     setSelectedCustomer(customer);
@@ -155,7 +163,13 @@ export function useAddOrder() {
   }
 
   function onSaveSucceeded(addToTrip: boolean, existingCustomerId: string) {
-    if (addToTrip) requestTripAddition(customerMode === "existing" ? existingCustomerId : draftIds.customerId);
+    if (addToTrip) {
+      const customerId = customerMode === "existing" ? existingCustomerId : draftIds.customerId;
+      requestTripAddition(customerId);
+      // Reaches the trip on every phone of the account, wherever it runs.
+      // Best effort: the order itself is saved either way.
+      routeOrderRepository.addCustomerToTrip(customerId).catch(() => undefined);
+    }
     setSuccessMessage(t("save.success"));
     form.reset(defaultValues);
     setCustomerMode("new");

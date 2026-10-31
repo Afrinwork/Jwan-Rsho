@@ -32,6 +32,42 @@ export type StoredActiveTrip = {
   savedAt: string;
 };
 
+// The same trip, synced through route_orders.trip_state to every phone
+// signed in to the account. deviceId: the phone that wrote it ("server" for
+// an "add to trip" from the order form, see add_customer_to_trip), so a
+// phone can tell its own writes coming back from another phone's.
+export type SyncedActiveTrip = StoredActiveTrip & { deviceId: string };
+
+// On opening the map: the newer of this phone's trip and the synced one, so
+// a phone joins the trip another phone started (or kept driving) since.
+export function chooseTripToResume(
+  local: StoredActiveTrip | null,
+  synced: SyncedActiveTrip | null,
+  userId: string | null,
+  now: number,
+): { trip: StoredActiveTrip | null; fromSync: boolean } {
+  const resumableLocal = isResumableTrip(local, userId, now) ? local : null;
+  const resumableSynced = synced && isResumableTrip(synced, userId, now) ? synced : null;
+  if (resumableSynced && (!resumableLocal || Date.parse(resumableSynced.savedAt) > Date.parse(resumableLocal.savedAt))) {
+    return { trip: resumableSynced, fromSync: true };
+  }
+  return { trip: resumableLocal, fromSync: false };
+}
+
+// While the map is open: whether a synced trip is another phone's change to
+// follow — not this phone's own write coming back, not one already seen,
+// not another account's or yesterday's.
+export function isOtherDevicesTripChange(
+  synced: SyncedActiveTrip | null,
+  deviceId: string,
+  lastSeenSavedAt: string | null,
+  userId: string | null,
+  now: number,
+): synced is SyncedActiveTrip {
+  if (!synced || synced.deviceId === deviceId || synced.savedAt === lastSeenSavedAt) return false;
+  return isResumableTrip(synced, userId, now);
+}
+
 // A trip left open overnight is yesterday's tour, not one to resume.
 export const ACTIVE_TRIP_MAX_AGE_MS = 18 * 60 * 60 * 1000;
 

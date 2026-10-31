@@ -4,6 +4,7 @@ import * as Location from "expo-location";
 
 import { distanceKm } from "@/src/features/map/utils/circleMath";
 import { driverLiveLocationRepository } from "@/src/repositories/driverLiveLocationRepository";
+import { getCurrentPositionOrRecent } from "@/src/services/devicePosition";
 import { DriverLiveLocationSource } from "@/src/types/driverLiveLocation";
 
 type LatLng = { latitude: number; longitude: number };
@@ -36,7 +37,8 @@ export function useReportPositionOnAppOpen(enabled: boolean) {
       try {
         const permission = await Location.getForegroundPermissionsAsync();
         if (!permission.granted) return;
-        const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        const location = await getCurrentPositionOrRecent();
+        if (!location) return;
         report({ latitude: location.coords.latitude, longitude: location.coords.longitude, source: "app" });
       } catch {
         // ignored on purpose

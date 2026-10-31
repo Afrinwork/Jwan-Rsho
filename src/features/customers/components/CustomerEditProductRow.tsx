@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { AppInput } from "@/src/components/ui/AppInput";
+import { DecimalInput } from "@/src/components/ui/DecimalInput";
 import { spacing } from "@/src/constants/spacing";
 import { CustomerEditFormValues } from "@/src/features/customers/validation/customerEditSchema";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
@@ -43,12 +44,11 @@ export function CustomerEditProductRow({
             control={control}
             name={`items.${index}.quantity`}
             render={({ field }) => (
-              <AppInput
-                keyboardType="decimal-pad"
+              <DecimalInput
                 onBlur={field.onBlur}
-                onChangeText={(text) => field.onChange(text === "" ? 0 : Number(text.replace(",", ".")))}
+                onChangeValue={field.onChange}
                 placeholder={t("orderItems.quantityPlaceholder")}
-                value={String(field.value)}
+                value={field.value ?? 0}
               />
             )}
           />
