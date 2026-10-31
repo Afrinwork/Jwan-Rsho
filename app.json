@@ -3,7 +3,7 @@
     "name": "Rasho SmartPlan",
     "slug": "rsho",
     "scheme": "rsho",
-    "version": "1.9.0",
+    "version": "1.9.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
