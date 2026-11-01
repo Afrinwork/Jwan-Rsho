@@ -1,4 +1,5 @@
-import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { AppModal } from "@/src/components/ui/AppModal";
 import { mapT } from "@/src/features/map/i18n/mapT";
 
 import { AppBadge } from "@/src/components/ui/AppBadge";
@@ -21,7 +22,7 @@ export function AddressCheckSheet(props: AddressCheckSheetProps) {
   const t = mapT;
 
   return (
-    <Modal animationType="slide" onRequestClose={props.onClose} transparent visible={props.visible}>
+    <AppModal animationType="slide" onRequestClose={props.onClose} transparent visible={props.visible}>
       <View style={styles.overlay}>
         <Pressable onPress={props.onClose} style={styles.backdrop} />
         <View style={[styles.sheet, { backgroundColor: colors.background, borderColor: colors.border }]}>
@@ -62,7 +63,7 @@ export function AddressCheckSheet(props: AddressCheckSheetProps) {
           </View>
         </View>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 

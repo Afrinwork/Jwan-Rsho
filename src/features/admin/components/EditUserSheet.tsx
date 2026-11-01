@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Modal, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { AppModal } from "@/src/components/ui/AppModal";
 import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
@@ -48,7 +49,7 @@ export function EditUserSheet({
   const canSave = fullName.trim().length > 0 && email.trim().length > 0 && !saving;
 
   return (
-    <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
+    <AppModal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
       <View style={styles.overlay}>
         <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={[styles.title, { color: colors.text }]}>{t("editUserSheet.title")}</Text>
@@ -68,7 +69,7 @@ export function EditUserSheet({
           <AppButton label={t("userActions.cancel")} onPress={onClose} size="compact" variant="secondary" />
         </View>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 

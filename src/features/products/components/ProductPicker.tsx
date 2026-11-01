@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { FlatList, Modal, StyleSheet, Text } from "react-native";
+import { FlatList, StyleSheet, Text } from "react-native";
+import { AppModal } from "@/src/components/ui/AppModal";
 import { useTranslation } from "react-i18next";
 
 import { EmptyState } from "@/src/components/ui/EmptyState";
@@ -35,7 +36,7 @@ export function ProductPicker({ visible, excludeIds = [], onSelect, onClose }: P
   );
 
   return (
-    <Modal animationType="slide" onRequestClose={onClose} presentationStyle="pageSheet" visible={visible}>
+    <AppModal animationType="slide" onRequestClose={onClose} presentationStyle="pageSheet" visible={visible}>
       <ScreenContainer>
         <Text style={[styles.title, { color: colors.text }]}>{t("picker.title")}</Text>
         <SearchInput onChangeText={setQuery} placeholder={t("picker.searchPlaceholder")} value={query} />
@@ -59,7 +60,7 @@ export function ProductPicker({ visible, excludeIds = [], onSelect, onClose }: P
           ItemSeparatorComponent={() => <Separator />}
         />
       </ScreenContainer>
-    </Modal>
+    </AppModal>
   );
 }
 

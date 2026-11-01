@@ -1,5 +1,6 @@
 import { ReactNode, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { AppModal } from "@/src/components/ui/AppModal";
 import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
@@ -84,7 +85,7 @@ export function MapCustomerSheet({
   const hasPhone = Boolean(details?.customer.phone);
 
   return (
-    <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
+    <AppModal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
       <View style={styles.overlay}>
         <Pressable onPress={onClose} style={styles.backdrop} />
         <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -154,7 +155,7 @@ export function MapCustomerSheet({
           ) : null}
         </View>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 

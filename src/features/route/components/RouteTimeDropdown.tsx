@@ -1,6 +1,7 @@
 import { ChevronDown20Regular } from "@fluentui/react-native-icons";
 import { useMemo, useState } from "react";
-import { FlatList, Modal, Pressable, StyleSheet, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
+import { AppModal } from "@/src/components/ui/AppModal";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { AppText } from "@/src/components/ui/AppText";
@@ -40,7 +41,7 @@ export function RouteTimeDropdown(props: RouteTimeDropdownProps) {
         </AppText>
         <ChevronDown20Regular color={colors.mutedText} />
       </Pressable>
-      <Modal animationType="fade" onRequestClose={() => setOpen(false)} transparent visible={open}>
+      <AppModal animationType="fade" onRequestClose={() => setOpen(false)} transparent visible={open}>
         <View style={styles.overlay}>
           <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <AppText variant="label">{t("startCard.departureTimeLabel")}</AppText>
@@ -73,7 +74,7 @@ export function RouteTimeDropdown(props: RouteTimeDropdownProps) {
             <AppButton label={t("common:cancel")} onPress={() => setOpen(false)} size="compact" variant="secondary" />
           </View>
         </View>
-      </Modal>
+      </AppModal>
     </>
   );
 }

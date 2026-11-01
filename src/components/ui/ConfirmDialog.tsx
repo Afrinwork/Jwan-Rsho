@@ -1,4 +1,5 @@
-import { Modal, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { AppModal } from "@/src/components/ui/AppModal";
 
 import { AppCard } from "@/src/components/ui/AppCard";
 import { ConfirmPanel, ConfirmPanelProps } from "@/src/components/ui/ConfirmPanel";
@@ -13,13 +14,13 @@ export function ConfirmDialog({ visible, ...panel }: ConfirmDialogProps) {
   const colors = useThemeColors();
 
   return (
-    <Modal animationType="fade" onRequestClose={panel.onCancel} transparent visible={visible}>
+    <AppModal animationType="fade" onRequestClose={panel.onCancel} transparent visible={visible}>
       <View style={styles.backdrop}>
         <AppCard contentStyle={styles.card} frosted style={{ backgroundColor: colors.surfaceElevated }}>
           <ConfirmPanel {...panel} />
         </AppCard>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 

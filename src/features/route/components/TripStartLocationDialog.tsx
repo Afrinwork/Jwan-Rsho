@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { KeyboardAvoidingView, Modal, ScrollView, StyleSheet, View } from "react-native";
+import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from "react-native";
+import { AppModal } from "@/src/components/ui/AppModal";
 import { useTranslation } from "react-i18next";
 
 import { FormField } from "@/src/components/forms/FormField";
@@ -67,7 +68,7 @@ export function TripStartLocationDialog(props: TripStartLocationDialogProps) {
   }
 
   return (
-    <Modal animationType="fade" onRequestClose={props.onClose} transparent visible={props.visible}>
+    <AppModal animationType="fade" onRequestClose={props.onClose} transparent visible={props.visible}>
       {/* "padding" on Android too: edge-to-edge (SDK 58) no longer resizes the
           window for the keyboard, so the bottom fields ended up under it. */}
       <KeyboardAvoidingView behavior="padding" style={styles.overlay}>
@@ -103,10 +104,10 @@ export function TripStartLocationDialog(props: TripStartLocationDialogProps) {
               </FormField>
               <View style={styles.row}>
                 <View style={styles.column}>
-                  <CountrySelectField onChange={setCountry} value={country} />
+                  <CountrySelectField inline onChange={setCountry} value={country} />
                 </View>
                 <View style={styles.column}>
-                  <CitySelectField country={country} onChange={setCity} value={city} />
+                  <CitySelectField country={country} inline onChange={setCity} value={city} />
                 </View>
               </View>
               {error ? <ErrorState message={error} /> : null}
@@ -122,7 +123,7 @@ export function TripStartLocationDialog(props: TripStartLocationDialogProps) {
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
-    </Modal>
+    </AppModal>
   );
 }
 

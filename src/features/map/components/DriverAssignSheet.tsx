@@ -1,4 +1,5 @@
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { AppModal } from "@/src/components/ui/AppModal";
 import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
@@ -30,13 +31,13 @@ export function DriverAssignSheet({ visible, ...content }: DriverAssignSheetProp
   const colors = useThemeColors();
 
   return (
-    <Modal animationType="fade" onRequestClose={content.onClose} transparent visible={visible}>
+    <AppModal animationType="fade" onRequestClose={content.onClose} transparent visible={visible}>
       <View style={styles.overlay}>
         <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <DriverAssignContent {...content} />
         </View>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 

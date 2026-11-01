@@ -587,7 +587,12 @@ export function MapScreen() {
           closeDriverAssignment();
         }}
         onEdit={() => {
-          if (selectedCustomerId) router.push(`/customer/edit/${selectedCustomerId}`);
+          if (!selectedCustomerId) return;
+          // The sheet is a Modal: left open, it stayed on top of the edit
+          // screen and covered it.
+          const customerId = selectedCustomerId;
+          setSelectedCustomerId(null);
+          router.push(`/customer/edit/${customerId}`);
         }}
         onComplete={() => setCompleteConfirmVisible(true)}
         completing={mapActions.completingOrder}

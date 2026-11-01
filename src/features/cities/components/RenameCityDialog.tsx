@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Modal, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { AppModal } from "@/src/components/ui/AppModal";
 import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
@@ -38,7 +39,7 @@ export function RenameCityDialog({ visible, currentName, saving, onCancel, onSav
   const trimmed = value.trim();
 
   return (
-    <Modal animationType="fade" onRequestClose={onCancel} transparent visible={visible}>
+    <AppModal animationType="fade" onRequestClose={onCancel} transparent visible={visible}>
       <View style={styles.backdrop}>
         <AppCard contentStyle={styles.card} frosted>
           <AppText variant="heading">{t("rename.title")}</AppText>
@@ -58,7 +59,7 @@ export function RenameCityDialog({ visible, currentName, saving, onCancel, onSav
           </View>
         </AppCard>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 

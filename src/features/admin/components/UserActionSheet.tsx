@@ -1,4 +1,5 @@
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { AppModal } from "@/src/components/ui/AppModal";
 import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
@@ -32,7 +33,7 @@ export function UserActionSheet({
   const { t } = useTranslation("admin");
 
   return (
-    <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
+    <AppModal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
       <View style={styles.overlay}>
         <Pressable onPress={onClose} style={StyleSheet.absoluteFill} />
         <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -47,7 +48,7 @@ export function UserActionSheet({
           <AppButton label={t("userActions.cancel")} onPress={onClose} size="compact" variant="secondary" />
         </View>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 

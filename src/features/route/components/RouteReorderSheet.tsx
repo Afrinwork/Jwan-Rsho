@@ -1,6 +1,7 @@
 import { Dismiss20Regular, Edit20Regular, ReOrderDotsVertical20Regular } from "@fluentui/react-native-icons";
 import { useState } from "react";
-import { Modal, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import { AppModal } from "@/src/components/ui/AppModal";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import ReorderableList, { useIsActive, useReorderableDrag } from "react-native-reorderable-list";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -52,7 +53,7 @@ export function RouteReorderSheet(props: RouteReorderSheetProps) {
   const selectedCount = whatsapp.selectedIds.length;
 
   return (
-    <Modal animationType="slide" onRequestClose={props.onClose} transparent visible={props.visible}>
+    <AppModal animationType="slide" onRequestClose={props.onClose} transparent visible={props.visible}>
       {/* A Modal is its own native root: without this, Android delivers no
           gestures to the drag list inside it. */}
       <GestureHandlerRootView style={styles.root}>
@@ -174,7 +175,7 @@ export function RouteReorderSheet(props: RouteReorderSheetProps) {
           ) : null}
         </SafeAreaView>
       </GestureHandlerRootView>
-    </Modal>
+    </AppModal>
   );
 }
 

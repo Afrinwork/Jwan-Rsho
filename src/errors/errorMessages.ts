@@ -3,6 +3,7 @@ import { t } from "@/src/i18n/i18n";
 export const errorMessages = {
   backendNotConfigured: t("errors:backendNotConfigured"),
   invalidCredentials: t("errors:invalidCredentials"),
+  accountBlocked: t("errors:accountBlocked"),
   recentLoginRequired: t("errors:recentLoginRequired"),
   generic: t("errors:generic"),
   forbidden: t("errors:forbidden"),

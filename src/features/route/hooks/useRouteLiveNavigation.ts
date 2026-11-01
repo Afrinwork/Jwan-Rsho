@@ -3,11 +3,10 @@ import { useCallback, useMemo, useState } from "react";
 import { distanceKm } from "@/src/features/map/utils/circleMath";
 import { MapCustomerMarker } from "@/src/features/map/types/mapTypes";
 import { reportCompletedCustomer } from "@/src/features/route/hooks/useDriverPositionReporting";
+import { nextArrivedStopId } from "@/src/features/route/services/routeArrivalService";
 import { orderDetailsRepository } from "@/src/repositories/orderDetailsRepository";
 import { orderRepository } from "@/src/repositories/orderRepository";
 import { formatError } from "@/src/utils/formatError";
-
-const ARRIVAL_THRESHOLD_KM = 0.12;
 
 export function useRouteLiveNavigation(
   markers: MapCustomerMarker[],
@@ -42,10 +41,15 @@ export function useRouteLiveNavigation(
     return distanceKm(liveCoordinate, currentMarker);
   }, [currentMarker, liveCoordinate]);
 
+  // Kept while the driver stays near the stop (see nextArrivedStopId), so
+  // GPS jitter doesn't keep opening and closing the question.
+  const [arrivedId, setArrivedId] = useState<string | null>(null);
+  const nextArrivedId = nextArrivedStopId(arrivedId, currentMarker?.id ?? null, distanceToCurrentKm);
+  if (nextArrivedId !== arrivedId) setArrivedId(nextArrivedId);
+
   const arrivalPromptVisible =
     currentMarker !== null &&
-    distanceToCurrentKm !== null &&
-    distanceToCurrentKm <= ARRIVAL_THRESHOLD_KM &&
+    nextArrivedId === currentMarker.id &&
     !dismissedIds.has(currentMarker.id);
 
   // Returns whether the order actually got completed — callers that need to

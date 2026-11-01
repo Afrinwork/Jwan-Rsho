@@ -1,4 +1,5 @@
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { AppModal } from "@/src/components/ui/AppModal";
 import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
@@ -23,7 +24,7 @@ export function NavigationAppSheet({ visible, apps, onClose, onSelect, t: fixedT
   const t = fixedT ?? reactiveT;
 
   return (
-    <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
+    <AppModal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
       <View style={styles.overlay}>
         <Pressable onPress={onClose} style={styles.backdrop} />
         <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -42,7 +43,7 @@ export function NavigationAppSheet({ visible, apps, onClose, onSelect, t: fixedT
           <AppButton label={t("common.close")} onPress={onClose} variant="secondary" />
         </View>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 

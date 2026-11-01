@@ -1,6 +1,7 @@
 import { AddCircle20Regular, ChevronDown20Regular } from "@fluentui/react-native-icons";
 import { useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { AppModal } from "@/src/components/ui/AppModal";
 import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
@@ -16,9 +17,12 @@ type CitySelectFieldProps = {
   onChange: (value: string) => void;
   country: string;
   error?: string;
+  // Inside a Modal: the options open below the field instead of in a
+  // second Modal on top (see AppModal).
+  inline?: boolean;
 };
 
-export function CitySelectField({ value, onChange, country, error }: CitySelectFieldProps) {
+export function CitySelectField({ value, onChange, country, error, inline = false }: CitySelectFieldProps) {
   const { cities, loading } = useCustomerCities();
   const colors = useThemeColors();
   const { t } = useTranslation("customers");
@@ -26,6 +30,29 @@ export function CitySelectField({ value, onChange, country, error }: CitySelectF
   const options = cities.filter((city) => !country || city.country === country);
   const normalizedValue = value.trim().toLowerCase();
   const isNewCity = normalizedValue.length > 0 && !options.some((option) => option.city.trim().toLowerCase() === normalizedValue);
+  const optionList = options.map((option) => {
+    const active = option.city === value;
+    return (
+      <Pressable
+        key={`${option.country}-${option.normalizedCity}`}
+        onPress={() => {
+          onChange(option.city);
+          setOpen(false);
+        }}
+        style={[
+          styles.option,
+          {
+            borderColor: active ? colors.primary : colors.border,
+            backgroundColor: active ? colors.primaryMuted : colors.surfaceElevated,
+          },
+        ]}
+      >
+        <Text style={[styles.optionLabel, { color: active ? colors.primary : colors.text }]}>
+          {option.city}
+        </Text>
+      </Pressable>
+    );
+  });
 
   return (
     <FormField error={error} label={t("form.cityLabel")}>
@@ -41,7 +68,7 @@ export function CitySelectField({ value, onChange, country, error }: CitySelectF
         ) : options.length > 0 ? (
           <>
             <Pressable
-              onPress={() => setOpen(true)}
+              onPress={() => setOpen((current) => !current)}
               style={[styles.trigger, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
             >
               <Text numberOfLines={1} style={[styles.triggerLabel, { color: colors.text }]}>
@@ -49,38 +76,28 @@ export function CitySelectField({ value, onChange, country, error }: CitySelectF
               </Text>
               <ChevronDown20Regular color={colors.mutedText} />
             </Pressable>
-            <Modal animationType="fade" onRequestClose={() => setOpen(false)} transparent visible={open}>
-              <View style={styles.overlay}>
-                <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                  <ScrollView contentContainerStyle={styles.sheetContent} showsVerticalScrollIndicator={false}>
-                    {options.map((option) => {
-                      const active = option.city === value;
-                      return (
-                        <Pressable
-                          key={`${option.country}-${option.normalizedCity}`}
-                          onPress={() => {
-                            onChange(option.city);
-                            setOpen(false);
-                          }}
-                          style={[
-                            styles.option,
-                            {
-                              borderColor: active ? colors.primary : colors.border,
-                              backgroundColor: active ? colors.primaryMuted : colors.surfaceElevated,
-                            },
-                          ]}
-                        >
-                          <Text style={[styles.optionLabel, { color: active ? colors.primary : colors.text }]}>
-                            {option.city}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </ScrollView>
-                  <AppButton label={t("common:cancel")} onPress={() => setOpen(false)} size="compact" variant="secondary" />
+            {inline ? (
+              open ? (
+                <ScrollView
+                  contentContainerStyle={styles.sheetContent}
+                  nestedScrollEnabled
+                  style={[styles.inlineList, { borderColor: colors.border }]}
+                >
+                  {optionList}
+                </ScrollView>
+              ) : null
+            ) : (
+              <AppModal animationType="fade" onRequestClose={() => setOpen(false)} transparent visible={open}>
+                <View style={styles.overlay}>
+                  <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <ScrollView contentContainerStyle={styles.sheetContent} showsVerticalScrollIndicator={false}>
+                      {optionList}
+                    </ScrollView>
+                    <AppButton label={t("common:cancel")} onPress={() => setOpen(false)} size="compact" variant="secondary" />
+                  </View>
                 </View>
-              </View>
-            </Modal>
+              </AppModal>
+            )}
           </>
         ) : null}
         {isNewCity ? (
@@ -128,6 +145,12 @@ const styles = StyleSheet.create({
     maxHeight: "70%",
     padding: spacing.md,
     gap: spacing.sm,
+  },
+  inlineList: {
+    maxHeight: 220,
+    borderWidth: 1,
+    borderRadius: radius.input,
+    padding: spacing.xs,
   },
   sheetContent: {
     gap: spacing.xs,

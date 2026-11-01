@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { AppModal } from "@/src/components/ui/AppModal";
 import { useTranslation } from "react-i18next";
 import { ChevronDown20Regular } from "@fluentui/react-native-icons";
 
@@ -15,9 +16,12 @@ type CountrySelectFieldProps = {
   value: string;
   onChange: (value: string) => void;
   error?: string;
+  // Inside a Modal: the options open below the field instead of in a
+  // second Modal on top (see AppModal).
+  inline?: boolean;
 };
 
-export function CountrySelectField({ value, onChange, error }: CountrySelectFieldProps) {
+export function CountrySelectField({ value, onChange, error, inline = false }: CountrySelectFieldProps) {
   const { t, i18n } = useTranslation("countries");
   const { countries, loading } = useCountries();
   const colors = useThemeColors();
@@ -25,6 +29,29 @@ export function CountrySelectField({ value, onChange, error }: CountrySelectFiel
   const activeCountries = useMemo(() => countries.filter((country) => country.isActive), [countries]);
   const selectedCountry = activeCountries.find((country) => country.name === value);
   const selectedLabel = selectedCountry ? getLocalizedName(selectedCountry, i18n.language) : t("selectField.label");
+  const options = activeCountries.map((country) => {
+    const active = value === country.name;
+    return (
+      <Pressable
+        key={country.id}
+        onPress={() => {
+          onChange(country.name);
+          setOpen(false);
+        }}
+        style={[
+          styles.option,
+          {
+            backgroundColor: active ? colors.primaryMuted : colors.surfaceElevated,
+            borderColor: active ? colors.primary : colors.border,
+          },
+        ]}
+      >
+        <Text style={[styles.optionLabel, { color: active ? colors.primary : colors.text }]}>
+          {getLocalizedName(country, i18n.language)}
+        </Text>
+      </Pressable>
+    );
+  });
 
   return (
     <FormField error={error} label={t("selectField.label")}>
@@ -35,7 +62,7 @@ export function CountrySelectField({ value, onChange, error }: CountrySelectFiel
       ) : (
         <>
           <Pressable
-            onPress={() => setOpen(true)}
+            onPress={() => setOpen((current) => !current)}
             style={[styles.trigger, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}
           >
             <Text numberOfLines={1} style={[styles.triggerLabel, { color: value ? colors.text : colors.mutedText }]}>
@@ -43,38 +70,28 @@ export function CountrySelectField({ value, onChange, error }: CountrySelectFiel
             </Text>
             <ChevronDown20Regular color={colors.mutedText} />
           </Pressable>
-          <Modal animationType="fade" onRequestClose={() => setOpen(false)} transparent visible={open}>
-            <View style={styles.overlay}>
-              <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <ScrollView contentContainerStyle={styles.sheetContent} showsVerticalScrollIndicator={false}>
-                  {activeCountries.map((country) => {
-                    const active = value === country.name;
-                    return (
-                      <Pressable
-                        key={country.id}
-                        onPress={() => {
-                          onChange(country.name);
-                          setOpen(false);
-                        }}
-                        style={[
-                          styles.option,
-                          {
-                            backgroundColor: active ? colors.primaryMuted : colors.surfaceElevated,
-                            borderColor: active ? colors.primary : colors.border,
-                          },
-                        ]}
-                      >
-                        <Text style={[styles.optionLabel, { color: active ? colors.primary : colors.text }]}>
-                          {getLocalizedName(country, i18n.language)}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </ScrollView>
-                <AppButton label={t("common:cancel")} onPress={() => setOpen(false)} size="compact" variant="secondary" />
+          {inline ? (
+            open ? (
+              <ScrollView
+                contentContainerStyle={styles.sheetContent}
+                nestedScrollEnabled
+                style={[styles.inlineList, { borderColor: colors.border }]}
+              >
+                {options}
+              </ScrollView>
+            ) : null
+          ) : (
+            <AppModal animationType="fade" onRequestClose={() => setOpen(false)} transparent visible={open}>
+              <View style={styles.overlay}>
+                <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <ScrollView contentContainerStyle={styles.sheetContent} showsVerticalScrollIndicator={false}>
+                    {options}
+                  </ScrollView>
+                  <AppButton label={t("common:cancel")} onPress={() => setOpen(false)} size="compact" variant="secondary" />
+                </View>
               </View>
-            </View>
-          </Modal>
+            </AppModal>
+          )}
         </>
       )}
     </FormField>
@@ -110,6 +127,12 @@ const styles = StyleSheet.create({
     maxHeight: "70%",
     padding: spacing.md,
     gap: spacing.sm,
+  },
+  inlineList: {
+    maxHeight: 220,
+    borderWidth: 1,
+    borderRadius: radius.input,
+    padding: spacing.xs,
   },
   sheetContent: {
     gap: spacing.xs,

@@ -1,4 +1,5 @@
-import { Modal, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import { AppModal } from "@/src/components/ui/AppModal";
 import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
@@ -26,7 +27,7 @@ export function DriverLiveStatusSheet(props: DriverLiveStatusSheetProps) {
   const colors = useThemeColors();
 
   return (
-    <Modal animationType="slide" onRequestClose={props.onClose} transparent visible={props.visible}>
+    <AppModal animationType="slide" onRequestClose={props.onClose} transparent visible={props.visible}>
       <View style={styles.overlay}>
         <Pressable onPress={props.onClose} style={styles.backdrop} />
         <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -48,7 +49,7 @@ export function DriverLiveStatusSheet(props: DriverLiveStatusSheetProps) {
           <AppButton label={t("common.close")} onPress={props.onClose} variant="secondary" />
         </View>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 

@@ -1,6 +1,7 @@
 import { AddCircle20Regular, ArrowDown20Regular, ArrowUp20Regular, ChevronDown20Regular, Dismiss20Regular } from "@fluentui/react-native-icons";
 import { ReactNode, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { AppModal } from "@/src/components/ui/AppModal";
 import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/src/components/ui/AppButton";
@@ -70,7 +71,7 @@ export function WhatsappComponentsDropdown({ value, onChange }: WhatsappComponen
         </View>
         <ChevronDown20Regular color={colors.mutedText} />
       </Pressable>
-      <Modal animationType="fade" onRequestClose={() => setOpen(false)} transparent visible={open}>
+      <AppModal animationType="fade" onRequestClose={() => setOpen(false)} transparent visible={open}>
         <View style={styles.overlay}>
           <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <AppText variant="label">{t("whatsappTemplate.componentsLabel")}</AppText>
@@ -123,7 +124,7 @@ export function WhatsappComponentsDropdown({ value, onChange }: WhatsappComponen
             <AppButton label={t("common:close")} onPress={() => setOpen(false)} size="compact" />
           </View>
         </View>
-      </Modal>
+      </AppModal>
     </>
   );
 }

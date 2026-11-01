@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Modal, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { AppModal } from "@/src/components/ui/AppModal";
 
 import { AppButton } from "@/src/components/ui/AppButton";
 import { AppCard } from "@/src/components/ui/AppCard";
@@ -27,7 +28,7 @@ export function RouteMoveStopDialog(props: RouteMoveStopDialogProps) {
   const isValid = Number.isInteger(parsed) && parsed >= 1 && parsed <= props.totalCount;
 
   return (
-    <Modal animationType="fade" onRequestClose={props.onCancel} transparent visible={props.stop !== null}>
+    <AppModal animationType="fade" onRequestClose={props.onCancel} transparent visible={props.stop !== null}>
       <View style={styles.backdrop}>
         <AppCard contentStyle={styles.card} frosted style={{ backgroundColor: colors.surfaceElevated }}>
           <AppText variant="heading">{t("manualOrder.dialogTitle", { name: props.stop?.name ?? "" })}</AppText>
@@ -57,7 +58,7 @@ export function RouteMoveStopDialog(props: RouteMoveStopDialogProps) {
           </View>
         </AppCard>
       </View>
-    </Modal>
+    </AppModal>
   );
 }
 

@@ -2,6 +2,7 @@
   "firebaseNotConfigured": "Firebase wurde noch nicht eingerichtet.",
   "backendNotConfigured": "Der Server wurde noch nicht eingerichtet.",
   "invalidCredentials": "E-Mail-Adresse oder Passwort ist falsch.",
+  "accountBlocked": "Dein Konto ist gesperrt, z. B. weil bis 10:00 Uhr keine Tagesmeldung gesendet wurde. Bitte wende dich an deinen Admin, damit er dich wieder freischaltet.",
   "recentLoginRequired": "Bitte melde dich erneut an, bevor du die E-Mail-Adresse aenderst.",
   "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
   "forbidden": "Du hast keine Berechtigung fuer diesen Bereich.",

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { KeyboardAvoidingView, Modal, ScrollView, StyleSheet, View } from "react-native";
+import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from "react-native";
+import { AppModal } from "@/src/components/ui/AppModal";
 import { useTranslation } from "react-i18next";
 
 import { FormField } from "@/src/components/forms/FormField";
@@ -66,7 +67,7 @@ export function CustomerAddressDialog(props: CustomerAddressDialogProps) {
   }
 
   return (
-    <Modal animationType="fade" onRequestClose={props.onClose} transparent visible={props.marker !== null}>
+    <AppModal animationType="fade" onRequestClose={props.onClose} transparent visible={props.marker !== null}>
       <KeyboardAvoidingView behavior="padding" style={styles.overlay}>
         <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -88,10 +89,10 @@ export function CustomerAddressDialog(props: CustomerAddressDialogProps) {
             </FormField>
             <View style={styles.row}>
               <View style={styles.column}>
-                <CountrySelectField onChange={setCountry} value={country} />
+                <CountrySelectField inline onChange={setCountry} value={country} />
               </View>
               <View style={styles.column}>
-                <CitySelectField country={country} onChange={setCity} value={city} />
+                <CitySelectField country={country} inline onChange={setCity} value={city} />
               </View>
             </View>
             {error ? <ErrorState message={error} /> : null}
@@ -100,7 +101,7 @@ export function CustomerAddressDialog(props: CustomerAddressDialogProps) {
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
-    </Modal>
+    </AppModal>
   );
 }
 

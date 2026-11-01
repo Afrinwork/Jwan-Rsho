@@ -37,6 +37,9 @@ const authMessageMap: Record<string, string> = {
   session_not_found: errorMessages.authRequired,
   refresh_token_not_found: errorMessages.authRequired,
   refresh_token_already_used: errorMessages.authRequired,
+  // Deactivated by the admin, or blocked automatically at 10:00 for a
+  // missing morning report — not a wrong password.
+  user_banned: errorMessages.accountBlocked,
 };
 
 function isAuthError(error: unknown): error is { code?: string; message: string } {
@@ -60,7 +63,11 @@ export function formatError(error: unknown): AppError {
   }
 
   if (isAuthError(error)) {
-    return new AppError(authMessageMap[error.code ?? ""] ?? errorMessages.invalidCredentials, error.code ?? "auth-error");
+    // No connection to the auth server: said as such instead of "wrong
+    // password", which sent people retyping a correct password on a bad
+    // mobile connection.
+    if ("name" in error && error.name === "AuthRetryableFetchError") return new AppError(errorMessages.noInternet, "network-error");
+    return new AppError(authMessageMap[error.code ?? ""] ?? errorMessages.generic, error.code ?? "auth-error");
   }
 
   if (isNetworkError(error)) return new AppError(errorMessages.noInternet, "network-error");

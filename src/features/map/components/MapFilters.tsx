@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { AppModal } from "@/src/components/ui/AppModal";
 import { mapT } from "@/src/features/map/i18n/mapT";
 
 import { spacing } from "@/src/constants/spacing";
@@ -85,7 +86,7 @@ export function MapFilters(props: MapFiltersProps) {
         })}
       </View>
 
-      <Modal animationType="fade" onRequestClose={() => setOpenFilter(null)} transparent visible={activeCategory !== null}>
+      <AppModal animationType="fade" onRequestClose={() => setOpenFilter(null)} transparent visible={activeCategory !== null}>
         <View style={styles.overlay}>
           <Pressable onPress={() => setOpenFilter(null)} style={styles.backdrop} />
           <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -117,7 +118,7 @@ export function MapFilters(props: MapFiltersProps) {
             </View>
           </View>
         </View>
-      </Modal>
+      </AppModal>
     </View>
   );
 }
