@@ -37,8 +37,7 @@ const authMessageMap: Record<string, string> = {
   session_not_found: errorMessages.authRequired,
   refresh_token_not_found: errorMessages.authRequired,
   refresh_token_already_used: errorMessages.authRequired,
-  // Deactivated by the admin, or blocked automatically at 10:00 for a
-  // missing morning report — not a wrong password.
+  // Deactivated by the admin — not a wrong password.
   user_banned: errorMessages.accountBlocked,
 };
 

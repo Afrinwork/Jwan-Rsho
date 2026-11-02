@@ -1,7 +1,7 @@
 import { toCamelCase } from "@/src/repositories/supabase/caseMapping";
 import { requireSupabase, resolveOwnerScope } from "@/src/repositories/supabase/repositoryContext";
 import { DriverCheckIn } from "@/src/types/driverCheckIn";
-import { getBerlinDateKey, isPastMorningWindow } from "@/src/utils/time/europeBerlin";
+import { getBerlinDateKey } from "@/src/utils/time/europeBerlin";
 import { generateUuid } from "@/src/utils/uuid";
 
 export type CheckInAttemptFailureReason =
@@ -141,9 +141,6 @@ export const driverCheckInRepository = {
     if (readError) throw readError;
     if (existing?.status === "blocked") {
       throw new Error("Your manager must release your account before you can submit a report.");
-    }
-    if (isPastMorningWindow(now) && !existing) {
-      throw new Error("The daily report deadline has passed. Please contact your manager.");
     }
 
     const values = {

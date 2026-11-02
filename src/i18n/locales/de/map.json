@@ -127,7 +127,7 @@
   "driverStatus": {
     "open": "Tagesmeldung senden",
     "title": "Tagesmeldung fuer die Verwaltung",
-    "subtitle": "Sende vor 10:00 Uhr deine aktuelle Adresse und deinen Kilometerstand. Der Kilometerstand wird als Zahl gespeichert, kein Bild ist erforderlich.",
+    "subtitle": "Sende deine aktuelle Adresse und deinen Kilometerstand an die Verwaltung (optional). Der Kilometerstand wird als Zahl gespeichert, kein Bild ist erforderlich.",
     "addressAuto": "Deine aktuelle Adresse wird automatisch aus deinem Standort ermittelt.",
     "managementNote": "Adresse und Kilometerstand werden sofort an deine Verwaltung uebermittelt.",
     "odometerPlaceholder": "Kilometerstand",
