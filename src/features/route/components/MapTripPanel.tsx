@@ -326,13 +326,13 @@ export function MapTripPanel({ trip, railOnly = false, productEmojiById, onCusto
       {/* Instead of the list, not on top of it: a second Modal on top of the
           list freezes the screen. */}
       <CustomerAddressDialog
-        key={editAddressId ?? "closed"}
+        key={`address-${editAddressId ?? "closed"}`}
         marker={editAddressId ? navigation.pendingMarkers.find((marker) => marker.id === editAddressId) ?? null : null}
         onClose={() => setEditAddressId(null)}
         onSaved={() => onCustomerChanged?.()}
       />
       <RouteMoveStopDialog
-        key={moveStopId ?? "closed"}
+        key={`move-${moveStopId ?? "closed"}`}
         onCancel={() => setMoveStopId(null)}
         onConfirm={(position) => {
           if (moveStopId) trip.movePendingStop(moveStopId, position - pendingNumberOffset);
